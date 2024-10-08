@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout</title>
+</head>
+<body>
+    <h1>Checkout</h1>
+    <form action="/checkout" method="POST">
+        <!-- Ordered Items Information -->
+        <h2>Your Items</h2>
+        <% orderedItems.forEach(item => { %>
+          <div>
+            <p><%= item.product.name %> (Quantity: <%= item.quantity %>)</p>
+            <p>Price: <%= item.price %></p>
+          </div>
+        <% }) %>
+        <hr>
+      
+        <!-- Total Price -->
+        <p>Total Price: <%= totalPrice %></p>
+      
+        <!-- Address Information -->
+        <h2>Shipping Address</h2>
+        <div>
+            <label for="country">Country:</label>
+            <input type="text" id="country" name="addressDetails[country]" required>
+        </div>
+        <div>
+            <label for="street">Street:</label>
+            <input type="text" id="street" name="addressDetails[street]" required>
+        </div>
+        <div>
+            <label for="city">City:</label>
+            <input type="text" id="city" name="addressDetails[city]" required>
+        </div>
+        <div>
+            <label for="state">State:</label>
+            <input type="text" id="state" name="addressDetails[state]" required>
+        </div>
+        <div>
+            <label for="postalCode">Postal Code:</label>
+            <input type="text" id="postalCode" name="addressDetails[postalCode]" required>
+        </div>
+        
+        <!-- Submit Button -->
+        <button type="submit">Place Order</button>
+      </form>
+      

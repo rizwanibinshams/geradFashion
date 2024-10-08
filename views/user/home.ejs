@@ -1,0 +1,372 @@
+<%- include("../../views/partials/user/header") %>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+  .btn {
+      display: inline-block;
+      padding: 12px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #fff;
+      background-color: #ff6b6b;
+      border: none;
+      border-radius: 5px;
+      transition: background-color 0.3s, transform 0.3s;
+      cursor: pointer;
+      text-align: center;
+  }
+
+
+  .btn:hover {
+      background-color: #ff4c4c;
+      transform: translateY(-2px);
+  }
+
+
+  .btn:active {
+      transform: translateY(1px);
+  }
+  .wishlist-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 10px;
+      border-radius: 50%;
+      color: #ff6b6b;
+      font-size: 18px;
+      z-index: 10;
+      transition: background-color 0.3s, color 0.3s, transform 0.3s;
+  }
+
+
+  .wishlist-btn:hover {
+      background-color: rgba(255, 255, 255, 1);
+      color: #ff4c4c;
+      transform: translateY(-2px);
+  }
+
+
+  .wishlist-btn:active {
+      transform: translateY(1px);
+  }
+
+
+  .product-img-action-wrap {
+      position: relative;
+  }
+
+
+  .product-img {
+      position: relative;
+      display: block;
+      overflow: hidden;
+  }
+
+
+  .product-cart-wrap {
+      border: 1px solid #eee;
+      padding: 20px;
+      margin-bottom: 30px;
+  }
+
+
+  .product-content-wrap h6 {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 5px;
+  }
+
+
+  .product-content-wrap h5 {
+      font-size: 16px;
+      color: #ff6b6b;
+      margin-bottom: 10px;
+  }
+
+
+  .product-content-wrap a {
+      display: inline-block;
+      padding: 8px 12px;
+      background-color: #ff6b6b;
+      color: white;
+      text-transform: uppercase;
+      font-size: 14px;
+      border-radius: 4px;
+      text-decoration: none;
+  }
+
+
+  .product-content-wrap a:hover {
+      background-color: #ff4c4c;
+  }
+
+
+
+
+
+
+
+
+ .btn {
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    background-color: #ff6b6b;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    transition: 0.3s;
+}
+
+.btn:hover {
+    background-color: #ff4c4c;
+}
+
+.wishlist-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 10px;
+    border-radius: 50%;
+    color: #ff6b6b;
+    font-size: 18px;
+    transition: 0.3s;
+}
+
+.wishlist-btn:hover {
+    color: #ff4c4c;
+}
+
+.product-card {
+    border: 1px solid #eee;
+    padding: 20px;
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden; 
+    transition: box-shadow 0.3s, transform 0.3s;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.product-card img {
+    max-width: 100%;
+    border-radius: 10px;
+    transition: transform 0.5s;
+    position: relative;
+    z-index: 1; 
+}
+
+.product-card:hover img {
+    transform: scale(1.05);
+}
+
+.product-card .price-info {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+}
+
+.product-card .price-info .original-price {
+    text-decoration: line-through;
+    color: #888;
+    margin-right: 5px;
+}
+
+.product-card .price-info .sale-price {
+    color: #ff6b6b;
+    font-weight: bold;
+}
+
+.rating i {
+    color: #ffd700;
+}
+
+.discount-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: #ff4757;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 50%;
+    font-size: 14px;
+    z-index: 2; 
+}
+
+</style>
+<section class="hero">
+  <div class="hero__slider owl-carousel">
+      <div class="hero__items set-bg" data-setbg="img/hero/hero-1.jpg">
+          <div class="container">
+              <div class="row">
+                  <div class="col-xl-5 col-lg-7 col-md-8">
+                      <div class="hero__text">
+                          <h6>Summer Collection</h6>
+                          <h2>Fall - Winter Collections 2030</h2>
+                          <p>A specialist label creating luxury essentials. Ethically created.</p>
+                          <a href="#" class="primary-btn">Shop now <span class="arrow_right"></span></a>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+      <div class="hero__items set-bg" data-setbg="img/hero/hero-2.jpg">
+          <div class="container">
+              <div class="row">
+                  <div class="col-xl-5 col-lg-7 col-md-8">
+                      <div class="hero__text">
+                          <h6>Summer Collection</h6>
+                          <h2>Fall - Winter Collections 2030</h2>
+                          <p>A specialist label creating luxury essentials.</p>
+                          <a href="#" class="primary-btn">Shop now <span class="arrow_right"></span></a>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+</section>
+<section class="banner spad">
+  <div class="container">
+      <div class="row">
+          <div class="col-lg-7 offset-lg-4">
+              <div class="banner__item">
+                  <div class="banner__item__pic">
+                      <img src="img/banner/banner-1.jpg" alt="Clothing Collections 2030">
+                  </div>
+                  <div class="banner__item__text">
+                      <h2>Clothing Collections 2030</h2>
+                      <a href="#">Shop now</a>
+                  </div>
+              </div>
+          </div>
+          <div class="col-lg-5">
+              <div class="banner__item banner__item--middle">
+                  <div class="banner__item__pic">
+                      <img src="img/banner/banner-2.jpg" alt="Accessories">
+                  </div>
+                  <div class="banner__item__text">
+                      <h2>Accessories</h2>
+                      <a href="#">Shop now</a>
+                  </div>
+              </div>
+          </div>
+          <div class="col-lg-7">
+              <div class="banner__item banner__item--last">
+                  <div class="banner__item__pic">
+                      <img src="img/banner/banner-3.jpg" alt="Shoes Spring 2030">
+                  </div>
+                  <div class="banner__item__text">
+                      <h2>Shoes Spring 2030</h2>
+                      <a href="#">Shop now</a>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+</section>
+<section class="product spad">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <ul class="filter__controls text-center">
+                    <li class="active" data-filter=".new-arrivals">New Arrivals</li>
+                </ul>
+            </div>
+        </div>
+        <div class="row product__filter">
+          <% if (products && products.length > 0) { %>
+              <% products.forEach(product => { %>
+                  <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                      <div class="product-card">
+                          <% const discount = Math.abs(((product.regularPrice - product.salePrice) / product.regularPrice) * 100); %>
+                          <% if (discount > 0) { %>
+                              <div class="discount-badge"><%= discount.toFixed(2) %>%</div>
+                          <% } %>
+                          <img src="/uploads/product-images/<%= product.productImage[0] %>" alt="<%= product.productName %>">
+                          <h5 class="mt-3"><%= product.productName %></h5>
+                          <p>Brand: <%= product.brand %></p>
+                          <div class="price-info">
+                              <span class="original-price">₹<%= product.regularPrice %></span>
+                              <span class="sale-price">₹<%= product.salePrice %></span>
+                          </div>
+                          <div class="rating">
+                              <% for (let i = 1; i <= 5; i++) { %>
+                                  <% if (i <= product.rating) { %>
+                                      <i class="fas fa-star"></i>
+                                  <% } else { %>
+                                      <i class="far fa-star"></i>
+                                  <% } %>
+                              <% } %>
+                          </div>
+                          <button class="btn btn-primary mt-3" onclick="addToCart('<%= product._id %>')">Add to Cart</button>
+                          <a href="/productDetails?id=<%= product._id %>" class="stretched-link"></a>
+                      </div>
+                  </div>
+              <% }) %>
+          <% } else { %>
+              <p>No products available.</p>
+          <% } %>
+        </div>
+    </div>
+  </section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const productItems = document.querySelectorAll('.product-item');
+        productItems.forEach((item, index) => {
+            item.style.animation = `fadeInUp 0.6s ease ${index * 0.1}s forwards`;
+            item.style.opacity = '0';
+        });
+
+        // Add hover effect for wishlist button
+        const wishlistBtns = document.querySelectorAll('.wishlist-btn');
+        wishlistBtns.forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                const icon = btn.querySelector('i');
+                icon.style.transform = 'scale(1.2)';
+            });
+            btn.addEventListener('mouseleave', () => {
+                const icon = btn.querySelector('i');
+                icon.style.transform = 'scale(1)';
+            });
+        });
+
+        // Add ripple effect to "Add to Cart" buttons
+        const addToCartBtns = document.querySelectorAll('.btn-primary');
+        addToCartBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                let ripple = document.createElement('span');
+                this.appendChild(ripple);
+                let x = e.clientX - e.target.offsetLeft;
+                let y = e.clientY - e.target.offsetTop;
+                ripple.style.left = `${x}px`;
+                ripple.style.top = `${y}px`;
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+    });
+</script>
+<%- include("../partials/user/footer") %>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

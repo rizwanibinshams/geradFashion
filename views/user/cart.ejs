@@ -1,0 +1,80 @@
+<%- include("../partials/user/header") %>
+
+<section class="cart-page spad">
+    <div class="container">
+        <h2>Your Cart</h2>
+        
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="alert alert-danger"><%= error %></div>
+        <% } %>
+
+        <% if (cart.length > 0) { %>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Size</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Subtotal</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% cart.forEach(item => { %>
+                        <tr>
+                            <td><%= item.productId.productName %></td>
+                            <td><%= item.size ? item.size : 'N/A' %></td>
+
+                            <td>
+                                <form action="/update" method="POST" style="display:inline;">
+
+                                    <input type="hidden" name="productId" value="<%= item.productId._id %>">
+                                    <input type="number" name="quantity" value="<%= item.quantity %>" min="1" max="99" onchange="this.form.submit()">
+                                </form>
+                            </td>
+                            <td>₹<%= item.productId.salePrice.toFixed(2) %></td>
+                            <td>₹<%= (item.productId.salePrice * item.quantity).toFixed(2) %></td>
+                            <td>
+                                <button class="btn btn-danger" onclick="removeFromCart('<%= item.productId._id %>')">Remove</button>
+                                
+
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="4">Total</th>
+                        <th colspan="2">₹<%= total.toFixed(2) %></th>
+                    </tr>
+                </tfoot>
+            </table>
+            <a href="/checkout" class="btn btn-primary">Proceed to Checkout</a>
+        <% } else { %>
+            <p>Your cart is empty.</p>
+        <% } %>
+    </div>
+</section>
+<script>
+    function removeFromCart(productId) {
+        fetch(`/remove/${productId}`, {
+            method: 'DELETE',
+        })
+        .then(response => {
+            if (response.ok) {
+                // Reload the cart page after successful deletion
+                window.location.href = '/cart';
+            } else {
+                return response.json().then(error => {
+                    alert(error.message || 'Failed to remove item from cart');
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while trying to remove the item from the cart');
+        });
+    }
+</script>
+<%- include("../partials/user/footer") %>

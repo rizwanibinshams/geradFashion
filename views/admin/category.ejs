@@ -1,0 +1,395 @@
+<%- include("../partials/admin/header") %>
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        .col-md-3 {
+          padding: 20px;
+          border: 1px solid #ddd;
+          border-radius: 10px;
+          margin: 10px;
+        }
+    
+        .form-label {
+          margin-bottom: 8px;
+        }
+    
+        .form-control {
+          width: 100%;
+          padding: 8px;
+          margin-bottom: 10px;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+          box-sizing: border-box;
+        }
+    
+        .d-grid {
+          margin-top: 20px;
+        }
+    
+        .btn-primary {
+          background-color: #007bff;
+          color: #fff;
+          border: 1px solid #007bff;
+          border-radius: 5px;
+          padding: 10px 20px;
+          cursor: pointer;
+        }
+    
+        .btn-primary:hover {
+          background-color: #0056b3;
+          border-color: #0056b3;
+        }
+    
+        .pagination-container {
+          text-align: center;
+        }
+    
+        .pagination {
+          display: inline-block;
+        }
+    
+        .pagination a,
+        .pagination .current-page {
+          display: inline-block;
+          padding: 5px 10px;
+          margin: 0 2px;
+          border: 1px solid #ddd;
+          text-decoration: none;
+          color: #333;
+        }
+    
+        .pagination a:hover {
+          background-color: #f5f5f5;
+        }
+    
+        .error-message {
+          color: red;
+        }
+       .text-white{
+        text-decoration: none;
+       }
+      </style>
+    </head>
+    <body>
+      <section class="content-main">
+        <div class="content-header">
+          <div>
+            <h2 class="content-title card-title">Category</h2>
+          </div>
+        </div>
+        <header class="card-header text-center mb-20">
+          <form action="/admin/category/" method="get" class="d-inline">
+            <div class="input-group input-group-sm border border-1 border-grey rounded-pill" style="width: 500px; margin-left: 230px">
+              <input type="text" class="form-control border-0 rounded-pill mt-3" placeholder="Search categories" name="search"/>
+              <button class="btn" type="submit">Search</button>
+            </div>
+          </form>
+        </header>
+        <div class="card">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-3">
+                <form method="post" action="/admin/addCategory" onsubmit="return handleFormSubmit(event)">
+                  <div class="mb-4">
+                    <label for="product_name" class="form-label">Name</label>
+                    <input type="text" name="name" placeholder="Type here" class="form-control" id="product_name" />
+                    <div id="name-error" class="error-message"></div>
+                  </div>
+                  <div class="mb-4">
+                    <label class="form-label">Description</label>
+                    <textarea placeholder="Type here" name="description" class="form-control" id="descriptionId" ></textarea>
+                    <div id="description-error" class="error-message"></div>
+                  </div>
+                  <div class="d-grid">
+                    <button class="btn btn-primary" type="submit">
+                      Create category
+                    </button>
+                  </div>
+                </form>
+              </div>
+              <div class="col-md-8 ml-3">
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th class="text-center"></th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Offer Price</th>
+                        <th>Offer</th>
+                        <th>Status</th>
+                        <th>List/Unlist</th>
+                        
+                        <th class="text-start">Edit</th>
+                        <th>Delete</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                        <%cat.reverse().forEach((category,index)=>{%>
+                      <tr>
+                        <td></td>
+                        <td class="text-start"><%= category.name %></td>
+                        <td class="text-start"><%= category.description %></td>
+                        <td>
+                            <% if(category.categoryOffer) { %>
+                                <%= category.categoryOffer %>%
+                            <% } else { %>
+                                0%
+                            <% } %>
+                        </td>
+                        <td class="text-start">
+                            <% if(category.categoryOffer === 0) { %>
+                            <button class="btn btn-info" style="width: 100px">
+                                <a href="#" class="text-white" onclick="addOffer('<%= category._id %>')">Add Offer</a>
+                            </button>
+                            <% } else { %>
+                            <button class="btn btn-info" style="width: 100px">
+                                <a href="#" class="text-white" onclick="removeOffer('<%= category._id %>')">Remove</a>
+                            </button>
+                            <% } %>
+                        </td>
+                        <td class="text-start">
+                            <% if(category.isListed) { %>
+                          <span class="badge rounded-pill alert-success" style="width: 60px">Listed</span>
+                          <% } else { %>
+                           
+                          <span class="badge rounded-pill alert-danger" style="width: 60px">Unlisted</span>
+                          <% } %>
+                        </td>
+                        <td class="text-start">
+                            <% if(category.isListed) { %>
+                          <button class="btn btn-danger" style="width: 70px">
+                            <a href="/admin/listCategory?id=<%= category._id%>" class="text-white">Unlist</a>
+                          </button>
+                          <% } else { %>
+                           
+                          <button class="btn btn-success" style="width: 70px">
+                            <a href="/admin/unlistCategory?id=<%= category._id%>" class="text-white">List</a>
+                          </button>
+                          <% } %>
+                        </td>
+                        <td class="text-start">
+                          <a href="/admin/editCategory?id=<%= category._id %>" class="btn btn-info text-white">Edit</a>
+                        </td>
+                        <td class="text-start">
+                            <button class="btn btn-danger" style="width: 80px " onclick="return confirmDelete()">
+                            <a href="/admin/deleteCategory?id=<%= category._id %>" class=" text-white">delete</a>
+
+                        </button>
+                       
+                    </td>
+                        
+                        
+                      </tr>
+                      <% }) %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    <div class="pagination-container">
+        <% if (currentPage > 1) { %>
+        <a href="?page=<%= currentPage - 1 %>">&laquo; Previous</a>
+        <% } %> <% for (let i = 1; i <= totalPages; i++) { %> <% if (i ===
+        currentPage) { %>
+        <span class="current-page"><%= i %></span>
+        <% } else { %>
+        <a href="?page=<%= i %>"><%= i %></a>
+        <% } %> <% } %> <% if (currentPage < totalPages) { %>
+        <a href="?page=<%= currentPage + 1 %>">Next &raquo;</a>
+        <% } %>
+      </div>
+  
+  </section>
+  
+
+<script>
+
+
+function handleFormSubmit(event) {
+    console.log('Form submission attempted');
+    event.preventDefault();
+    
+    if (!validateForm()) {
+        console.log('Form validation failed');
+        return;
+    }
+    
+    console.log('Form validation passed');
+    const name = document.getElementsByName('name')[0].value;
+    const description = document.getElementById('descriptionId').value;
+    
+    console.log('Sending fetch request');
+    fetch('/admin/addCategory', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name, description })
+    })
+    .then(response => {
+        console.log('Received response:', response.status);
+        if (!response.ok) {
+            return response.json().then(err => {
+                throw new Error(err.error || 'Unknown error occurred');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Category added successfully:', data);
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: 'Category added successfully!'
+        }).then(() => {
+            // Reload the page to reflect the changes in the EJS template
+            window.location.reload();
+        });
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops',
+            text: 'An error occurred: ' + error.message
+        });
+    });
+}
+
+function validateForm() {
+    console.log('Validating form');
+    clearErrorMessages();
+    const name = document.getElementsByName('name')[0].value.trim();
+    const description = document.getElementById('descriptionId').value.trim();
+    let isValid = true;
+
+    if (name === "") {
+        displayErrorMessage("name-error", 'Please enter a name');
+        isValid = false;
+    } else if (!/^[a-zA-Z\s]+$/.test(name)) {
+        displayErrorMessage('name-error', 'Name should contain only alphabets');
+        isValid = false;
+    }
+    if (description === '') {
+        displayErrorMessage("description-error", "Please enter a description");
+        isValid = false;
+    }
+    console.log('Form validation result:', isValid);
+    return isValid;
+}
+
+function displayErrorMessage(elementId, message) {
+    const errorElement = document.getElementById(elementId);
+    if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+    }
+}
+
+function clearErrorMessages() {
+    const errorElements = document.getElementsByClassName('error-message');
+    Array.from(errorElements).forEach((element) => {
+        element.textContent = "";
+        element.style.display = 'none';
+    });
+}
+
+
+async function addOffer(categoryId) {
+    const {value:amount} = await Swal.fire({
+        title:'Offer in Percentage',
+        input:"number",
+        inputLabel:'Percentage',
+        inputPlaceholder:"%",
+    });
+    if(amount){
+        try {
+            const response = await fetch ("/admin/addCategoryOffer",{
+                method:'POST',
+                headers:{
+                    "content-type":"application/json"
+                },
+                body:JSON.stringify({
+                    percentage:amount,
+                    categoryId:categoryId,
+                }),
+            });
+             
+            const data = await response.json();
+            if(response.ok && data.status === true){
+                Swal.fire(
+                    "Offer added",
+                    "the offer has been added",
+                    "success"
+                ).then(()=>{
+                    location.reload();
+                })
+            } else{
+                Swal.fire("failed",data.message||"Adding offer failed","error")
+            }
+
+
+
+        } catch (error) {
+            Swal.fire(
+                "Error",
+                "An Error occurred while adding offer",
+                "error"
+            );
+            console.log("Error addin offer",error);
+            
+        }
+    }
+}
+
+
+async function removeOffer(categoryId){
+    try {
+        const response = await fetch ("/admin/removeCategoryOffer",{
+                method:'POST',
+                headers:{
+                    "content-type":"application/json"
+                },
+                body:JSON.stringify({
+                    
+                    categoryId:categoryId,
+                }),
+            });
+            const data = await response.json();
+            if(response.ok && data.status === true){
+                Swal.fire(
+                    "Offer removed",
+                    "the offer has been removed",
+                    "success"
+                ).then(()=>{
+                    location.reload();
+                })
+            } else{
+                Swal.fire("failed",data.message||"removing offer failed","error")
+           
+            }
+
+    } catch (error) {
+        Swal.fire(
+                "Error",
+                "An Error occurred while removing offer",
+                "error"
+            );
+            console.error("Error removing offer",error);
+    }
+}
+
+function confirmDelete(){
+        return confirm("Are you sure you want to delete this category")
+    }
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+<%- include("../partials/admin/footer") %>
+

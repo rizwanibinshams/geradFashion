@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - E-commerce</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/2.3.0/alpine-ie11.min.js" defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .transition-transform { transition: transform 0.3s ease-in-out; }
+        .hover-scale:hover { transform: scale(1.05); }
+        [x-cloak] { display: none !important; }
+
+        #editAddressModal {
+    display: none; /* Initially hidden */
+    position: fixed; /* Cover the entire screen */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    justify-content: center; /* Center the modal */
+    align-items: center; /* Center the modal */
+}
+
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8 max-w-4xl" x-data="{ 
+        editMode: false,
+        activeSection: null
+    }">
+        <h1 class="text-3xl font-bold mb-8 text-center text-gray-800">My Account</h1>
+
+        <!-- User Info Card -->
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-6">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-semibold text-gray-800">Personal Information</h2>
+                    <button @click="editMode = !editMode" class="text-blue-500 hover:text-blue-600 focus:outline-none transition-colors duration-300">
+                        <i class="fas" :class="editMode ? 'fa-times' : 'fa-edit'"></i>
+                        <span x-text="editMode ? 'Cancel' : 'Edit'"></span>
+                    </button>
+                </div>
+                <div x-show="!editMode">
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <p class="text-sm text-gray-600">Full Name</p>
+                            <p class="font-medium text-gray-800"><%= user.name %></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Email</p>
+                            <p class="font-medium text-gray-800"><%= user.email %></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Phone</p>
+                            <p class="font-medium text-gray-800"><%= user.phone %></p>
+                        </div>
+                        
+                    </div>
+                </div>
+                <div x-show="editMode" x-cloak>
+                    <form class="grid grid-cols-2 gap-4" action="/update-profile" method="POST">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                            <input type="text" id="name" name="name" value="<%= user.name %>" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                            <input type="email" id="email" name="email" value="<%= user.email %>" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        </div>
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700">Phone</label>
+                            <input type="tel" id="phone" name="phone" value="<%= user.phone %>" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        </div>
+                        
+                        <div class="col-span-2 mt-4">
+                            <button type="submit" class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-300">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div @click="activeSection = activeSection === 'addresses' ? null : 'addresses'" class="bg-white p-4 rounded-lg shadow-md text-center hover-scale transition-transform cursor-pointer" :class="{ 'ring-2 ring-blue-500': activeSection === 'addresses' }">
+                <i class="fas fa-map-marker-alt text-2xl text-blue-500 mb-2"></i>
+                <h3 class="font-semibold text-gray-800">Addresses</h3>
+                <p class="text-sm text-gray-600">Manage your addresses</p>
+            </div>
+        </div>
+
+        <!-- Addresses Section -->
+        <div x-show="activeSection === 'addresses'" x-cloak class="bg-white shadow-lg rounded-lg overflow-hidden mb-6">
+            <div class="p-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Your Addresses</h2>
+                <div class="space-y-4">
+                
+                    <% addresses.forEach(function(userAddress) { %>
+                        <% userAddress.address.forEach(function(address) { %>
+                            <div class="border p-4 rounded">
+                                <h3 class="font-semibold"><%= address.addressType || 'Default Type' %></h3>
+                                <p><%= address.street || 'Street not provided' %></p>
+                                <p><%= address.phone %></p>
+                                <p><%= address.city || 'City not provided' %>, <%= address.state || 'State not provided' %>, <%= address.pincode || 'Zip not provided' %></p>
+                                <div class="mt-2">
+                                    <button class="text-blue-500 hover:underline mr-2" onclick="editAddress('<%= address._id %>')">Edit</button>
+                                    <button class="text-red-500 hover:underline" onclick="deleteAddress('<%= address._id %>')">Delete</button>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% }); %>
+                </div>
+                
+                <!-- Edit Address Modal -->
+                
+                
+
+
+
+                <div id="editAddressModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50" style="display:none;">
+                    <div class="bg-white p-6 rounded-lg w-full max-w-md">
+                        <form id="editAddressForm">
+                            <input type="hidden" name="id" id="editAddressId" />
+                
+                            <div class="mb-4">
+                                <label for="editAddressType" class="block">Address Type</label>
+                                <input type="text" name="addressType" id="editAddressType" placeholder="Address Type" class="w-full p-2 border rounded" required />
+                            </div>
+                
+                            <div class="mb-4">
+                                <label for="editAddressStreet" class="block">Street</label>
+                                <input type="text" name="street" id="editAddressStreet" placeholder="Street" class="w-full p-2 border rounded" required />
+                            </div>
+                
+                            <div class="mb-4">
+                                <label for="editAddressCity" class="block">City</label>
+                                <input type="text" name="city" id="editAddressCity" placeholder="City" class="w-full p-2 border rounded" required />
+                            </div>
+                
+                            <div class="mb-4">
+                                <label for="editAddressLandMark" class="block">Landmark</label>
+                                <input type="text" name="landMark" id="editAddressLandMark" placeholder="Landmark" class="w-full p-2 border rounded" required />
+                            </div>
+                
+                            <div class="mb-4">
+                                <label for="editAddressState" class="block">State</label>
+                                <input type="text" name="state" id="editAddressState" placeholder="State" class="w-full p-2 border rounded" required />
+                            </div>
+                
+                            <div class="mb-4">
+                                <label for="editAddressPincode" class="block">Zip Code</label>
+                                <input type="text" name="pincode" id="editAddressPincode" placeholder="Zip Code" class="w-full p-2 border rounded" required />
+                            </div>
+                
+                            <div class="mb-4">
+                                <label for="editAddressPhone" class="block">Phone</label>
+                                <input type="text" name="phone" id="editAddressPhone" placeholder="Phone" class="w-full p-2 border rounded" required />
+                            </div>
+                
+                            <div class="mb-4">
+                                <label for="editAddressAltPhone" class="block">Alternate Phone</label>
+                                <input type="text" name="altPhone" id="editAddressAltPhone" placeholder="Alternate Phone" class="w-full p-2 border rounded" />
+                            </div>
+                
+                            <!-- Add other fields similarly -->
+                            <div class="mt-4 flex justify-between">
+                                <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">Save</button>
+                                <button type="button" onclick="closeModal()" class="bg-gray-500 text-white py-2 px-4 rounded">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                
+
+                
+                <form class="mt-6" action="/addAddress" method="POST">
+                    <h3 class="text-lg font-semibold mb-2">Add New Address</h3>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="type" class="block text-sm font-medium text-gray-700">Type</label>
+                            <input type="text" id="type" name="addressType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+                        </div>
+                        <div>
+                            <label for="street" class="block text-sm font-medium text-gray-700">Street</label>
+                            <input type="text" id="street" name="street" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+                        </div>
+                        <div>
+                            <label for="landMark" class="block text-sm font-medium text-gray-700">Landmark</label>
+                            <input type="text" id="landMark" name="landMark" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+                        </div>
+                        <div>
+                            <label for="city" class="block text-sm font-medium text-gray-700">City</label>
+                            <input type="text" id="city" name="city" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+                        </div>
+                        <div>
+                            <label for="state" class="block text-sm font-medium text-gray-700">State</label>
+                            <input type="text" id="state" name="state" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+                        </div>
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700">Phone</label>
+                            <input type="text" id="phone" name="phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+                        </div>
+                        <div>
+                            <label for="zip" class="block text-sm font-medium text-gray-700">Zip Code</label>
+                            <input type="text" id="zip" name="pincode" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+                        </div>
+                        <div>
+                            <label for="altPhone" class="block text-sm font-medium text-gray-700">Alternate Phone</label>
+                            <input type="text" id="altPhone" name="altPhone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-colors duration-300">Add Address</button>
+                </form>
+                
+                
+            </div>
+        </div>
+    </div>
+    <script>
+    
+// Function to delete the address
+async function deleteAddress(id) {
+    const confirmation = confirm("Are you sure you want to delete this address?");
+    if (confirmation) {
+        try {
+            const response = await fetch(`/addresses/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await response.json();
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert(data.error);
+            }
+        } catch (error) {
+            console.error("Error deleting address:", error);
+            alert('An error occurred while deleting the address.');
+        }
+    }
+}
+
+async function editAddress(id) {
+    try {
+        console.log(`Fetching address details for ID: ${id}`);
+        const response = await fetch(`/addresses/${id}`);
+        const data = await response.json();
+        
+        console.log('Response status:', response.status);
+        console.log('Fetched data:', data);
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to fetch address details');
+        }
+
+        const address = data.address;
+        console.log('Address object:', address);
+
+        if (!address) {
+            throw new Error('Address data is missing or undefined');
+        }
+
+        document.getElementById('editAddressId').value = id;
+        document.getElementById('editAddressType').value = address.addressType || '';
+        document.getElementById('editAddressStreet').value = address.street || '';
+        document.getElementById('editAddressCity').value = address.city || '';
+        document.getElementById('editAddressLandMark').value = address.landMark || '';
+        document.getElementById('editAddressState').value = address.state || '';
+        document.getElementById('editAddressPincode').value = address.pincode || '';
+        document.getElementById('editAddressPhone').value = address.phone || '';
+        document.getElementById('editAddressAltPhone').value = address.altPhone || '';
+
+        console.log('Modal populated with data');
+        logModalValues(); // Log the values for debugging
+
+        document.getElementById('editAddressModal').style.display = 'flex';
+    } catch (error) {
+        console.error('Error in editAddress function:', error);
+        alert(`An error occurred while fetching address details: ${error.message}`);
+    }
+}
+
+function logModalValues() {
+    console.log('Modal values:');
+    console.log('Type:', document.getElementById('editAddressType').value);
+    console.log('Street:', document.getElementById('editAddressStreet').value);
+    console.log('City:', document.getElementById('editAddressCity').value);
+    console.log('Landmark:', document.getElementById('editAddressLandMark').value);
+    console.log('State:', document.getElementById('editAddressState').value);
+    console.log('Pincode:', document.getElementById('editAddressPincode').value);
+    console.log('Phone:', document.getElementById('editAddressPhone').value);
+    console.log('Alt Phone:', document.getElementById('editAddressAltPhone').value);
+}
+
+document.getElementById('editAddressForm').onsubmit = async function (event) {
+    event.preventDefault(); // Prevent the default form submission
+    const id = document.getElementById('editAddressId').value; // Get ID from a hidden input in the form
+
+    // Call the editAddress function with the extracted ID
+    await editAddress(id); 
+};
+document.getElementById('editAddressForm').onsubmit = async function (event) {
+    event.preventDefault(); // Prevent the default form submission
+    const id = document.getElementById('editAddressId').value; // Get ID from a hidden input in the form
+
+    // Call the updateAddress function with the form data
+    await updateAddress(id); 
+};
+
+async function updateAddress(id) {
+    const addressData = {
+        addressType: document.getElementById('editAddressType').value,
+        street: document.getElementById('editAddressStreet').value,
+        city: document.getElementById('editAddressCity').value,
+        landMark: document.getElementById('editAddressLandMark').value,
+        state: document.getElementById('editAddressState').value,
+        pincode: document.getElementById('editAddressPincode').value,
+        phone: document.getElementById('editAddressPhone').value,
+        altPhone: document.getElementById('editAddressAltPhone').value,
+    };
+
+    try {
+        const response = await fetch(`/addresses/${id}`, {
+            method: 'PUT', // Assuming you are using PUT method for updates
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(addressData),
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to update address');
+        }
+
+        console.log('Address updated successfully:', data);
+        alert('Address updated successfully!');
+        location.reload(); 
+        closeModal(); // Close the modal after successful update
+    } catch (error) {
+        console.error('Error updating address:', error);
+        alert(`An error occurred while updating the address: ${error.message}`);
+    }
+}
+
+
+// Function to close the modal
+function closeModal() {
+    document.getElementById('editAddressModal').style.display = 'none';
+}
+
+// Event listener for opening the modal
+document.querySelectorAll('.edit-address-button').forEach(button => {
+    button.addEventListener('click', function() {
+        const id = this.getAttribute('data-id');
+        editAddress(id);
+    });
+});
+ // Check the URL for the update success parameter
+ const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('update') === 'success') {
+        alert('Profile updated successfully!');
+    } else if (urlParams.get('update') === 'error') {
+        alert('An error occurred while updating the profile.');
+    }
+    </script>
+</body>
+</html>

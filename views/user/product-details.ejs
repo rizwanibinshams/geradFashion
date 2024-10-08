@@ -1,0 +1,896 @@
+<%- include("../partials/user/header") %>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+
+        }
+
+        .product-details {
+            padding: 40px 0;
+        }
+
+       
+
+        .breadcrumb a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .product__details__pic {
+            display: flex;
+            gap: 20px;
+        }
+
+        .thumbnail-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .thumbnail {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            transition: border-color 0.3s ease;
+        }
+
+        .thumbnail:hover,
+        .thumbnail.active {
+            border-color: #007bff;
+        }
+
+        .main-image-container {
+            flex-grow: 1;
+            position: relative;
+            height: 500px;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .main-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: zoom-in;
+            transition: transform 0.3s ease;
+        }
+
+        .main-image:hover {
+            transform: scale(1.05);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            padding-top: 50px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            overflow: auto;
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #bbb;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .product__details__text {
+            padding: 20px;
+        }
+
+        .product__details__text h3 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .product__details__text h4 {
+            font-size: 2rem;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+
+        .product__details__text p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .product__details__options {
+            margin-top: 30px;
+        }
+
+        .product__details__options span {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .quantity {
+            margin-top: 30px;
+        }
+
+        .btn-primary,
+        .btn-outline-secondary {
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            margin-right: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover,
+        .btn-outline-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+
+
+        
+
+        .product-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .product-card {
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 15px;
+            background-color: white;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 280px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-card:hover {
+            transform: scale(1.05);
+        }
+
+        .product-card img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+
+       
+        .discount-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+        }
+
+        .price-info {
+            margin: 10px 0;
+        }
+
+        .rating {
+            color: #ffc107;
+        }
+
+        .original-price {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .sale-price {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .btn {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .product-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            height: 100%;
+        }
+
+
+
+        .pricing h4 {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .sale-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-left: 10px;
+        }
+
+        .discount {
+            font-size: 18px;
+            font-weight: bold;
+            color: #27ae60;
+            margin-top: 10px;
+        }
+
+        .main-image-container {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            height: auto;
+        }
+
+        .main-image {
+            width: 100%;
+            height: auto;
+            transition: transform 0.1s ease;
+        }
+
+        .main-image.zoomed {
+            transform-origin: center;
+        }
+
+        .quantity-box {
+    display: flex;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    margin: 20px 0;
+}
+
+.quantity-label {
+    margin-right: 10px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    overflow: hidden;
+    background-color: #f9f9f9;
+}
+
+.quantity-controls button {
+    background-color: #ddd;
+    border: none;
+    padding: 10px 15px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    outline: none;
+}
+
+.quantity-controls button:hover {
+    background-color: #ccc;
+}
+
+.quantity-controls input {
+    width: 50px;
+    text-align: center;
+    border: none;
+    background-color: #fff;
+    font-size: 16px;
+    padding: 10px 0;
+    outline: none;
+}
+
+
+
+
+
+        .product-details {
+            display: flex;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .product-image {
+            flex: 1;
+            padding: 2rem;
+        }
+        .product-info {
+            flex: 1;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+        .main-image {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+        .main-image:hover {
+            transform: scale(1.05);
+        }
+        .thumbnails {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        .thumbnail {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin: 0 0.5rem;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.3s ease;
+        }
+        .thumbnail:hover, .thumbnail.active {
+            border-color: #3498db;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+        .price-container {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 1rem;
+        }
+        .regular-price {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            text-decoration: line-through;
+            margin-right: 1rem;
+        }
+        .sale-price {
+            font-size: 2rem;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .discount {
+            background-color: #2ecc71;
+            color: white;
+            padding: 0.3rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-left: 1rem;
+        }
+        .description {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            color: #34495e;
+        }
+        .product-meta {
+            margin-bottom: 1.5rem;
+        }
+        .product-meta p {
+            margin: 0.5rem 0;
+        }
+        .rating {
+            margin-bottom: 1rem;
+        }
+        .rating i {
+            color: #f1c40f;
+            font-size: 1.2rem;
+        }
+        .quantity-box {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .quantity-label {
+            margin-right: 1rem;
+            font-weight: bold;
+        }
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .quantity-controls button {
+            background-color: #ecf0f1;
+            border: none;
+            color: #2c3e50;
+            padding: 0.5rem 1rem;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .quantity-controls button:hover {
+            background-color: #bdc3c7;
+        }
+        .quantity-controls input {
+            width: 50px;
+            text-align: center;
+            border: none;
+            font-size: 1.2rem;
+            padding: 0.5rem;
+        }
+        .buttons {
+            display: flex;
+            gap: 1rem;
+        }
+        .btn {
+            flex: 1;
+            padding: 1rem;
+            font-size: 1.1rem;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        .btn-secondary {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #c0392b;
+        }
+
+
+
+        .related-products {
+    background-color: #f8f9fa;
+    padding: 20px 0;
+}
+
+.product-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    background-color: #fff;
+    transition: transform 0.2s;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+}
+
+.discount-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #dc3545;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.price-info {
+    margin-top: 10px;
+}
+
+.original-price {
+    text-decoration: line-through;
+    color: #6c757d;
+}
+
+.sale-price {
+    color: #28a745;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.rating {
+    color: #ffc107;
+    margin-top: 5px;
+}
+
+.description,
+.status,
+.quantity {
+    font-size: 0.9em;
+    color: #6c757d;
+    margin: 5px 0;
+}
+
+.add-to-cart-btn {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.add-to-cart-btn:hover {
+    background-color: #0056b3;
+}
+
+.toast {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #28a745;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    z-index: 1050;
+    transition: opacity 0.5s;
+}
+
+
+    </style>
+
+<body>
+    <section class="product-details spad">
+        <div class="container">
+        
+            <nav aria-label="breadcrumb" >
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/products">Products</a></li>
+                    <li class="breadcrumb-item active" aria-current="page"><%= product.productName %></li>
+                </ol>
+            </nav>
+
+            <div class="row">
+                <!-- Image Section -->
+                <div class="col-lg-6 col-md-6 col-sm-12 mb-4">
+                    <div class="product__details__pic animate__animated animate__fadeIn">
+                        <!-- Thumbnail images -->
+                        <div class="thumbnail-container">
+                            <% product.productImage.forEach(function(image, index) { %>
+                                <img src="/uploads/re-image/<%= image %>" class="thumbnail <%= index === 0 ? 'active' : '' %>" onclick="changeImage('/uploads/re-image/<%= image %>', this)" alt="<%= product.productName %>">
+                            <% }) %>
+                        </div>
+                        <!-- Main large image -->
+                        <div class="main-image-container">
+                            <img 
+                                id="main-image" 
+                                src="/uploads/re-image/<%= product.productImage[0] %>" 
+                                alt="<%= product.productName %>" 
+                                class="main-image"
+                                onmousemove="zoomMainImage(event)" 
+                                onmouseleave="resetZoom()"
+                            >
+                        </div>
+                        
+                    </div>
+                </div>
+
+              <div class="col-lg-6 col-md-6 col-sm-12 mb-5">
+    <div class="product__details__text animate__animated animate__fadeIn p-4 border rounded-lg shadow-lg bg-white">
+        <h3 class="text-2xl font-bold mb-4"><%= product.productName %></h3>
+
+        <!-- Regular and Sale Price -->
+        <div class="pricing mb-4">
+            <h4 class="text-lg">
+                <span class="regular-price text-gray-500 line-through">₹ <%= product.regularPrice %></span>
+                <span class="sale-price text-red-500 font-semibold">₹ <%= product.salePrice %></span>
+            </h4>
+
+            <!-- Discount Percentage -->
+            <% if (product.regularPrice > product.salePrice) { 
+                let discountPercentage = Math.round(((product.regularPrice - product.salePrice) / product.regularPrice) * 100); %>
+                <p class="discount text-green-500">Save <%= discountPercentage %>%</p>
+            <% } %>
+        </div>
+
+        <!-- Description and Other Details -->
+        <p class="mb-4 text-gray-700"><%= product.description %></p>
+        <div class="product__details__options mb-4">
+            <p class="text-gray-600"><i class="fas fa-tags"></i> <span>Category:</span> <%= product.category.name %></p>
+            <p class="text-gray-600"><i class="fas fa-copyright"></i> <span>Brand:</span> <%= product.brand %></p>
+            <p class="text-gray-600"><i class="fas fa-palette"></i> <span>Colors:</span> <%= product.color.join(', ') %></p>
+
+            <div class="rating mb-2">
+                <% for (let i = 1; i <= 5; i++) { %>
+                    <% if (i <= product.rating) { %>
+                        <i class="fas fa-star text-yellow-400"></i>
+                    <% } else { %>
+                        <i class="far fa-star text-yellow-400"></i>
+                    <% } %>
+                <% } %>
+            </div>
+
+            <p class="text-gray-600">Status: <%= product.status %></p>
+            <p class="text-gray-600">Available Quantity: <%= product.quantity %></p>
+        </div>
+
+        <!-- Size Selection -->
+        <div class="size-selection mb-4 flex items-center">
+            <label for="size-select" class="form-label font-semibold mr-2">Select Size:</label>
+            <select id="size-select" class="form-select border rounded-md">
+                <% if (product.size && product.size.length > 0) { %>
+                    <% product.size.forEach(size => { %>
+                        <option value="<%= size %>"><%= size %></option>
+                    <% }); %>
+                <% } else { %>
+                    <option value="">N/A</option>
+                <% } %>
+            </select>
+        </div>
+
+        <!-- Quantity Selection -->
+        <div class="quantity-selection mb-4 flex items-center">
+            <label for="quantity-input" class="form-label font-semibold mr-2">Quantity:</label>
+            <input type="number" id="quantity-input" class="form-control border rounded-md w-20" value="1" min="1" max="<%= product.quantity %>">
+        </div>
+
+        <!-- Add to Cart and Wishlist Buttons -->
+        <div class="action-buttons flex space-x-2">
+            <button 
+            data-product-id="<%= product._id %>" 
+            onclick="addToCart('<%= product._id %>')" 
+            class="btn btn-primary btn-lg flex-grow">
+            <i class="fas fa-shopping-cart"></i> Add to Cart
+        </button>
+        
+            <a href="/addToWishlist?id=<%= product._id %>" class="btn btn-outline-secondary btn-lg">
+                <i class="fas fa-heart"></i> Add to Wishlist
+            </a>
+        </div>
+    </div>
+</div>
+
+                
+                
+
+            <!-- Pop-up Modal for Zoomed Image -->
+            <div id="imageModal" class="modal">
+                <span class="close">&times;</span>
+                <img class="modal-content" id="modal-image">
+            </div>
+        </div>
+    </section>
+
+
+
+    <section class="related-products spad">
+        <div class="container">
+            <h4 class="mb-4">Related Products</h4>
+            <div class="row product-container">
+                <% if (relatedProducts.length > 0) { %>
+                    <% relatedProducts.forEach(product => { %>
+                        <div class="col-md-3">
+                            <a href="/productDetails?id=<%= product._id %>"> 
+                                <div class="product-card position-relative">
+                                    <% const discount = Math.abs(((product.regularPrice - product.salePrice) / product.regularPrice) * 100); %>
+                                    <% if (discount > 0) { %>
+                                        <div class="discount-badge"><%= discount.toFixed(2) %>%</div>
+                                    <% } %>
+                                    <img src="/uploads/product-images/<%= product.productImage[0] %>" alt="<%= product.productName %>" class="img-fluid">
+                                    <h5 class="mt-2"><%= product.productName %></h5>
+                                    <p>Brand: <%= product.brand %></p>
+    
+                                    <div class="price-info">
+                                        <span class="original-price">₹<%= product.regularPrice %></span>
+                                        <span class="sale-price">₹<%= product.salePrice %></span>
+                                    </div>
+    
+                                    <div class="rating">
+                                        <% for (let i = 1; i <= 5; i++) { %>
+                                            <% if (i <= product.rating) { %>
+                                                <i class="fas fa-star"></i>
+                                            <% } else { %>
+                                                <i class="far fa-star"></i>
+                                            <% } %>
+                                        <% } %>
+                                    </div>
+    
+                                    <p>Description: <%= product.description %></p>
+                                    <p>Status: <%= product.status %></p>
+                                    <p>Quantity: <%= product.quantity %></p>
+    
+                                   
+                                    <button class="btn btn-primary" onclick="addToCart('<%= product._id %>')">Add to Cart</button>
+                                </div>
+                            </a>
+                        </div> 
+                    <% }) %>
+                <% } else { %>
+                    <p class="text-center">No related products available.</p>
+                <% } %>
+            </div>
+        </div>
+    </section>
+    
+
+
+
+
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script>
+            
+            function changeImage(imageSrc, clickedThumbnail) {
+                const mainImage = document.getElementById('main-image');
+                mainImage.style.opacity = '0';
+                setTimeout(() => {
+                    mainImage.src = imageSrc;
+                    mainImage.style.opacity = '1';
+                }, 300);
+
+
+                document.querySelectorAll('.thumbnail').forEach(thumb => thumb.classList.remove('active'));
+                clickedThumbnail.classList.add('active');
+            }
+
+           
+            var modal = document.getElementById("imageModal");
+            var modalImage = document.getElementById("modal-image");
+            var mainImage = document.getElementById("main-image");
+            var closeModal = document.getElementsByClassName("close")[0];
+
+            mainImage.onclick = function () {
+                modal.style.display = "block";
+                modalImage.src = this.src;
+                $(".modal").addClass("animate__animated animate__zoomIn");
+            }
+
+            closeModal.onclick = function () {
+                $(".modal").removeClass("animate__zoomIn").addClass("animate__zoomOut");
+                setTimeout(() => {
+                    modal.style.display = "none";
+                    $(".modal").removeClass("animate__zoomOut");
+                }, 500);
+            }
+
+            window.onclick = function (event) {
+                if (event.target == modal) {
+                    closeModal.onclick();
+                }
+            }
+
+           
+            $(window).scroll(function () {
+                $('.animate__animated:not(.animate__fadeIn)').each(function () {
+                    var elementTop = $(this).offset().top;
+                    var elementBottom = elementTop + $(this).outerHeight();
+                    var viewportTop = $(window).scrollTop();
+                    var viewportBottom = viewportTop + $(window).height();
+                    if (elementBottom > viewportTop && elementTop < viewportBottom) {
+                        $(this).addClass('animate__fadeIn');
+                    }
+                });
+            });
+            function zoomMainImage(event) {
+    const image = document.getElementById('main-image');
+    const rect = image.getBoundingClientRect();
+
+    const x = event.clientX - rect.left; // X position of the mouse
+    const y = event.clientY - rect.top; // Y position of the mouse
+
+    const xPercent = (x / rect.width) * 100; // Calculate X percentage
+    const yPercent = (y / rect.height) * 100; // Calculate Y percentage
+
+    // Set the transform origin to the mouse position and scale the image
+    image.style.transformOrigin = `${xPercent}% ${yPercent}%`;
+    image.style.transform = "scale(2)"; // Change scale as needed
+}
+
+function resetZoom() {
+    const image = document.getElementById('main-image');
+
+    // Reset scale to normal
+    image.style.transform = "scale(1)";
+}
+
+
+
+
+
+            function updateQuantity(amount) {
+    const quantityInput = document.getElementById('quantity-input');
+    let currentQuantity = parseInt(quantityInput.value);
+    currentQuantity += amount;
+    if (currentQuantity < 1) currentQuantity = 1; // Ensure quantity doesn't go below 1
+    quantityInput.value = currentQuantity;
+}
+
+async function addToCart(productId) {
+    try {
+        const button = document.querySelector(`button[data-product-id='${productId}']`);
+        
+        if (!button) {
+            console.error(`Button not found for product ID: ${productId}`);
+            alert('Error: Button not found. Please try again.');
+            return; // Exit if button is not found
+        }
+        
+        // Optionally change the button text for feedback (but not disabling)
+        button.textContent = 'Adding...'; // Change button text for feedback
+
+        const response = await fetch('/addToCart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ productId: productId }),
+        });
+
+        console.log('Response Status:', response.status); // Log response status
+
+        if (response.ok) {
+            alert('Product added to cart!');
+            window.location.reload(); // Reload to update cart count
+        } else {
+            const error = await response.json();
+            console.error('Server Error:', error); // Log the error received from the server
+            alert(`Error: ${error.message}. Please try again.`);
+            if (error.message.includes('not logged in')) {
+                alert('Please log in to add items to your cart.');
+                window.location.href = '/login'; // Redirect to login page
+            }
+        }
+    } catch (error) {
+        console.error('Error occurred while adding to cart:', error);
+        alert('Failed to add product to cart. Please check your connection and try again.');
+    } finally {
+        // Reset button text (if you want to return to original text after action)
+        if (button) {
+            button.textContent = 'Add to Cart'; // Reset button text
+        }
+    }
+}
+
+
+
+
+
+
+        </script>
+
+        <%- include("../partials/user/footer") %>

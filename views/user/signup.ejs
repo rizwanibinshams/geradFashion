@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zxx">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="Male_Fashion Template" />
+    <meta name="keywords" content="Male_Fashion, unica, creative, html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Male-Fashion</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="css/font-awesome.min.css" type="text/css" />
+    <link rel="stylesheet" href="css/elegant-icons.css" type="text/css" />
+    <link rel="stylesheet" href="css/magnific-popup.css" type="text/css" />
+    <link rel="stylesheet" href="css/nice-select.css" type="text/css" />
+    <link rel="stylesheet" href="css/owl.carousel.min.css" type="text/css" />
+    <link rel="stylesheet" href="css/slicknav.min.css" type="text/css" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .header__nav__option .sign-in-link {
+        font-size: 16px;
+        color: #333;
+        margin-right: 15px;
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .header__nav__option .sign-in-link:hover {
+        color: #ff7f50;
+      }
+      .signup-section {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+      .signup-form,
+      .signup-image {
+        flex: 1;
+        padding: 10px;
+      }
+      .signup-form {
+        max-width: 50%;
+      }
+      .signup-image {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        max-width: 40%;
+      }
+      .signup-image img {
+        max-width: 100%;
+        height: auto;
+      }
+      .social-btns {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 10px;
+      }
+      .social-btns button {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+      }
+      .spacer {
+        height: 30px; 
+      }
+      .form-group label {
+        font-size: 0.875rem; 
+      }
+      .form-control {
+        font-size: 0.875rem; 
+        padding: 0.5rem; 
+      }
+      .btn-primary {
+        padding: 0.5rem 1rem; 
+        font-size: 0.875rem; 
+      }
+      .card-title {
+        font-size: 1.25rem; 
+      }
+      .signup-image .sign-in-link {
+        color: #333;
+        text-decoration: none;
+      }
+      .signup-image .sign-in-link:hover {
+        color: #ff7f50;
+      }
+      .text-message{
+        color: red;
+        font-size: 0.75rem;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container mt-5 mb-1">
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <div class="card">
+            <div class="card-body signup-section">
+              <div class="signup-form">
+                <h3 class="card-title text-center">Sign Up</h3>
+
+                <form id="signupform" method="post" action="/signup">
+                  <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="name" 
+                        name="name"
+                      placeholder="Enter Name" 
+                    />
+                    <div class="text-message" id="error1"></div>
+                  
+                  </div>
+                  <div class="form-group">
+                    <label for="email">Email address</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="email"
+                      id="email"
+                      placeholder="Enter email"
+                    />
+                    <div class="text-message" id="error2"></div>
+                  </div>
+                  <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="phone"
+                      id="phone"
+                      placeholder="Enter phone number"
+                    />
+                    <div class="text-message" id="error3"></div>
+                  </div>
+                  <div class="form-group">
+                    <label for="password">Password</label>
+                    <input
+                      type="password"
+                      class="form-control"
+                      id="password"
+                      name="password"
+                      placeholder="Password"
+                    />
+                    <div class="text-message" id="error4"></div>
+                  </div>
+                  <div class="form-group">
+                    <label for="confirm-password">Confirm Password</label>
+                    <input
+                      type="password"
+                      class="form-control"
+                      name="cPassword"
+                      id="confirm-password"
+                      placeholder="Confirm Password"
+                    />
+                    <div class="text-message" id="error5"></div>
+                  </div>
+                  <%if(locals.message && message.length>0){%>
+                    <div class="alert alert-danger text-center">
+                      <%=message%>
+                    </div>
+                    <%}%>
+                  <div
+                    class="d-flex justify-content-between align-items-center"
+                  >
+                    <button type="submit" class="btn btn-primary">
+                      Sign Up
+                    </button>
+                    <div class="mt-2px">
+                      <p>or sign up with</p>
+                    </div>
+                    <div class="social-btns">
+                      <a  href="/auth/google" class="btn btn-outline-danger">
+                        <img
+                          src="img/googlesignup.png"
+                          alt="Google Logo"
+                          style="width: 24px; height: 24px"
+                        />
+                      </a>
+                    </div>
+                  </div>
+                </form>
+              </div>
+              <div class="signup-image">
+                <a href="/">
+                  <img src="img/signup.svg" alt="Shopping Site" />
+                </a>
+                <div class="text-center mt-2">
+                  <a href="/login" class="sign-in-link"
+                    >Already registered? Log in</a
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <%-include("../partials/user/footer.ejs")%>
+
+
+
+    <script>
+const nameid = document.getElementById('name');
+const emailid = document.getElementById('email');
+const phoneid = document.getElementById('phone');
+const passid = document.getElementById('password');
+const cpassid = document.getElementById('confirm-password');
+const error1 = document.getElementById('error1');
+const error2 = document.getElementById('error2');
+const error3 = document.getElementById('error3');
+const error4 = document.getElementById('error4');
+const error5 = document.getElementById('error5');
+const signform = document.getElementById('signupform');
+
+function nameValidateChecking() {
+  const nameval = nameid.value;
+  const namepattern = /^[A-Za-z\s]+$/;
+
+  if (nameval.trim() === "") {
+    error1.style.display = 'block';
+    error1.innerHTML = 'Enter a valid name';
+  } else if (!namepattern.test(nameval)) {
+    error1.style.display = 'block';
+    error1.innerHTML = 'Name should contain only letters and spaces';
+  } else {
+    error1.style.display = 'none';
+    error1.innerHTML = '';
+  }
+}
+
+function emailValidateChecking() {
+  const emailval = emailid.value;
+  const emailpattern = /^[a-z0-9._-]+@[a-z]+\.[a-z]{2,3}$/;
+
+  if (!emailpattern.test(emailval)) {
+    error2.style.display = 'block';
+    error2.innerHTML = 'Invalid email format';
+  } else {
+    error2.style.display = 'none';
+    error2.innerHTML = '';
+  }
+}
+
+function phoneValidateChecking() {
+  const phoneval = phoneid.value;
+
+  if (phoneval.trim() === "") {
+    error3.style.display = 'block';
+    error3.innerHTML = 'Enter a valid phone number';
+  } else if (phoneval.length !== 10) {
+    error3.style.display = 'block';
+    error3.innerHTML = 'Enter a 10 digit number';
+  } else {
+    error3.style.display = 'none';
+    error3.innerHTML = '';
+  }
+}
+
+function passValidateChecking() {
+  const passval = passid.value;
+  const cpassval = cpassid.value;
+  const alpha = /[a-zA-Z]/;
+  const digit = /\d/;
+
+  if (passval.length < 8) {
+    error4.style.display = 'block';
+    error4.innerHTML = 'Password should contain a minimum of 8 characters';
+  } else if (!alpha.test(passval) || !digit.test(passval)) {
+    error4.style.display = 'block';
+    error4.innerHTML = 'Password should contain both letters and numbers';
+  } else {
+    error4.style.display = 'none';
+    error4.innerHTML = '';
+  }
+
+  if (passval !== cpassval) {
+    error5.style.display = 'block';
+    error5.innerHTML = 'Passwords do not match';
+  } else {
+    error5.style.display = 'none';
+    error5.innerHTML = '';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  signform.addEventListener('submit', function (e) {
+    nameValidateChecking();
+    emailValidateChecking();
+    phoneValidateChecking();
+    passValidateChecking();
+
+    
+    if (
+      error1.innerHTML ||
+      error2.innerHTML ||
+      error3.innerHTML ||
+      error4.innerHTML ||
+      error5.innerHTML
+    ) {
+      e.preventDefault();
+    }
+  });
+});
+
+
+    </script>
+  </body>
+</html>
+

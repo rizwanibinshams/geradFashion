@@ -1,0 +1,58 @@
+<%- include("../partials/admin/header") %>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 mt-60">
+            <form id="categoryForm" method="post" action="/admin/editCategory/<%= category._id %>">
+                <div class="d-grid text-end mt-30 col-md-5">
+                    <button class="btn btn-primary" type="submit">Update category</button>
+                </div>
+                <div class="mb-4 mt-30">
+                    <label for="categoryName" class="form-label">Name</label>
+                    <input type="text" id="categoryName" name="categoryName" value="<%= category.name %>" class="form-control border" />
+                    <div id="name-error" class="text-danger"></div> 
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label">Description</label>
+                    <textarea id="description" name="description" class="form-control border"><%= category.description %></textarea>
+                    <div id="description-error" class="text-danger"></div> 
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('categoryForm').addEventListener('submit', function(event) {
+       
+        document.getElementById('name-error').textContent = '';
+        document.getElementById('description-error').textContent = '';
+
+        
+        const categoryName = document.getElementById('categoryName').value.trim();
+        const description = document.getElementById('description').value.trim();
+
+        
+        const namePattern = /^[A-Za-z\s]+$/; 
+        let valid = true;
+
+       
+        if (!namePattern.test(categoryName)) {
+            document.getElementById('name-error').textContent = "Category name should contain only alphabets and spaces.";
+            valid = false;
+        }
+
+      
+        if (description === "") {
+            document.getElementById('description-error').textContent = "Description cannot be empty.";
+            valid = false;
+        }
+
+        
+        if (!valid) {
+            event.preventDefault();
+        }
+    });
+</script>
+
+<%- include("../partials/admin/footer") %>
