@@ -95,7 +95,7 @@ router.put('/addresses/:id',auth.AdressMiddleware, addressController.editAddress
 // Remove an address
 router.delete('/addresses/:id',auth.AdressMiddleware, addressController.removeAddress);
 
-//user edit
+//user edited
 
 router.post('/update-profile',auth.AdressMiddleware,userController.updateProfile)
 
