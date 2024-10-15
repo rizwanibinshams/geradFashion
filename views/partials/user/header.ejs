@@ -9,287 +9,99 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Gerad-Fashion</title>
 
-   
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
-
-  
-    <link rel="stylesheet" href="/css/bootstrap.min.css" type="text/css">
-    <link rel="stylesheet" href="/css/elegant-icons.css" type="text/css">
-    <link rel="stylesheet" href="/css/font-awesome.min.css" type="text/css">
-    <link rel="stylesheet" href="/css/magnific-popup.css" type="text/css">
-    <link rel="stylesheet" href="/css/nice-select.css" type="text/css">
-    <link rel="stylesheet" href="/css/owl.carousel.min.css" type="text/css">
-    <link rel="stylesheet" href="/css/slicknav.min.css" type="text/css">
-    <link rel="stylesheet" href="/css/style.css" type="text/css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<style>
- 
-
-
-/* Logo styling */
-.header__logo a {
-    font-family: 'Nunito Sans', sans-serif;
-    font-size: 32px;
-    font-weight: 800;
-    color: #333;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    text-decoration: none;
-    transition: color 0.3s ease;
-}
-
-.header__logo a:hover {
-    color: #ff7f50;
-}
-
-.header__logo {
-    display: inline-block;
-    padding: 10px 0;
-    position: relative;
-}
-
-.header__logo:before {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 0;
-    width: 60%;
-    height: 4px;
-    background-color: #ff7f50;
-    border-radius: 2px;
-    transition: width 0.3s ease;
-}
-
-.header__logo:hover:before {
-    width: 100%;
-}
-
-/* Navigation menu styles */
-.header__menu ul {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    font-family: 'Nunito Sans', sans-serif;
-    font-weight: 600;
-    font-size: 18px;
-}
-
-.header__menu ul li {
-    margin: 0 15px;
-    position: relative;
-}
-
-.header__menu ul li a {
-    color: #333;
-    text-decoration: none;
-    padding: 10px 20px;
-    transition: color 0.3s ease, background-color 0.3s ease;
-}
-
-.header__menu ul li a:hover {
-    color: #fff;
-    background-color: #ff7f50;
-    border-radius: 5px;
-}
-
-/* Dropdown menu styling */
-.header__menu ul li ul.dropdown {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: #fff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 10px 0;
-    z-index: 1000;
-}
-
-.header__menu ul li:hover ul.dropdown {
-    display: block;
-}
-
-.header__menu ul li ul.dropdown li {
-    padding: 0;
-    margin: 0;
-}
-
-.header__menu ul li ul.dropdown li a {
-    padding: 10px 20px;
-    white-space: nowrap;
-    font-size: 16px;
-    color: #333;
-}
-
-.header__menu ul li ul.dropdown li a:hover {
-    background-color: #ff7f50;
-    color: #fff;
-}
-
-
-.header__nav__option .sign-in-link {
-    font-size: 16px;
-    color: #333;
-    margin-right: 15px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: color 0.3s ease;
-}
-
-.header__nav__option .sign-in-link:hover {
-    color: #ff7f50;
-}
-
-
-.dropdown {
-    position: relative;
-    display: inline-block;
-}
-
-.dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: #fff;
-    min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-    right: 0;
-}
-
-.dropdown-content a {
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-    width: 100%;
-}
-
-.dropdown-content a:hover {
-    background-color: #ff7f50;
-    color: white;
-}
-
-.dropdown:hover .dropdown-content {
-    display: block;
-}
-
-
-.header__nav__option a img {
-    width: 20px;
-    margin: 0 15px;
-    transition: transform 0.3s ease;
-}
-
-.header__nav__option a:hover img {
-    transform: scale(1.1);
-}
-
-
-
-</style>
-
-<body>
+<body class="bg-gray-50">
     <!-- Header Section Begin -->
-    <header class="header">
-        
-        <div class="container-fluid">
-            <div class="row align-items-center">
+    <header class="bg-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
                 <!-- Logo Section -->
-                <div class="col-lg-3 col-md-3">
-                    <div class="header__logo">
-                        <a href="/">Gerad-Fashion</a>
-                    </div>
+                <div class="header__logo">
+                    <a href="/" class="text-3xl font-extrabold text-gray-800 hover:text-orange-500 transition-all duration-300">Gerad-Fashion</a>
                 </div>
                 
                 <!-- Navigation Menu -->
-                <div class="col-lg-6 col-md-6">
-                    <nav class="header__menu mobile-menu">
-                        <ul>
-                            <li class="active"><a href="/">Home</a></li>
-                            <li><a href="/products">Products</a></li>
-                            <li><a href="#">Pages</a>
-                                <ul class="dropdown">
-                                    <li><a href="/aboutus">About Us</a></li>
-                                    <li><a href="./shop-details.html">Shop Details</a></li>
-                                    <li><a href="/cart">Shopping Cart</a></li>
-                                    <li><a href="./checkout.html">Check Out</a></li>
-                                </ul>
-                            </li>
-                            <li><a href="./contact.ejs">Contacts</a></li>
-                        </ul>
-                    </nav>
-                </div>
-        
+                <nav class="header__menu hidden md:flex space-x-8">
+                    <ul class="flex items-center space-x-6 text-lg font-semibold text-gray-800">
+                        <li><a href="/" class="hover:text-orange-500 transition-all duration-300">Home</a></li>
+                        <li><a href="/products" class="hover:text-orange-500 transition-all duration-300">Products</a></li>
+                        <li class="relative group">
+                            <a href="#" class="hover:text-orange-500 transition-all duration-300">Pages</a>
+                            <ul class="dropdown absolute hidden group-hover:block bg-white shadow-lg rounded-md py-2">
+                                <li><a href="/aboutus" class="block px-4 py-2 hover:bg-orange-500 hover:text-white">About Us</a></li>
+                                <li><a href="./shop-details.html" class="block px-4 py-2 hover:bg-orange-500 hover:text-white">Shop Details</a></li>
+                                <li><a href="/cart" class="block px-4 py-2 hover:bg-orange-500 hover:text-white">Shopping Cart</a></li>
+                                <li><a href="./checkout.html" class="block px-4 py-2 hover:bg-orange-500 hover:text-white">Check Out</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="./contact.ejs" class="hover:text-orange-500 transition-all duration-300">Contacts</a></li>
+                    </ul>
+                </nav>
+
                 <!-- User Options and Icons -->
-                <div class="col-lg-3 col-md-3">
-                    <div class="header__nav__option">
-                        <% if (typeof user !== 'undefined' && user !== null) { %> 
-                            <!-- If the user is logged in, show their name and options -->
-                            <div class="dropdown">
-                                <a href="/" class="sign-in-link"><%= user.name %></a>
-                                <div class="dropdown-content">
-                                    <a href="/profile">Profile</a>
-                                    <a href="/logout">Logout</a>
-                                </div>
-                            </div>
-                        <% } else { %>
-                            <!-- If the user is not logged in, show Sign Up and Log in links -->
-                            <a href="/signup" class="sign-in-link">Sign Up</a>
-                            <a href="/login" class="sign-in-link">Log in</a>
-                        <% } %>
-                
-                        <!-- Icons Section -->
-                        <a href="#" class="search-switch"><img src="img/icon/search.png" alt="Search"></a>
-                        <a href="#"><img src="img/icon/heart.png" alt="Favorites"></a>
-                        <div id="cart-container">
-                            <button id="cart-button" onclick="fetchCart()">
-                                <img src="img/icon/cart.png" alt="Cart">
-                                <span id="cart-count">0</span>
-                            </button>
+                <div class="header__nav__option flex items-center space-x-6">
+                    <% if (typeof user !== 'undefined' && user !== null) { %> 
+                        <div class="relative group">
+                            <a href="/" class="text-lg font-semibold text-gray-800 hover:text-orange-500 transition-all duration-300"><%= user.name %></a>
+                            <ul class="dropdown-content absolute hidden group-hover:block right-0 bg-white shadow-lg rounded-md py-2">
+                                <li><a href="/profile" class="block px-4 py-2 hover:bg-orange-500 hover:text-white">Profile</a></li>
+                                <li><a href="/logout" class="block px-4 py-2 hover:bg-orange-500 hover:text-white">Logout</a></li>
+                            </ul>
                         </div>
-                    </div>
+                    <% } else { %>
+                        <a href="/signup" class="text-lg font-semibold text-gray-800 hover:text-orange-500 transition-all duration-300">Sign Up</a>
+                        <a href="/login" class="text-lg font-semibold text-gray-800 hover:text-orange-500 transition-all duration-300">Log in</a>
+                    <% } %>
+
+                    <!-- Icons Section -->
+                    <a href="#" class="transition-transform duration-300 hover:scale-110"><img src="img/icon/search.png" alt="Search" class="w-5"></a>
+                    <a href="#" class="transition-transform duration-300 hover:scale-110"><img src="img/icon/heart.png" alt="Favorites" class="w-5"></a>
+                    <button id="cart-button" class="transition-transform duration-300 hover:scale-110" onclick="fetchCart()">
+                        <img src="img/icon/cart.png" alt="Cart" class="w-5">
+                    </button>
                 </div>
-                
             </div>
         </div>
-        
     </header>
 
     <script>
-      async function fetchCart() {
-    try {
-        const response = await fetch('/cart', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
+        // Cart fetch function
+        async function fetchCart() {
+            try {
+                const response = await fetch('/cart', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
 
-        if (response.ok) {
-            // Redirect to the cart page
-            window.location.href = '/cart';
-        } else if (response.status === 401) {
-            // If user is not authenticated, redirect to the login page
-            window.location.href = '/login'; // Change to your login route
-        } else {
-            console.error('Failed to fetch cart:', response.status);
+                if (response.ok) {
+                    window.location.href = '/cart';
+                } else if (response.status === 401) {
+                    window.location.href = '/login';
+                } else {
+                    console.error('Failed to fetch cart:', response.status);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
-    } catch (error) {
-        console.error('Error:', error);
-    }
-}
 
-// Add event listener to the cart button
-document.addEventListener('DOMContentLoaded', function() {
-    const cartButton = document.getElementById('cart-button');
-    if (cartButton) {
-        cartButton.addEventListener('click', fetchCart);
-    }
-});
-
+        // Dropdown hover effect (in case Tailwind's group-hover isn't enough)
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropdowns = document.querySelectorAll('.dropdown-content');
+            dropdowns.forEach(dropdown => {
+                dropdown.parentElement.addEventListener('mouseover', () => {
+                    dropdown.classList.remove('hidden');
+                });
+                dropdown.parentElement.addEventListener('mouseout', () => {
+                    dropdown.classList.add('hidden');
+                });
+            });
+        });
     </script>
     <!-- Header Section End -->
 </body>

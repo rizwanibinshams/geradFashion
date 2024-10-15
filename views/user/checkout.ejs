@@ -1,51 +1,346 @@
+<%- include("../partials/user/header") %>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout</title>
+    <title>Checkout Page</title>
+    <!-- <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet"> -->
+    <style>
+        .checkout-container {
+            background: linear-gradient(135deg, #f6f9fc 0%, #e9f1f7 100%);
+        }
+        .form-control:focus, .form-check-input:focus {
+            box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+            border-color: #3b82f6;
+        }
+        .btn-primary {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb;
+            border-color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card {
+            transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-scale {
+            transition: transform 0.3s ease;
+        }
+        .animate-scale:hover {
+            transform: scale(1.05);
+        }
+    </style>
 </head>
-<body>
-    <h1>Checkout</h1>
-    <form action="/checkout" method="POST">
-        <!-- Ordered Items Information -->
-        <h2>Your Items</h2>
-        <% orderedItems.forEach(item => { %>
-          <div>
-            <p><%= item.product.name %> (Quantity: <%= item.quantity %>)</p>
-            <p>Price: <%= item.price %></p>
-          </div>
-        <% }) %>
-        <hr>
-      
-        <!-- Total Price -->
-        <p>Total Price: <%= totalPrice %></p>
-      
-        <!-- Address Information -->
-        <h2>Shipping Address</h2>
-        <div>
-            <label for="country">Country:</label>
-            <input type="text" id="country" name="addressDetails[country]" required>
+<body class="bg-gray-50">
+    <div class="checkout-container min-h-screen py-12">
+        <div class="container mx-auto px-4">
+            <nav aria-label="breadcrumb" class="mb-8">
+                <ol class="flex items-center space-x-2 text-gray-600">
+                    <li><a href="/" class="hover:text-blue-600">Home</a></li>
+                    <li><span class="mx-2">/</span></li>
+                    <li><a href="/cart" class="hover:text-blue-600">Cart</a></li>
+                    <li><span class="mx-2">/</span></li>
+                    <li><a href="/checkout" class="hover:text-blue-600">Checkout</a></li>
+                </ol>
+            </nav>
+            
+            <h2 class="text-4xl font-bold mb-12 text-center text-gray-800 animate__animated animate__fadeInDown">Secure Checkout</h2>
+            
+            <div class="flex flex-wrap -mx-4">
+                <!-- Left Column -->
+                <div class="w-full lg:w-1/2 px-4 mb-8">
+                    <div class="card rounded-lg shadow-lg p-6 animate__animated animate__fadeInLeft">
+                        <h4 class="text-2xl font-semibold mb-6 text-gray-700">Billing Details</h4>
+                        
+                        <!-- Saved Addresses -->
+                        <div id="savedAddresses" class="mb-8">
+                            <% if (addresses && addresses.length > 0) { %>
+                                <h5 class="text-lg font-medium mb-4 text-gray-600">Saved Addresses</h5>
+                                <% addresses.forEach(function(address) { %>
+                                    <div class="form-check mb-4 animate__animated animate__fadeIn bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition duration-300">
+                                        <input class="form-check-input" type="radio" name="address" id="<%= address._id %>" value="<%= address._id %>">
+                                        <label class="form-check-label ml-2 cursor-pointer" for="<%= address._id %>">
+                                            <span class="font-medium text-gray-700"><%= address.name || 'Name not provided' %></span><br>
+                                            <span class="text-sm text-gray-500"><%= address.addressType || 'Default Type' %>,
+                                            <%= address.street || 'Street not provided' %>,
+                                            <%= address.city || 'City not provided' %>,
+                                            <%= address.state || 'State not provided' %> - 
+                                            <%= address.pincode || 'Zip not provided' %></span>
+                                        </label>
+                                    </div>
+                                <% }); %>
+                            <% } else { %>
+                                <p class="mb-4 text-gray-600">No addresses found. Please add an address.</p>
+                            <% } %>
+                        </div>
+                        
+                        <!-- New Address Form -->
+                        <h5 class="text-xl font-medium mb-4 text-gray-700">Add New Address</h5>
+                        <form id="newAddressForm" onsubmit="handleSubmit(event)" class="space-y-4">
+                            <div class="mb-4">
+                                <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                                <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="name" name="name" required>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="type" class="block text-sm font-medium text-gray-700">Type</label>
+                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="type" name="addressType" required>
+                                </div>
+                                <div>
+                                    <label for="street" class="block text-sm font-medium text-gray-700">Street</label>
+                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="street" name="street" required>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="landMark" class="block text-sm font-medium text-gray-700">Landmark</label>
+                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="landMark" name="landMark">
+                                </div>
+                                <div>
+                                    <label for="pincode" class="block text-sm font-medium text-gray-700">Pincode</label>
+                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="pincode" name="pincode" required>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="city" class="block text-sm font-medium text-gray-700">City</label>
+                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="city" name="city" required>
+                                </div>
+                                <div>
+                                    <label for="state" class="block text-sm font-medium text-gray-700">State</label>
+                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="state" name="state" required>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="phone" class="block text-sm font-medium text-gray-700">Phone</label>
+                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="phone" name="phone" required>
+                                </div>
+                                <div>
+                                    <label for="altPhone" class="block text-sm font-medium text-gray-700">Alternate Phone</label>
+                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="altPhone" name="altPhone">
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-blue-500 transition duration-300 ease-in-out mt-4 animate-scale">
+                                Save Address
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div class="w-full lg:w-1/2 px-4">
+                    <div class="card rounded-lg shadow-lg p-6 animate__animated animate__fadeInRight">
+                        <h4 class="text-2xl font-semibold mb-6 text-gray-700">Your Order</h4>
+                        <div class="overflow-x-auto">
+                            <table class="table-auto w-full">
+                                <thead>
+                                    <tr class="bg-gray-100">
+                                        <th class="px-4 py-2 text-left text-gray-600">Product</th>
+                                        <th class="px-4 py-2 text-right text-gray-600">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cartItems">
+                                    <% cart.forEach(item => { %>
+                                        <tr class="animate__animated animate__fadeIn border-b">
+                                            <td class="px-4 py-2 text-gray-700"><%= item.productId.productName %> (x<%= item.quantity %>)</td>
+                                            <td class="px-4 py-2 text-right text-gray-700">₹<%= (item.productId.salePrice * item.quantity).toFixed(2) %></td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="font-bold">
+                                        <td class="px-4 py-2 text-gray-700">Total</td>
+                                        <td class="px-4 py-2 text-right text-gray-700">₹<%= total.toFixed(2) %></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        
+                        <!-- Coupon Code -->
+                        <div class="mt-6">
+                            <label for="couponCode" class="block text-sm font-medium text-gray-700 mb-2">Coupon Code</label>
+                            <div class="flex">
+                                <input type="text" class="form-control flex-grow mr-2 rounded-l-md" id="couponCode" name="couponCode" placeholder="Enter coupon code">
+                                <button onclick="applyCoupon()" class="bg-blue-500 text-white px-4 py-2 rounded-r-md hover:bg-blue-600 transition duration-300 ease-in-out">Apply</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Discount Applied -->
+                        <div class="mt-4 hidden" id="discountApplied">
+                            <p class="text-green-600 font-medium">Discount Applied: <span id="discountAmount"></span></p>
+                        </div>
+                        
+                        <!-- Payment Methods -->
+                        <div class="mt-6">
+                            <h5 class="text-xl font-medium mb-4 text-gray-700">Payment Method</h5>
+                            <div class="space-y-2">
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="radio" name="paymentMethod" id="cashOnDelivery" value="cashOnDelivery" class="form-radio text-blue-600">
+                                    <span class="text-gray-700">Cash on Delivery</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="radio" name="paymentMethod" id="razorpay" value="razorpay" class="form-radio text-blue-600">
+                                    <span class="text-gray-700">Razorpay</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button onclick="confirmOrder()" class="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:bg-blue-700 transition duration-300 ease-in-out mt-6 animate-scale" id="placeOrderBtn">
+                            Place Order
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div>
-            <label for="street">Street:</label>
-            <input type="text" id="street" name="addressDetails[street]" required>
-        </div>
-        <div>
-            <label for="city">City:</label>
-            <input type="text" id="city" name="addressDetails[city]" required>
-        </div>
-        <div>
-            <label for="state">State:</label>
-            <input type="text" id="state" name="addressDetails[state]" required>
-        </div>
-        <div>
-            <label for="postalCode">Postal Code:</label>
-            <input type="text" id="postalCode" name="addressDetails[postalCode]" required>
-        </div>
-        
-        <!-- Submit Button -->
-        <button type="submit">Place Order</button>
-      </form>
-      
+    </div>
+
+    <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script> -->
+    <script>
+        function applyCoupon() {
+            const couponCode = document.getElementById('couponCode').value;
+            if (couponCode) {
+                // Here you would typically make an API call to validate the coupon
+                // For this example, we'll just simulate a successful coupon application
+                $('#discountApplied').removeClass('hidden').addClass('animate__animated animate__fadeIn');
+                $('#discountAmount').text('₹50.00'); // Example discount
+                alert('Coupon applied successfully!');
+            } else {
+                alert('Please enter a valid coupon code.');
+            }
+        }
+
+        async function handleSubmit(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const formData = new FormData(form);
+            const formObject = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch('/addAddress', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formObject),
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const result = await response.json();
+                
+                // Add the new address to the list of saved addresses
+                const savedAddresses = document.getElementById('savedAddresses');
+                const newAddressHtml = `
+                    <div class="form-check mb-4 animate__animated animate__fadeIn bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition duration-300">
+                        <input class="form-check-input" type="radio" name="address" id="${result.address._id}" value="${result.address._id}">
+                        <label class="form-check-label ml-2 cursor-pointer" for="${result.address._id}">
+                            <span class="font-medium text-gray-700">${result.address.name || 'Name not provided'}</span><br>
+                            <span class="text-sm text-gray-500">${result.address.addressType || 'Default Type'},
+                            ${result.address.street || 'Street not provided'},
+                            ${result.address.city || 'City not provided'},
+                            ${result.address.state || 'State not provided'} - 
+                            ${result.address.pincode || 'Zip not provided'}</span>
+                        </label>
+                    </div>
+                `;
+                savedAddresses.insertAdjacentHTML('beforeend', newAddressHtml);
+                
+                // Clear the form
+                form.reset();
+                
+                alert('Address saved successfully!');
+            } catch (error) {
+                console.error('Error saving address:', error);
+                alert('There was an error saving the address. Please try again.');
+            }
+        }
+
+        function confirmOrder() {
+            const addressId = document.querySelector('input[name="address"]:checked');
+            const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+
+            if (!addressId) {
+                alert("Please select an address before placing the order.");
+                return;
+            }
+
+            if (!paymentMethod) {
+                alert("Please select a payment method before placing the order.");
+                return;
+            }
+
+            fetch("/place-order", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ 
+                    addressId: addressId.value,
+                    paymentMethod: paymentMethod.value
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data); // Log the response data for debugging
+                if (data.success) {
+                    alert(data.message);
+                    window.location.href = '/';
+                } else {
+                    alert(data.message || "An error occurred while placing the order.");
+                }
+            })
+            .catch(error => {
+                console.error("Error placing order:", error);
+                alert("An error occurred while placing the order.");
+            });
+        }
+
+        // Add animation to form inputs
+        const formInputs = document.querySelectorAll('.form-control, .form-check-input');
+        formInputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.closest('.mb-4, .form-check').classList.add('animate__animated', 'animate__pulse');
+            });
+            input.addEventListener('blur', function() {
+                this.closest('.mb-4, .form-check').classList.remove('animate__animated', 'animate__pulse');
+            });
+        });
+
+        // Add animation to the "Place Order" button
+        const placeOrderBtn = document.getElementById('placeOrderBtn');
+        placeOrderBtn.addEventListener('click', function() {
+            this.classList.add('animate__animated', 'animate__pulse');
+            setTimeout(() => {
+                this.classList.remove('animate__animated', 'animate__pulse');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

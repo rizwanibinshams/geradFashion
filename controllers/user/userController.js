@@ -4,6 +4,7 @@ const mongoose = require('mongoose')
 const Category = require("../../models/categorySchema")
 const Product = require("../../models/productSchema")
 const Address = require("../../models/addressSchema")
+const {Order} = require("../../models/orderSchema"); 
 const env = require('dotenv').config()
 const nodemailer = require('nodemailer')
 const otpgenerator = require('otp-generator')
@@ -290,35 +291,39 @@ const logout = async (req,res)=>{
 // Example controller function for loading the profile page
 const loadProfile = async (req, res) => {
     try {
-        // Log the session object to debug
         console.log("Session User:", req.session.user);
         
-
-        // Check if the user is logged in
         if (!req.session.user) {
             console.log("User not logged in");
-            return res.redirect('/login'); // Redirect to login page if not logged in
+            return res.redirect('/login');
         }
 
-        // Fetch the user from the database using the ID stored in the session
-        const userData = await user.findById(req.session.user.id); // Ensure 'User' is the correct model
-
-        // Check if the user was found
+        const userData = await user.findById(req.session.user.id);
         if (!userData) {
             console.log("User not found");
-            return res.status(404).render('error', { message: 'User not found' }); // Use 404 status code
+            return res.status(404).render('page-404', { message: 'User not found' });
         }
 
-        // Fetch addresses for the user, assuming you have an Address model
         const addresses = await Address.find({ userId: userData._id });
-        console.log(addresses);
-        // Render the profile page with user data and addresses
-        res.render('profile', { user: userData, addresses }); // Pass addresses to the template
+        console.log("Addresses:", addresses);
+
+        const orders = await Order.find({ userId: userData._id }); // Ensure Order is a valid Mongoose model
+        console.log("Orders:", orders); // Check what orders are fetched
+
+        // Check if orders exist
+        if (orders.length === 0) {
+            console.log("No orders found for this user");
+        }
+
+        res.render('profile', { user: userData, addresses, orders });
     } catch (error) {
         console.error('Error loading profile:', error);
-        res.status(500).render('error', { message: 'Server error occurred' }); // Use 500 status code for server errors
+        res.status(500).render('page-404', { message: 'Server error occurred' });
     }
 };
+
+
+
 
 const updateProfile = async (req, res) => {
     try {

@@ -9,22 +9,28 @@ const cartItemSchema = new Schema({
     },
     quantity: {
         type: Number,
-        default: 1
+        default: 1,
+        min: [1, 'Quantity must be at least 1']
     },
     price: {
         type: Number,
-        required: true
+        required: true,
+        min: [0, 'Price cannot be negative']
     },
     size: {
         type: String,
-        required: false  // Changed to false to make it optional
+        required: false,
+        enum: ['S', 'M', 'L', 'XL', 'XXL', 'none'], // Example values if relevant
+        default: 'none' // Default if size is optional
     },
     totalPrice: {
-        type: Number
+        type: Number,
+        required: true
     },
     status: {
         type: String,
-        default: 'placed'
+        default: 'placed',
+        enum: ['placed', 'shipped', 'delivered', 'cancelled'] // Enforcing valid status values
     },
     cancellationReason: {
         type: String,
@@ -33,17 +39,16 @@ const cartItemSchema = new Schema({
 });
 
 cartItemSchema.pre('save', function(next) {
-    // Check if price and quantity are valid numbers
     if (isNaN(this.price) || isNaN(this.quantity)) {
+        const error = new Error('Invalid price or quantity.');
         console.error('Invalid price or quantity:', this.price, this.quantity);
-        // Optionally set totalPrice to 0 or handle the error as needed
-        this.totalPrice = 0; // Or you can choose to skip saving the document
-    } else {
-        this.totalPrice = this.price * this.quantity;
+        return next(error);  // Pass the error to the next middleware
     }
+
+    // Ensure that totalPrice is calculated correctly before saving
+    this.totalPrice = this.price * this.quantity;
     next();
 });
-
 
 const cartSchema = new Schema({
     userId: {

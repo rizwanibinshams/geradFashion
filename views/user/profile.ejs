@@ -1,3 +1,5 @@
+
+<%- include("../partials/user/header") %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,7 +32,22 @@
 
     </style>
 </head>
+
+
 <body class="bg-gray-100">
+
+    <nav aria-label="breadcrumb" class="bg-gray-100 p-4 rounded">
+        <ol class="flex space-x-4">
+            <li class="breadcrumb-item">
+                <a href="/" class="text-blue-600 hover:text-blue-800">Home</a>
+            </li>
+            
+            <li class="breadcrumb-item">
+                <a href="/profile" class="text-blue-600 hover:text-blue-800">Profile</a>
+            </li>
+        </ol>
+    </nav>
+    
     <div class="container mx-auto px-4 py-8 max-w-4xl" x-data="{ 
         editMode: false,
         activeSection: null
@@ -87,6 +104,9 @@
             </div>
         </div>
 
+
+
+        
         <!-- Quick Actions -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div @click="activeSection = activeSection === 'addresses' ? null : 'addresses'" class="bg-white p-4 rounded-lg shadow-md text-center hover-scale transition-transform cursor-pointer" :class="{ 'ring-2 ring-blue-500': activeSection === 'addresses' }">
@@ -94,40 +114,125 @@
                 <h3 class="font-semibold text-gray-800">Addresses</h3>
                 <p class="text-sm text-gray-600">Manage your addresses</p>
             </div>
+
+            <div @click="activeSection = activeSection === 'orders' ? null : 'orders'" class="bg-white p-4 rounded-lg shadow-md text-center hover-scale transition-transform cursor-pointer" :class="{ 'ring-2 ring-blue-500': activeSection === 'orders' }">
+                <i class="fas fa-shopping-cart text-2xl text-blue-500 mb-2"></i>
+                <h3 class="font-semibold text-gray-800">Orders</h3>
+                <p class="text-sm text-gray-600">View your order history</p>
+            </div>
         </div>
 
         <!-- Addresses Section -->
-        <div x-show="activeSection === 'addresses'" x-cloak class="bg-white shadow-lg rounded-lg overflow-hidden mb-6">
-            <div class="p-6">
-                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Your Addresses</h2>
-                <div class="space-y-4">
-                
-                    <% addresses.forEach(function(userAddress) { %>
-                        <% userAddress.address.forEach(function(address) { %>
-                            <div class="border p-4 rounded">
-                                <h3 class="font-semibold"><%= address.addressType || 'Default Type' %></h3>
-                                <p><%= address.street || 'Street not provided' %></p>
-                                <p><%= address.phone %></p>
-                                <p><%= address.city || 'City not provided' %>, <%= address.state || 'State not provided' %>, <%= address.pincode || 'Zip not provided' %></p>
-                                <div class="mt-2">
-                                    <button class="text-blue-500 hover:underline mr-2" onclick="editAddress('<%= address._id %>')">Edit</button>
-                                    <button class="text-red-500 hover:underline" onclick="deleteAddress('<%= address._id %>')">Delete</button>
-                                </div>
-                            </div>
-                        <% }); %>
-                    <% }); %>
-                </div>
-                
+       <!-- Addresses Section -->
+<div x-show="activeSection === 'addresses'" x-cloak class="bg-white shadow-lg rounded-lg overflow-hidden mb-6">
+    <div class="p-6">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Your Addresses</h2>
+        <div class="space-y-4">
+            <% addresses.forEach(function(userAddress) { %>
+                <% userAddress.address.forEach(function(address) { %>
+                    <div class="border p-4 rounded">
+                        <h3 class="font-semibold"><%= address.addressType || 'Default Type' %></h3>
+                        <h2 class="font-semibold"><%= address.name || 'Name not provided' %> </h2>
+                        <p><%= address.street || 'Street not provided' %></p>
+                        <p><%= address.phone %></p>
+                        <p><%= address.city || 'City not provided' %>, <%= address.state || 'State not provided' %>, <%= address.pincode || 'Zip not provided' %></p>
+                        <div class="mt-2">
+                            <button class="text-blue-500 hover:underline mr-2" onclick="editAddress('<%= address._id %>')">Edit</button>
+                            <button class="text-red-500 hover:underline" onclick="deleteAddress('<%= address._id %>')">Delete</button>
+                        </div>
+                    </div>
+                <% }); %>
+            <% }); %>
+        </div>
+    </div>
+
+
+
+    <form class="mt-6" action="/addAddress" method="POST">
+        <h3 class="text-lg font-semibold mb-2">Add New Address</h3>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+    
+            
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                <input type="text" id="name" name="name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+            </div>
+            <div>
+                <label for="type" class="block text-sm font-medium text-gray-700">Type</label>
+                <input type="text" id="type" name="addressType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+            </div>
+            <div>
+                <label for="street" class="block text-sm font-medium text-gray-700">Street</label>
+                <input type="text" id="street" name="street" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+            </div>
+            <div>
+                <label for="landMark" class="block text-sm font-medium text-gray-700">Landmark</label>
+                <input type="text" id="landMark" name="landMark" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+            </div>
+            <div>
+                <label for="city" class="block text-sm font-medium text-gray-700">City</label>
+                <input type="text" id="city" name="city" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+            </div>
+            <div>
+                <label for="state" class="block text-sm font-medium text-gray-700">State</label>
+                <input type="text" id="state" name="state" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+            </div>
+            <div>
+                <label for="phone" class="block text-sm font-medium text-gray-700">Phone</label>
+                <input type="text" id="phone" name="phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+            </div>
+            <div>
+                <label for="pincode" class="block text-sm font-medium text-gray-700">Zip Code</label>
+                <input type="text" id="zip" name="pincode" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+            </div>
+            <div>
+                <label for="altPhone" class="block text-sm font-medium text-gray-700">Alternate Phone</label>
+                <input type="text" id="altPhone" name="altPhone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+            </div>
+        </div>
+        <button type="submit" class="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-colors duration-300">Add Address</button>
+    </form>
+   
+</div>
+
+
+
+
+
+<!-- Order Details Section -->
+<div x-show="activeSection === 'orders'" x-cloak class="bg-white shadow-lg rounded-lg overflow-hidden mb-6">
+    <div class="p-6">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Your Orders</h2>
+        <div class="space-y-4">
+            <% if (orders && orders.length > 0) { %>
+                <% orders.forEach(function(order) { %>
+                    <div class="border p-4 rounded">
+                        <h3 class="font-semibold">Order ID: <%= order._id %></h3>
+                        <p class="text-sm text-gray-600">Order Date: <%= new Date(order.date).toLocaleDateString() %></p>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <p>No orders found.</p>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+
                 <!-- Edit Address Modal -->
                 
                 
 
 
 
-                <div id="editAddressModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50" style="display:none;">
-                    <div class="bg-white p-6 rounded-lg w-full max-w-md">
+                <div id="editAddressModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 overflow-auto" style="display:none;">
+                    <div class="bg-white p-6 rounded-lg w-full max-w-md max-h-full overflow-y-auto">
                         <form id="editAddressForm">
                             <input type="hidden" name="id" id="editAddressId" />
+                            <div class="mb-4">
+                                <label for="editAddressName" class="block">Full Name</label>
+                                <input type="text" name="name" id="editAddressName" placeholder="Full Name" class="w-full p-2 border rounded" required />
+                            </div>
                 
                             <div class="mb-4">
                                 <label for="editAddressType" class="block">Address Type</label>
@@ -169,7 +274,6 @@
                                 <input type="text" name="altPhone" id="editAddressAltPhone" placeholder="Alternate Phone" class="w-full p-2 border rounded" />
                             </div>
                 
-                            <!-- Add other fields similarly -->
                             <div class="mt-4 flex justify-between">
                                 <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">Save</button>
                                 <button type="button" onclick="closeModal()" class="bg-gray-500 text-white py-2 px-4 rounded">Cancel</button>
@@ -179,51 +283,18 @@
                 </div>
                 
                 
+                
 
                 
-                <form class="mt-6" action="/addAddress" method="POST">
-                    <h3 class="text-lg font-semibold mb-2">Add New Address</h3>
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label for="type" class="block text-sm font-medium text-gray-700">Type</label>
-                            <input type="text" id="type" name="addressType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
-                        </div>
-                        <div>
-                            <label for="street" class="block text-sm font-medium text-gray-700">Street</label>
-                            <input type="text" id="street" name="street" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
-                        </div>
-                        <div>
-                            <label for="landMark" class="block text-sm font-medium text-gray-700">Landmark</label>
-                            <input type="text" id="landMark" name="landMark" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
-                        </div>
-                        <div>
-                            <label for="city" class="block text-sm font-medium text-gray-700">City</label>
-                            <input type="text" id="city" name="city" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
-                        </div>
-                        <div>
-                            <label for="state" class="block text-sm font-medium text-gray-700">State</label>
-                            <input type="text" id="state" name="state" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
-                        </div>
-                        <div>
-                            <label for="phone" class="block text-sm font-medium text-gray-700">Phone</label>
-                            <input type="text" id="phone" name="phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
-                        </div>
-                        <div>
-                            <label for="zip" class="block text-sm font-medium text-gray-700">Zip Code</label>
-                            <input type="text" id="zip" name="pincode" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
-                        </div>
-                        <div>
-                            <label for="altPhone" class="block text-sm font-medium text-gray-700">Alternate Phone</label>
-                            <input type="text" id="altPhone" name="altPhone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-                        </div>
-                    </div>
-                    <button type="submit" class="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-colors duration-300">Add Address</button>
-                </form>
+               
                 
                 
             </div>
         </div>
     </div>
+
+
+    
     <script>
     
 // Function to delete the address
@@ -269,7 +340,7 @@ async function editAddress(id) {
         if (!address) {
             throw new Error('Address data is missing or undefined');
         }
-
+        document.getElementById('editAddressName').value = address.name || '';
         document.getElementById('editAddressId').value = id;
         document.getElementById('editAddressType').value = address.addressType || '';
         document.getElementById('editAddressStreet').value = address.street || '';
@@ -292,6 +363,7 @@ async function editAddress(id) {
 
 function logModalValues() {
     console.log('Modal values:');
+    console.log('name', document.getElementById('editAddressName').value);
     console.log('Type:', document.getElementById('editAddressType').value);
     console.log('Street:', document.getElementById('editAddressStreet').value);
     console.log('City:', document.getElementById('editAddressCity').value);
@@ -319,6 +391,7 @@ document.getElementById('editAddressForm').onsubmit = async function (event) {
 
 async function updateAddress(id) {
     const addressData = {
+        name:document.getElementById('editAddressName').value,
         addressType: document.getElementById('editAddressType').value,
         street: document.getElementById('editAddressStreet').value,
         city: document.getElementById('editAddressCity').value,
@@ -375,5 +448,6 @@ document.querySelectorAll('.edit-address-button').forEach(button => {
         alert('An error occurred while updating the profile.');
     }
     </script>
+    <%- include("../partials/user/footer") %>
 </body>
 </html>

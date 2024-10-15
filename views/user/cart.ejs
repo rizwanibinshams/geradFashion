@@ -1,80 +1,115 @@
 <%- include("../partials/user/header") %>
 
-<section class="cart-page spad">
-    <div class="container">
-        <h2>Your Cart</h2>
-        
-        <% if (typeof error !== 'undefined' && error) { %>
-            <div class="alert alert-danger"><%= error %></div>
-        <% } %>
+<body class="bg-gray-100">
+    <!-- Breadcrumb Section -->
+   
 
-        <% if (cart.length > 0) { %>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th>Size</th>
-                        <th>Quantity</th>
-                        <th>Price</th>
-                        <th>Subtotal</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% cart.forEach(item => { %>
-                        <tr>
-                            <td><%= item.productId.productName %></td>
-                            <td><%= item.size ? item.size : 'N/A' %></td>
+    <!-- Cart Page -->
+    <section class="cart-page spad py-8">
+       
+        <div class="container mx-auto px-4">
 
-                            <td>
-                                <form action="/update" method="POST" style="display:inline;">
+            <nav aria-label="breadcrumb" class="mb-8">
+                <ol class="flex items-center space-x-2 text-gray-600">
+                    <li><a href="/" class="hover:text-blue-600">Home</a></li>
+                    <li><span class="mx-2">/</span></li>
+                    <li><a href="/cart" class="hover:text-blue-600">Cart</a></li>
+                    
+                </ol>
+            </nav>
 
-                                    <input type="hidden" name="productId" value="<%= item.productId._id %>">
-                                    <input type="number" name="quantity" value="<%= item.quantity %>" min="1" max="99" onchange="this.form.submit()">
-                                </form>
-                            </td>
-                            <td>₹<%= item.productId.salePrice.toFixed(2) %></td>
-                            <td>₹<%= (item.productId.salePrice * item.quantity).toFixed(2) %></td>
-                            <td>
-                                <button class="btn btn-danger" onclick="removeFromCart('<%= item.productId._id %>')">Remove</button>
-                                
+            <h2 class="text-3xl font-bold mb-6">Your Cart</h2>
 
-                            </td>
-                        </tr>
-                    <% }) %>
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <th colspan="4">Total</th>
-                        <th colspan="2">₹<%= total.toFixed(2) %></th>
-                    </tr>
-                </tfoot>
-            </table>
-            <a href="/checkout" class="btn btn-primary">Proceed to Checkout</a>
-        <% } else { %>
-            <p>Your cart is empty.</p>
-        <% } %>
-    </div>
-</section>
-<script>
-    function removeFromCart(productId) {
-        fetch(`/remove/${productId}`, {
-            method: 'DELETE',
-        })
-        .then(response => {
-            if (response.ok) {
-                // Reload the cart page after successful deletion
-                window.location.href = '/cart';
-            } else {
-                return response.json().then(error => {
-                    alert(error.message || 'Failed to remove item from cart');
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while trying to remove the item from the cart');
-        });
-    }
-</script>
+            <!-- Error Message -->
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="alert alert-danger bg-red-100 text-red-700 p-4 rounded-md"><%= error %></div>
+            <% } %>
+
+            <!-- Cart Items Table -->
+            <% if (cart.length > 0) { %>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border-collapse">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-2 border">Product</th>
+                                <th class="px-4 py-2 border">Size</th>
+                                <th class="px-4 py-2 border">Quantity</th>
+                                <th class="px-4 py-2 border">Price</th>
+                                <th class="px-4 py-2 border">Subtotal</th>
+                                <th class="px-4 py-2 border">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% cart.forEach(item => { %>
+                                <tr class="text-center">
+                                    <td class="px-4 py-2 border"><%= item.productId.productName %></td>
+                                    <td class="px-4 py-2 border"><%= item.size ? item.size : 'N/A' %></td>
+                                    <td class="px-4 py-2 border">
+                                        <form action="/update" method="POST" class="inline-block">
+                                            <input type="hidden" name="productId" value="<%= item.productId._id %>">
+                                            <input type="number" name="quantity" value="<%= item.quantity %>" min="1" max="99"
+                                                class="w-16 px-2 py-1 border rounded text-center focus:ring-blue-500"
+                                                onchange="this.form.submit()">
+                                        </form>
+                                    </td>
+                                    <td class="px-4 py-2 border">₹<%= item.productId.salePrice.toFixed(2) %></td>
+                                    <td class="px-4 py-2 border">₹<%= (item.productId.salePrice * item.quantity).toFixed(2) %></td>
+                                    <td class="px-4 py-2 border">
+                                        <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                                            onclick="removeFromCart('<%= item.productId._id %>')">Remove</button>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="4" class="px-4 py-2 text-right border">Total</th>
+                                <th colspan="2" class="px-4 py-2 text-left border">₹<%= total.toFixed(2) %></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="mt-6 text-right">
+                    <a href="/checkout" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-md">Proceed to Checkout</a>
+                </div>
+            <% } else { %>
+                <p class="text-xl text-gray-700 mt-6">Your cart is empty.</p>
+            <% } %>
+        </div>
+    </section>
+
+    <!-- JavaScript for Removing Items with Loading Animation -->
+    <script>
+        function removeFromCart(productId) {
+            const removeButton = event.target;
+            removeButton.disabled = true;
+            removeButton.innerHTML = 'Removing...';
+
+            fetch(`/remove/${productId}`, {
+                method: 'DELETE',
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Reload the cart page after successful deletion
+                    window.location.href = '/cart';
+                } else {
+                    return response.json().then(error => {
+                        alert(error.message || 'Failed to remove item from cart');
+                        removeButton.disabled = false;
+                        removeButton.innerHTML = 'Remove';
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while trying to remove the item from the cart');
+                removeButton.disabled = false;
+                removeButton.innerHTML = 'Remove';
+            });
+        }
+    </script>
+
 <%- include("../partials/user/footer") %>
+</body>
+
+

@@ -88,9 +88,9 @@ const getCart = async (req, res) => {
 
       // Calculate the total
       const total = cart.items.reduce((sum, item) => sum + (item.productId.salePrice * item.quantity), 0);
-
+      const userData = await User.findById(req.session.user.id)
       // Render the cart page with the cart items and total
-      res.render('cart', { cart: cart.items, total });
+      res.render('cart', { cart: cart.items, total , user:userData});
   } catch (error) {
       console.error("Error fetching cart:", error);
       res.status(500).render('page-404', { message: "Error fetching cart" });

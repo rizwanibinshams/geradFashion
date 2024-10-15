@@ -7,6 +7,7 @@ const addAddress = async (req, res) => {
         console.log("body dvbjhvd", req.body); // Check request body
 
         const {
+            name,
             addressType,
             street,
             landMark,
@@ -18,7 +19,7 @@ const addAddress = async (req, res) => {
         } = req.body;
 
         // Validate the request body
-        if (!addressType || !street || !city || !state || !pincode || !phone) {
+        if (!name||!addressType || !street || !city || !state || !pincode || !phone) {
             return res.status(400).json({ error: 'All fields are required' });
         }
 
@@ -37,6 +38,7 @@ const addAddress = async (req, res) => {
             userAddress = new Address({
                 userId,
                 address: [{
+                    name,
                     addressType,
                     street,
                     landMark,
@@ -59,6 +61,7 @@ const addAddress = async (req, res) => {
 
             // Push the new address into the array
             userAddress.address.push({
+                name,
                 addressType,
                 street,
                 landMark,
@@ -130,7 +133,7 @@ const getAddressById = async (req, res) => {
 const editAddress = async (req, res) => {
     try {
         const { id } = req.params; // Address ID from the URL parameters
-        const { addressType, street, city, landMark, state, pincode, phone, altPhone } = req.body;
+        const { name,addressType, street, city, landMark, state, pincode, phone, altPhone } = req.body;
 
         console.log('Request Params:', req.params);
         console.log('Request Body:', req.body);
@@ -159,6 +162,7 @@ const editAddress = async (req, res) => {
         console.log('Updating address:', addressToEdit);
 
         // Update the address fields
+        addressToEdit.name = name;
         addressToEdit.addressType = addressType;
         addressToEdit.street = street;
         addressToEdit.city = city;

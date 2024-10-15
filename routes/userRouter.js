@@ -4,8 +4,9 @@ const userController = require('../controllers/user/userController')
 const profileController = require('../controllers/user/ProfileController')
 const productController = require('../controllers/user/productController')
 const cartController = require('../controllers/user/cartController');
-const orderController = require('../controllers/user/orderController')
+const checkoutController = require('../controllers/user/checkoutController')
 const addressController = require('../controllers/user/addressController')
+const  orderController = require('../controllers/user/orderController')
 const passport = require('passport')
 const auth = require('../middlewares/auth')
 
@@ -98,5 +99,14 @@ router.delete('/addresses/:id',auth.AdressMiddleware, addressController.removeAd
 //user edited
 
 router.post('/update-profile',auth.AdressMiddleware,userController.updateProfile)
+
+
+
+
+//checkout page 
+
+router.get('/checkout',checkoutController.getCheckoutPage)
+
+router.post('/place-order', orderController.placeOrder);
 
 module.exports = router

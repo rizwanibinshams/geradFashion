@@ -1,95 +1,80 @@
-const Order = require('../../models/orderSchema');
+const { Order, Address } = require('../../models/orderSchema');
 const Product = require('../../models/productSchema');
-const Address = require('../../models/addressSchema')
+const Cart = require("../../models/cartSchema");
 const mongoose = require('mongoose');
-
-
-
-const checkoutPage = async (req, res) => {
-    try {
-        const { orderedItems, street, city, state, postalCode, country, discount } = req.body;
-
-        // Create the address document
-        const newAddress = new Address({
-            street,
-            city,
-            state,
-            postalCode,
-          
-        });
-        await newAddress.save();
-
-        // Calculate total price
-        let totalPrice = 0;
-        const populatedItems = await Promise.all(orderedItems.map(async (item) => {
-            const product = await Product.findById(item.productId);
-            const price = product.price * item.quantity;
-            totalPrice += price;
-            return {
-                product: product._id,
-                quantity: item.quantity,
-                price: product.price
-            };
-        }));
-
-        // Calculate final amount
-        const finalAmount = totalPrice - discount;
-
-        // Create the order
-        const newOrder = new Order({
-            orderedItems: populatedItems,
-            totalPrice,
-            discount,
-            finalAmount,
-            address: newAddress._id,
-            status: 'Pending',
-            couponApplied: discount > 0
-        });
-        await newOrder.save();
-
-        // Send success response
-        res.status(201).json({
-            message: 'Order successfully placed',
-            orderId: newOrder.orderId
-        });
-
-    } catch (error) {
-        console.error(error.message);
-        res.status(400).send(`Error: ${error.message}`);
-    }
-};
-
-
 
 const placeOrder = async (req, res) => {
     try {
-        const { orderedItems, addressId, totalPrice, finalAmount } = req.body;
+        const { addressId, paymentMethod } = req.body; // Ensure paymentMethod is passed in the request
+        const userId = req.session.user?.id; // Ensure user is authenticated
 
-        // Create a new order
-        const newOrder = new Order({
-            orderedItems,
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'User not authenticated.' });
+        }
+
+        // Fetch the address using the provided addressId
+        const userAddress = await Address.findOne({ 
+            userId, 
+            'address._id': addressId 
+        });
+
+        console.log('User Address:', userAddress);
+
+        if (!userAddress || userAddress.address.length === 0) {
+            return res.status(404).json({ success: false, message: 'Address not found.' });
+        }
+
+        // Find the specific address from the array
+        const addressDetails = userAddress.address.find(addr => addr._id.toString() === addressId);
+
+        console.log('Address Details:', addressDetails);
+
+        if (!addressDetails) {
+            return res.status(404).json({ success: false, message: 'Address not found.' });
+        }
+
+        // Fetch the user's cart items
+        const cart = await Cart.findOne({ userId }).populate('items.productId');
+
+        if (!cart || cart.items.length === 0) {
+            return res.status(400).json({ success: false, message: 'Cart is empty.' });
+        }
+
+        // Calculate total price from cart items
+        const totalPrice = cart.items.reduce((sum, item) => sum + item.totalPrice, 0);
+
+        // Prepare order data
+        const orderData = {
+            user: userId, // Add the user ID here
+            paymentMethod, // Include the payment method
+            orderedItems: cart.items.map(item => ({
+                product: item.productId,
+                quantity: item.quantity,
+                price: item.totalPrice
+            })),
             totalPrice,
-            finalAmount,
-            address: addressId,
-            status: 'Pending', // Initial status
-            couponApplied: false, // For now we assume no coupon is applied
-        });
+            finalAmount: totalPrice, // Adjust based on discounts if applicable
+            address: addressDetails, // Use the specific address details
+            status: 'Pending', // Initial order status
+            createdOn: new Date()
+        };
 
-        await newOrder.save();
+        // Create and save the order
+        const order = new Order(orderData);
+        await order.save();
 
-        // Send response
-        res.status(201).json({
-            message: 'Order placed successfully',
-            orderId: newOrder.orderId
-        });
+        // Clear the cart after successful order placement
+        await Cart.deleteOne({ userId });
+
+        return res.json({ success: true, message: "Order placed successfully!" });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Failed to place order' });
+        console.error('Error placing order:', error);
+        res.status(500).json({ success: false, message: "Error placing order." });
     }
 };
 
+
 module.exports = {
-    checkoutPage,
     placeOrder
 }

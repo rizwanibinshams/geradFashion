@@ -1,0 +1,245 @@
+<%- include("../../views/partials/admin/header") %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Orders</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900">
+    <div class="container mx-auto my-10 px-4">
+        <h1 class="text-4xl font-bold text-center mb-8 text-indigo-700">Admin Orders Dashboard</h1>
+    
+        <% if (message) { %>
+            <p class="text-center text-red-500 mb-4"><%= message %></p>
+        <% } else { %>
+            <div class="overflow-x-auto shadow-md rounded-lg">
+                <table class="w-full bg-white">
+                    <thead>
+                        <tr class="bg-indigo-600 text-white text-left">
+                            <th class="py-3 px-4">Order ID</th>
+                            <th class="py-3 px-4">User Name</th>
+                            <th class="py-3 px-4">Product Name</th>
+                            <th class="py-3 px-4">Quantity</th>
+                            <th class="py-3 px-4">Total Price</th>
+                            <th class="py-3 px-4">Payment method</th>
+                            <th class="py-3 px-4">Status</th>
+                            <th class="py-3 px-4">Date</th>
+                            <th class="py-3 px-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% orders.forEach(order => { %>
+                            <tr class="border-b hover:bg-gray-50 transition duration-150 ease-in-out" data-order-id="<%= order._id %>">
+                                <td class="py-3 px-4"><%= order._id %></td>
+                                <td class="py-3 px-4"><%= order.address.name %></td>
+                                <td class="py-3 px-4">
+                                    <% order.orderedItems.forEach(item => { %>
+                                        <% if (item.product && item.product.productName) { %>
+                                            <div><%= item.product.productName %></div>
+                                        <% } else { %>
+                                            <div><em>No product name</em></div>
+                                        <% } %>
+                                    <% }) %>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <% order.orderedItems.forEach(item => { %>
+                                        <div>x<%= item.quantity %></div>
+                                    <% }) %>
+                                </td>
+                                <td class="py-3 px-4">₹<%= order.totalPrice %></td>
+                                <td class="py-3 px-4"><%= order.paymentMethod ? order.paymentMethod : 'N/A' %></td> 
+                                <td class="py-3 px-4">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-<%= getStatusColor(order.status) %>-100 text-<%= getStatusColor(order.status) %>-800">
+                                        <%= order.status %>
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4"><%= new Date(order.createdOn).toLocaleDateString('en-GB') %></td>
+                                <td class="py-3 px-4">
+                                    <button class="bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-700 transition duration-300" onclick="openModal('<%= JSON.stringify(order) %>')">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                                        </svg>
+                                        View
+                                    </button>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+    
+            <!-- Pagination Controls -->
+            <div class="mt-6 flex justify-center">
+                <nav class="inline-flex">
+                    <% for (let i = 1; i <= totalPages; i++) { %>
+                        <a href="?page=<%= i %>" class="mx-1 px-4 py-2 text-sm font-medium <%= i === currentPage ? 'bg-indigo-600 text-white' : 'bg-gray-300 text-gray-700' %> rounded-md hover:bg-indigo-500 hover:text-white">
+                            <%= i %>
+                        </a>
+                    <% } %>
+                </nav>
+            </div>
+        <% } %>
+    </div>
+    
+
+    <!-- Modal for showing order details -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <span class="close text-2xl font-bold hover:text-gray-700 cursor-pointer" onclick="closeModal()">&times;</span>
+            <h2 class="text-2xl font-bold mb-4 text-indigo-700">Order Details</h2>
+            <div id="orderDetails" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <script>
+        function openModal(orderJSON) {
+            const order = JSON.parse(orderJSON);
+            const modal = document.getElementById('orderModal');
+            const orderDetails = document.getElementById('orderDetails');
+            
+            const itemsDetails = order.orderedItems.map(item => `
+                <div class="bg-gray-100 p-4 rounded-lg">
+                    <p class="font-semibold">${item.product ? item.product.productName : 'Product Name Not Available'}</p>
+                    <p>Quantity: ${item.quantity}</p>
+                    <p>Price: ₹${item.product ? item.product.salePrice : 'N/A'}</p>
+                </div>
+            `).join('');
+
+            const statusOptions = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
+                .map(status => `<option value="${status}" ${order.status === status ? 'selected' : ''}>${status}</option>`)
+                .join('');
+
+            orderDetails.innerHTML = `
+                <p><strong>Order ID:</strong> ${order._id}</p>
+                <p><strong>Customer Name:</strong> ${ order.address.name }</p>
+                <p><strong>Address:</strong> ${order.address ? `${order.address.street}, ${order.address.city}, ${order.address.state} ${order.address.zipCode}` : 'N/A'}</p>
+                <p><strong>Phone:</strong> ${order.address ? order.address.phone : 'N/A'}</p>
+               <p><strong>Payment Method:</strong> ${order.paymentMethod ? order.paymentMethod : 'N/A'}</p> 
+                
+                <h3 class="text-xl font-semibold mt-4 mb-2">Ordered Items:</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    ${itemsDetails}
+                </div>
+                <p class="mt-4"><strong>Total Price:</strong> ₹${order.totalPrice}</p>
+                <div class="mt-4">
+                    <label for="orderStatus" class="block text-sm font-medium text-gray-700">Order Status:</label>
+                    <select id="orderStatus" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" onchange="updateOrderStatus('${order._id}', this.value)">
+                        ${statusOptions}
+                    </select>
+                </div>
+            `;
+
+            gsap.to(modal, {duration: 0.3, opacity: 1, display: 'block', ease: 'power2.out'});
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('orderModal');
+            gsap.to(modal, {duration: 0.3, opacity: 0, display: 'none', ease: 'power2.in'});
+        }
+
+        function updateOrderStatus(orderId, newStatus) {
+            console.log('Updating order status with:', { orderId, status: newStatus });
+            
+            fetch('/admin/update-order-status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                },
+                body: JSON.stringify({ orderId, status: newStatus })
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                showNotification(data.message);
+                updateStatusInTable(orderId, newStatus);
+                window.location.reload()
+                closeModal();
+            })
+            .catch(error => {
+                console.error('Error updating order status:', error);
+                showNotification('Error updating order status. Please try again.');
+            });
+        }
+
+        function updateStatusInTable(orderId, newStatus) {
+            const statusCell = document.querySelector(`tr[data-order-id="${orderId}"] td:nth-child(6) span`);
+            if (statusCell) {
+                statusCell.textContent = newStatus;
+                const statusColor = getStatusColor(newStatus);
+                statusCell.className = `px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-${statusColor}-100 text-${statusColor}-800`;
+            }
+        }
+
+        function getStatusColor(status) {
+            switch(status.toLowerCase()) {
+                case 'pending': return 'yellow';
+                case 'processing': return 'blue';
+                case 'shipped': return 'indigo';
+                case 'delivered': return 'green';
+                case 'cancelled': return 'red';
+                default: return 'gray';
+            }
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg fade-in';
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('orderModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
+<%- include("../../views/partials/admin/footer") %>

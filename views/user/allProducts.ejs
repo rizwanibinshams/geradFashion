@@ -1,87 +1,16 @@
 <%- include("../partials/user/header") %>
 
-<!-- Add Bootstrap CSS -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 20px;
-        background-color: #f8f9fa;
-    }
-
-    .product-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 20px;
-    }
-
     .product-card {
-        border: 1px solid #ccc;
-        border-radius: 10px;
-        padding: 15px;
-        background-color: white;
-        transition: transform 0.3s;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        width: 100%;
-        max-width: 280px;
-        position: relative;
-        overflow: hidden;
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
     }
 
     .product-card:hover {
         transform: scale(1.05);
-    }
-
-    .product-card img {
-        max-width: 100%;
-        height: auto;
-        border-radius: 5px;
-    }
-
-    /* Discount Badge */
-    .discount-badge {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        background-color: #dc3545;
-        color: white;
-        border-radius: 50%;
-        padding: 10px;
-        font-size: 14px;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 50px;
-        height: 50px;
-    }
-
-    .price-info {
-        margin: 10px 0;
-    }
-
-    .rating {
-        color: #ffc107;
-    }
-
-    .original-price {
-        text-decoration: line-through;
-        color: #999;
-    }
-
-    .sale-price {
-        color: #28a745;
-        font-weight: bold;
-    }
-
-    .btn {
-        width: 100%;
-        margin-top: 10px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     }
 </style>
 
@@ -90,95 +19,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Products</title>
+    <title>Shop - Product List</title>
 </head>
-<body>
+<body class="bg-gray-100">
+   
+    <!-- Breadcrumbs -->
+    
 
-   <!-- Breadcrumbs -->
-   <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/">Home</a></li>
-        <li class="breadcrumb-item"><a href="/products">Products</a></li>
-    </ol>
-</nav>
+    <main class="container mx-auto mt-8">
 
-<header>
-    <h1 class="text-center my-4">Product List</h1>
-</header>
+        <nav aria-label="breadcrumb" class="mb-8">
+            <ol class="flex items-center space-x-2 text-gray-600">
+                <li><a href="/" class="hover:text-blue-600">Home</a></li>
+                <li><span class="mx-2">/</span></li>
+                <li><a href="/products" class="hover:text-blue-600">Products</a></li>
+                
+            </ol>
+        </nav>
+        <div class="flex">
+            <!-- Sidebar: Category Filter -->
+            <aside class="w-1/5 p-4 bg-white rounded-lg shadow-md">
+                <h5 class="text-lg font-semibold mb-4">Filter by Category</h5>
+                <ul>
+                    <li><a href="?category=pant" class="block text-gray-700 hover:text-blue-500 mb-2">Pant</a></li>
+                    <li><a href="?category=shirt" class="block text-gray-700 hover:text-blue-500 mb-2">Shirt</a></li>
+                    <li><a href="?category=hoodie" class="block text-gray-700 hover:text-blue-500 mb-2">Hoodie</a></li>
+                    <li><a href="?category=tshirt" class="block text-gray-700 hover:text-blue-500 mb-2">T-shirt</a></li>
+                </ul>
+            </aside>
 
-<main>
-    <div class="container">
-        <div class="row product-container">
-            <% if (products.length > 0) { %>
-                <% products.forEach(product => { %>
-                    <div class="col-md-3">
-                        <a href="/productDetails?id=<%= product._id %>"> 
-                        <div class="product-card">
-                            <!-- Discount Badge -->
-                            <% const discount = Math.abs(((product.regularPrice - product.salePrice) / product.regularPrice) * 100); %>
-                            <% if (discount > 0) { %>
-                                <div class="discount-badge"><%= discount.toFixed(0) %>%</div>
-                            <% } %>
+            <!-- Product List -->
+            <div class="flex-1 ml-8">
+                <!-- Sorting Dropdown -->
+                <div class="mb-4 flex justify-end">
+                    <select id="priceFilter" class="border border-gray-300 rounded p-2">
+                        <option value="low-high">Price: Low to High</option>
+                        <option value="high-low">Price: High to Low</option>
+                    </select>
+                </div>
 
-                            <img src="/uploads/product-images/<%= product.productImage[0] %>" alt="<%= product.productName %>" class="img-fluid">
-                            <h5 class="mt-2"><%= product.productName %></h5>
-                            <p>Brand: <%= product.brand %></p>
-                            
-                            <!-- Price Info -->
-                            <div class="price-info">
-                                <span class="original-price">$<%= product.regularPrice %></span>
-                                <span class="sale-price">$<%= product.salePrice %></span>
-                            </div>
-                            
-                            <!-- Rating -->
-                            <div class="rating">
-                                <% for (let i = 1; i <= 5; i++) { %>
-                                    <% if (i <= product.rating) { %>
-                                        <i class="fas fa-star"></i>
-                                    <% } else { %>
-                                        <i class="far fa-star"></i>
-                                    <% } %>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                    <% if (products.length > 0) { %>
+                        <% products.forEach(product => { %>
+                            <div class="product-card bg-white p-4 rounded-lg shadow-lg relative">
+                                <!-- Discount Badge -->
+                                <% const discount = Math.abs(((product.regularPrice - product.salePrice) / product.regularPrice) * 100); %>
+                                <% if (discount > 0) { %>
+                                    <div class="absolute top-2 left-2 bg-red-500 text-white rounded-full px-3 py-1 text-xs font-bold">
+                                        <%= discount.toFixed(0) %>% OFF
+                                    </div>
                                 <% } %>
+                
+                                <!-- Product Image -->
+                                <a href="/productDetails?id=<%= product._id %>" class="product-link" style="text-decoration: none; color: inherit;">
+                                    <img src="/uploads/product-images/<%= product.productImage[0] %>" alt="<%= product.productName %>" class="w-full h-48 object-cover rounded-lg mb-3">
+                                </a>
+                
+                                <!-- Product Info -->
+                                <h5 class="font-semibold text-lg mb-2"><%= product.productName %></h5>
+                                <p class="text-gray-500 mb-2">Brand: <%= product.brand %></p>
+                
+                                <!-- Price Info -->
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <span class="text-gray-400 line-through">$<%= product.regularPrice %></span>
+                                    <span class="text-green-500 font-bold">$<%= product.salePrice %></span>
+                                </div>
+                
+                                <!-- Rating -->
+                                <div class="flex mb-2">
+                                    <% for (let i = 1; i <= 5; i++) { %>
+                                        <% if (i <= product.rating) { %>
+                                            <i class="fas fa-star text-yellow-400"></i>
+                                        <% } else { %>
+                                            <i class="far fa-star text-yellow-400"></i>
+                                        <% } %>
+                                    <% } %>
+                                </div>
+                
+                                <p class="text-sm text-gray-600 mb-4">Status: <%= product.status %></p>
+                                <p class="text-sm text-gray-600 mb-4">Quantity: <%= product.quantity %></p>
+                
+                                <!-- Add to Cart Button and Wishlist Heart Icon -->
+                                <div class="flex justify-between items-center">
+                                    <!-- Add to Cart Button -->
+                                    <button class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600" onclick="addToCart('<%= product._id %>')">Add to Cart</button>
+                                    
+                                    <!-- Heart Icon for Wishlist -->
+                                    <i class="fas fa-heart text-red-500 text-2xl cursor-pointer" onclick="addToWishlist('<%= product._id %>')" title="Add to Wishlist"></i>
+                                </div>
                             </div>
-                            
-                            <p>Description: <%= product.description %></p>
-                            <p>Status: <%= product.status %></p>
-                            <p>Quantity: <%= product.quantity %></p>
-                            
-                          
-                            <button class="btn btn-primary" onclick="addToCart('<%= product._id %>')">Add to Cart</button>
-                            <button class="btn btn-secondary" onclick="addToWishlist('<%= product._id %>')">Add to Wishlist</button>
-                        </div>
-                    </a>
-                    </div>
-                <% }) %>
-            <% } else { %>
-                <p class="text-center">No products available.</p>
-            <% } %>
+                        <% }) %>
+                    <% } else { %>
+                        <p class="text-center col-span-4">No products available.</p>
+                    <% } %>
+                </div>
+                
+                
+            </div>
         </div>
-    </div>
-</main>
+    </main>
 
-<footer>
-    <p class="text-center">&copy; 2024 Your Company Name</p>
-</footer>
+    <footer class="bg-gray-800 text-white text-center py-4 mt-8">
+        &copy; 2024 Your Company Name
+    </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
 
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        document.getElementById('priceFilter').addEventListener('change', function() {
+            const value = this.value;
+            window.location.href = `/products?sort=${value}`;
+        });
 
-<script>
-    function addToCart(productId) {
-        console.log(`Product ${productId} added to cart`);
-        
-    }
+        function addToCart(productId) {
+            console.log(`Product ${productId} added to cart`);
+        }
 
-    function addToWishlist(productId) {
-        console.log(`Product ${productId} added to wishlist`);
-        
-    }
-</script>
+        function addToWishlist(productId) {
+            console.log(`Product ${productId} added to wishlist`);
+        }
+    </script>
 </body>
 </html>
 

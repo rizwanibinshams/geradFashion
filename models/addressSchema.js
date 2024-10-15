@@ -9,6 +9,11 @@ const addressSchema = new Schema({
         required : true
     },
     address: [{
+        name:{
+            type: String,
+            required:true
+        },
+
         addressType:{
             type: String,
             required:true

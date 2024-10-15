@@ -99,8 +99,8 @@
                 <div class="col-lg-6 col-md-6">
                     <nav class="header__menu mobile-menu">
                         <ul>
-                            <li><a href="./inex.html">Home</a></li>
-                            <li class="active"><a href="./shop.html">Shop</a></li>
+                            <li><a href="/">Home</a></li>
+                            <li><a href="/products">Shop</a></li>
                             <li><a href="#">Pages</a>
                                 <ul class="dropdown">
                                     <li><a href="./about.html">About Us</a></li>
@@ -117,10 +117,24 @@
                 </div>
                 <div class="col-lg-3 col-md-3">
                     <div class="header__nav__option">
+                        <% if (typeof user !== 'undefined' && user !== null) { %> 
+                            <!-- If the user is logged in, show their name and options -->
+                            <div class="dropdown">
+                                <a href="/" class="sign-in-link"><%= user.name %></a>
+                                <div class="dropdown-content">
+                                    <a href="/profile">Profile</a>
+                                    <a href="/logout">Logout</a>
+                                </div>
+                            </div>
+                        <% } else { %>
+                            <!-- If the user is not logged in, show Sign Up and Log in links -->
+                            <a href="/signup" class="sign-in-link">Sign Up</a>
+                            <a href="/login" class="sign-in-link">Log in</a>
+                        <% } %>
                         <a href="#" class="search-switch"><img src="img/icon/search.png" alt=""></a>
                         <a href="#"><img src="img/icon/heart.png" alt=""></a>
                         <a href="#"><img src="img/icon/cart.png" alt=""> <span>0</span></a>
-                        <div class="price">$0.00</div>
+                        
                     </div>
                 </div>
             </div>
