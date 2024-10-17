@@ -34,37 +34,39 @@
                     </div>
                 </div>
                 <!-- Add more hero items here if needed -->
+                 
             </div>
         </section>
         <section class="mb-12">
-            <h2 class="text-2xl font-bold text-center mb-6">Shop by Category</h2>
-            <div class="flex justify-center space-x-4">
-                <a href="#" class="category-item flex flex-col items-center">
-                    <div class="w-24 h-24 rounded-full bg-blue-500 flex items-center justify-center mb-2">
-                        <i class="fas fa-tshirt text-white text-3xl"></i>
+            <h2 class="text-3xl font-bold text-center mb-8 tracking-wide text-gray-800">Shop by Category</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-6xl mx-auto">
+                <a href="#" class="category-item flex flex-col items-center transition-transform transform hover:scale-105">
+                    <div class="w-28 h-28 rounded-full bg-blue-600 flex items-center justify-center mb-4 shadow-lg">
+                        <i class="fas fa-tshirt text-white text-4xl"></i>
                     </div>
-                    <span class="text-sm font-medium">T-Shirt</span>
+                    <span class="text-base font-semibold text-gray-700">T-Shirt</span>
                 </a>
-                <a href="#" class="category-item flex flex-col items-center">
-                    <div class="w-24 h-24 rounded-full bg-green-500 flex items-center justify-center mb-2">
-                        <i class="fas fa-hat-cowboy text-white text-3xl"></i>
+                <a href="#" class="category-item flex flex-col items-center transition-transform transform hover:scale-105">
+                    <div class="w-28 h-28 rounded-full bg-green-600 flex items-center justify-center mb-4 shadow-lg">
+                        <i class="fas fa-hat-cowboy text-white text-4xl"></i>
                     </div>
-                    <span class="text-sm font-medium">Shirt</span>
+                    <span class="text-base font-semibold text-gray-700">Shirt</span>
                 </a>
-                <a href="#" class="category-item flex flex-col items-center">
-                    <div class="w-24 h-24 rounded-full bg-yellow-500 flex items-center justify-center mb-2">
-                        <i class="fas fa-socks text-white text-3xl"></i>
+                <a href="#" class="category-item flex flex-col items-center transition-transform transform hover:scale-105">
+                    <div class="w-28 h-28 rounded-full bg-yellow-500 flex items-center justify-center mb-4 shadow-lg">
+                        <i class="fas fa-socks text-white text-4xl"></i>
                     </div>
-                    <span class="text-sm font-medium">Pants</span>
+                    <span class="text-base font-semibold text-gray-700">Pants</span>
                 </a>
-                <a href="#" class="category-item flex flex-col items-center">
-                    <div class="w-24 h-24 rounded-full bg-red-500 flex items-center justify-center mb-2">
-                        <i class="fas fa-tshirt text-white text-3xl transform rotate-45"></i>
+                <a href="#" class="category-item flex flex-col items-center transition-transform transform hover:scale-105">
+                    <div class="w-28 h-28 rounded-full bg-red-500 flex items-center justify-center mb-4 shadow-lg">
+                        <i class="fas fa-tshirt text-white text-4xl transform rotate-45"></i>
                     </div>
-                    <span class="text-sm font-medium">Hoodie</span>
+                    <span class="text-base font-semibold text-gray-700">Hoodie</span>
                 </a>
             </div>
         </section>
+        
         <!-- Product Section -->
         <section class="mb-12">
             <h2 class="text-3xl font-bold text-center mb-8">New Arrivals</h2>
@@ -73,7 +75,9 @@
                     <% products.forEach(product => { %>
                         <div class="product-card bg-white rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:scale-105">
                             <div class="relative">
+                                <a href="/productDetails?id=<%= product._id %>" class="product-link" style="text-decoration: none; color: inherit;">
                                 <img src="/uploads/product-images/<%= product.productImage[0] %>" alt="<%= product.productName %>" class="w-full h-64 object-cover">
+                                </a>
                                 <% const discount = Math.abs(((product.regularPrice - product.salePrice) / product.regularPrice) * 100); %>
                                 <% if (discount > 0) { %>
                                     <div class="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
@@ -98,11 +102,11 @@
                                         <% } %>
                                     </div>
                                 </div>
-                                <button onclick="addToCart('<%= product._id %>')" class="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition duration-300">
+                                <button onclick="addToCart('<%= product._id %>')"   data-product-id="<%= product._id %>" class="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition duration-300">
                                     Add to Cart
                                 </button>
                             </div>
-                            <a href="/productDetails?id=<%= product._id %>" class="absolute inset-0"></a>
+                           
                         </div>
                     <% }) %>
                 <% } else { %>
@@ -170,10 +174,23 @@
             });
         });
 
-        function addToCart(productId) {
-            // Implement your add to cart logic here
-            console.log(`Added product ${productId} to cart`);
+        async function addToCart(productId) {
+        try {
+            const response = await fetch('/addToCart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId })
+            });
+            if (response.ok) {
+                alert('Product added to cart!');
+                window.location.reload();
+            } else {
+                alert('Failed to add to cart. Try again.');
+            }
+        } catch (error) {
+            alert('Error occurred. Try again.');
         }
+    }
     </script>
 </body>
 </html>

@@ -47,7 +47,7 @@
                                     <td class="px-4 py-2 border">
                                         <form action="/update" method="POST" class="inline-block">
                                             <input type="hidden" name="productId" value="<%= item.productId._id %>">
-                                            <input type="number" name="quantity" value="<%= item.quantity %>" min="1" max="99"
+                                            <input type="number" name="quantity" value="<%= item.quantity %>" min="1" max="10"
                                                 class="w-16 px-2 py-1 border rounded text-center focus:ring-blue-500"
                                                 onchange="this.form.submit()">
                                         </form>
@@ -109,7 +109,8 @@
         }
     </script>
 
-<%- include("../partials/user/footer") %>
+
 </body>
 
 
+<%- include("../partials/user/footer") %>

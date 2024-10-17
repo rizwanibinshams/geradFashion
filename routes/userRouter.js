@@ -7,6 +7,7 @@ const cartController = require('../controllers/user/cartController');
 const checkoutController = require('../controllers/user/checkoutController')
 const addressController = require('../controllers/user/addressController')
 const  orderController = require('../controllers/user/orderController')
+const wishlistController = require('../controllers/user/wishlistController')
 const passport = require('passport')
 const auth = require('../middlewares/auth')
 
@@ -72,6 +73,8 @@ router.delete('/remove/:itemId', cartController.removeFromCart);
 
 router.get('/profile',userController.loadProfile)
 
+//success page 
+router.get("/success",userController.success)
 
 // router.get("/checkout",orderController.checkoutPage)
 // router.post('/checkout',orderController.placeOrder)
@@ -106,7 +109,12 @@ router.post('/update-profile',auth.AdressMiddleware,userController.updateProfile
 //checkout page 
 
 router.get('/checkout',checkoutController.getCheckoutPage)
-
+//place order
 router.post('/place-order', orderController.placeOrder);
+router.post('/orders/:orderId/cancel', orderController.cancelOrder);
+// wishlist 
+router.post('/wishlist/add', wishlistController.addToWishlist);
+router.delete('/wishlist/remove/:productId', wishlistController.removeFromWishlist);
+router.get('/wishlist', wishlistController.getWishlist);
 
 module.exports = router

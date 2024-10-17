@@ -275,7 +275,7 @@ const deleteSingleImage = async (req,res)=>{
     try {
         const { imageNameToServer,productIdToServer} = req.body;
         const product = await Product.findByIdAndUpdate(productIdToServer,{$pull:{productImage:imageNameToServer}})
-        const imagePath = path.join(__dirname,"../../public/uploads/product-images",imageNameToServer)
+        const imagePath = path.join(__dirname,"../../public/uploads/re-image",imageNameToServer)
         if(fs.existsSync(imagePath)){
             await fs.unlinkSync(imagePath);
             console.log(`Image ${imageNameToServer} delete successfully`);

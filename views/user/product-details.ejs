@@ -92,11 +92,15 @@
                         <% } %>
                     </div>
 
-                    <!-- Rating -->
-                    <div class="flex items-center mb-6">
-                        <% for (let i = 1; i <= 5; i++) { %>
-                            <i class="<%= i <= product.rating ? 'fas' : 'far' %> fa-star text-yellow-400"></i>
-                        <% } %>
+                    <!-- Rating Stars -->
+                    <div class="flex items-center mb-4">
+                        <div class="flex">
+                            <% for (let i = 1; i <= 5; i++) { %>
+                                <svg class="w-5 h-5 <%= i <= product.rating ? 'text-yellow-400' : 'text-gray-300' %>" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                </svg>
+                            <% } %>
+                        </div>
                         <span class="ml-2 text-gray-600">(<%= product.rating %> out of 5)</span>
                     </div>
 
@@ -125,28 +129,37 @@
                     </div>
 
                     <!-- Quantity Selection -->
+                     
                     <div class="mb-6">
                         <label for="quantity-input" class="block text-gray-700 font-semibold mb-2">Quantity:</label>
                         <div class="flex items-center">
+                            <!-- Decrease Button -->
                             <button onclick="updateQuantity(-1)" class="bg-gray-200 text-gray-700 px-3 py-2 rounded-l-md hover:bg-gray-300 transition-colors duration-200">-</button>
-                            <input type="number" id="quantity-input" class="border-t border-b border-gray-300 text-center w-16 py-2" value="1" min="1" max="<%= product.quantity %>">
+                    
+                            <!-- Quantity Input with max set to 10 -->
+                            <input type="number" id="quantity-input" class="border-t border-b border-gray-300 text-center w-16 py-2" value="1" min="1" max="10">
+                    
+                            <!-- Increase Button -->
                             <button onclick="updateQuantity(1)" class="bg-gray-200 text-gray-700 px-3 py-2 rounded-r-md hover:bg-gray-300 transition-colors duration-200">+</button>
                         </div>
                     </div>
+                    
+                    
 
                     <!-- Add to Cart & Wishlist -->
                     <div class="flex space-x-4">
                         <button data-product-id="<%= product._id %>" 
-                                onclick="addToCart('<%= product._id %>')" 
-                                class="flex-grow bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2">
-                            <i class="fas fa-shopping-cart"></i>
-                            <span>Add to Cart</span>
-                        </button>
-                        <a href="/addToWishlist?id=<%= product._id %>" 
-                           class="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors duration-200 flex items-center justify-center space-x-2">
-                            <i class="fas fa-heart"></i>
-                            <span>Wishlist</span>
-                        </a>
+                            onclick="addToCart('<%= product._id %>')" 
+                            class="flex-grow bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Add to Cart</span>
+                    </button>
+                
+                    <a href="/addToWishlist?id=<%= product._id %>" 
+                        class="wishlist-button bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors duration-200 flex items-center justify-center space-x-2">
+                         <i class="fas fa-heart"></i>
+                         <span>Wishlist</span>
+                     </a>
                     </div>
                 </div>
             </div>
@@ -174,6 +187,16 @@
                             <div class="text-lg">
                                 <span class="text-gray-500 line-through">₹<%= product.regularPrice %></span>
                                 <span class="text-red-500 font-bold">₹<%= product.salePrice %></span>
+                            </div>
+                            <div class="flex items-center mb-4">
+                                <div class="flex">
+                                    <% for (let i = 1; i <= 5; i++) { %>
+                                        <svg class="w-5 h-5 <%= i <= product.rating ? 'text-yellow-400' : 'text-gray-300' %>" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                        </svg>
+                                    <% } %>
+                                </div>
+                                <span class="ml-2 text-gray-600">(<%= product.rating %> out of 5)</span>
                             </div>
                         </a>
                     </div>
@@ -247,23 +270,96 @@
             }
         });
 
-
-    async function addToCart(productId) {
-        try {
-            const response = await fetch('/addToCart', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId })
-            });
-            if (response.ok) {
-                alert('Product added to cart!');
-                window.location.reload();
-            } else {
-                alert('Failed to add to cart. Try again.');
-            }
-        } catch (error) {
-            alert('Error occurred. Try again.');
+        function updateQuantity(change) {
+        const quantityInput = document.getElementById('quantity-input');
+        let currentQuantity = parseInt(quantityInput.value);
+        let newQuantity = currentQuantity + change;
+        if (newQuantity >= 1 && newQuantity <= 10) {  // Limit between 1 and 10
+            quantityInput.value = newQuantity;
         }
     }
+
+    function addToCart(productId) {
+        const quantity = document.getElementById('quantity-input').value;
+
+        $.ajax({
+            url: '/addToCart',  // Replace with your actual add-to-cart route
+            method: 'POST',
+            data: {
+                productId: productId,
+                quantity: quantity
+            },
+            success: function(response) {
+                // Handle success, e.g., update the cart counter or show a success message
+                alert('Product added to cart successfully!');
+                location.reload();
+            },
+            error: function(err) {
+                // Handle error, e.g., show an error message
+                alert('Failed to add product to cart.');
+            }
+        });
+    }
+
+
+
+    // Add this script to your main JavaScript file or include it in your HTML
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Select all wishlist buttons
+    const wishlistButtons = document.querySelectorAll('a[href^="/addToWishlist"]');
+
+    wishlistButtons.forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent the default link behavior
+
+            const productId = new URLSearchParams(this.href.split('?')[1]).get('id');
+
+            addToWishlist(productId, this);
+        });
+    });
+
+    function addToWishlist(productId, button) {
+        // Show loading state
+        button.classList.add('opacity-50', 'cursor-not-allowed');
+        button.querySelector('span').textContent = 'Adding...';
+
+        fetch('/wishlist/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // Include CSRF token if your app uses it
+                // 'X-CSRF-Token': getCsrfToken()
+            },
+            body: JSON.stringify({ productId: productId }),
+            credentials: 'same-origin' // This is important for including cookies
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Reset button state
+            button.classList.remove('opacity-50', 'cursor-not-allowed');
+            
+            if (data.message === "Product added to wishlist successfully") {
+                // Update button to show it's in the wishlist
+                button.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                button.classList.add('bg-red-500', 'text-white', 'hover:bg-red-600');
+                button.querySelector('span').textContent = 'In Wishlist';
+                button.querySelector('i').classList.add('text-white');
+            } else if (data.message === "Product is already in the wishlist") {
+                button.querySelector('span').textContent = 'In Wishlist';
+            } else {
+                throw new Error(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Reset button state
+            button.classList.remove('opacity-50', 'cursor-not-allowed');
+            button.querySelector('span').textContent = 'Wishlist';
+            // Show error to user (you can replace this with a more user-friendly notification)
+            alert('Failed to add to wishlist. Please try again.');
+        });
+    }
+});
 </script>
 <%- include("../partials/user/footer") %>

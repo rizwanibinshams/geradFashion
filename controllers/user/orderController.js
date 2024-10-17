@@ -18,16 +18,12 @@ const placeOrder = async (req, res) => {
             'address._id': addressId 
         });
 
-        console.log('User Address:', userAddress);
-
         if (!userAddress || userAddress.address.length === 0) {
             return res.status(404).json({ success: false, message: 'Address not found.' });
         }
 
         // Find the specific address from the array
         const addressDetails = userAddress.address.find(addr => addr._id.toString() === addressId);
-
-        console.log('Address Details:', addressDetails);
 
         if (!addressDetails) {
             return res.status(404).json({ success: false, message: 'Address not found.' });
@@ -38,6 +34,19 @@ const placeOrder = async (req, res) => {
 
         if (!cart || cart.items.length === 0) {
             return res.status(400).json({ success: false, message: 'Cart is empty.' });
+        }
+
+        // Check if all items have sufficient stock
+        for (const item of cart.items) {
+            const product = item.productId;
+
+            // If product is out of stock or doesn't have enough quantity
+            if (product.quantity < item.quantity) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Product "${product.productName}" is out of stock or insufficient quantity. Available stock: ${product.quantity}.`
+                });
+            }
         }
 
         // Calculate total price from cart items
@@ -63,6 +72,13 @@ const placeOrder = async (req, res) => {
         const order = new Order(orderData);
         await order.save();
 
+        // Reduce the product stock for each item after successful order placement
+        for (const item of cart.items) {
+            await Product.findByIdAndUpdate(item.productId, {
+                $inc: { quantity: -item.quantity }
+            });
+        }
+
         // Clear the cart after successful order placement
         await Cart.deleteOne({ userId });
 
@@ -75,6 +91,35 @@ const placeOrder = async (req, res) => {
 };
 
 
+const cancelOrder = async (req, res) => {
+    try {
+        const orderId = req.params.orderId;
+        const order = await Order.findById(orderId);
+
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        if (order.status !== 'Pending') {
+            return res.status(400).json({ message: 'Only pending orders can be cancelled' });
+        }
+
+        order.status = 'Cancelled';
+        await order.save();
+
+        // Here you might want to add logic to refund the payment, 
+        // update inventory, etc.
+
+        res.status(200).json({ message: 'Order cancelled successfully', order });
+    } catch (error) {
+        console.error('Error cancelling order:', error);
+        res.status(500).json({ message: 'An error occurred while cancelling the order' });
+    }
+};
+
+
+
 module.exports = {
-    placeOrder
+    placeOrder,
+    cancelOrder
 }

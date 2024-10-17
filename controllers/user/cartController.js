@@ -4,64 +4,135 @@ const User = require('../../models/userSchema'); // Import the User model
 
 
 
+// const addToCart = async (req, res) => {
+//     try {
+//       const { productId, size } = req.body;
+//       const userId = req.session.user.id;
+  
+//       if (!userId) {
+//         return res.status(401).json({ message: "User not authenticated" });
+//       }
+  
+//       if (!productId) {
+//         return res.status(400).json({ message: "Product ID is required" });
+//       }
+  
+//       let cart = await Cart.findOne({ userId });
+  
+//       if (!cart) {
+//         cart = new Cart({ userId, items: [] });
+//       }
+  
+//       const product = await Product.findById(productId);
+//       if (!product) {
+//         return res.status(404).json({ message: "Product not found" });
+//       }
+  
+//       let cartItem;
+//       if (size) {
+//         cartItem = cart.items.find(item => 
+//           item.productId.toString() === productId && item.size === size
+//         );
+//       } else {
+//         cartItem = cart.items.find(item => 
+//           item.productId.toString() === productId
+//         );
+//       }
+  
+//       if (cartItem) {
+//         cartItem.quantity += 1;
+//         cartItem.totalPrice = cartItem.quantity * product.salePrice;
+//       } else {
+//         const newItem = {
+//           productId,
+//           quantity: 1,
+//           price: product.salePrice,
+//           totalPrice: product.salePrice
+//         };
+//         if (size) {
+//           newItem.size = size;
+//         }
+//         cart.items.push(newItem);
+//       }
+  
+//       await cart.save();
+//       res.status(200).json({ message: "Product added to cart successfully" });
+//     } catch (error) {
+//       console.error("Error adding to cart:", error);
+//       res.status(500).json({ message: "Error adding to cart", error: error.message });
+//     }
+//   };
+
+
 const addToCart = async (req, res) => {
-    try {
-      const { productId, size } = req.body;
-      const userId = req.session.user.id;
-  
-      if (!userId) {
-        return res.status(401).json({ message: "User not authenticated" });
-      }
-  
-      if (!productId) {
-        return res.status(400).json({ message: "Product ID is required" });
-      }
-  
-      let cart = await Cart.findOne({ userId });
-  
-      if (!cart) {
-        cart = new Cart({ userId, items: [] });
-      }
-  
-      const product = await Product.findById(productId);
-      if (!product) {
-        return res.status(404).json({ message: "Product not found" });
-      }
-  
-      let cartItem;
-      if (size) {
-        cartItem = cart.items.find(item => 
-          item.productId.toString() === productId && item.size === size
-        );
-      } else {
-        cartItem = cart.items.find(item => 
-          item.productId.toString() === productId
-        );
-      }
-  
-      if (cartItem) {
-        cartItem.quantity += 1;
-        cartItem.totalPrice = cartItem.quantity * product.salePrice;
-      } else {
-        const newItem = {
-          productId,
-          quantity: 1,
-          price: product.salePrice,
-          totalPrice: product.salePrice
-        };
-        if (size) {
-          newItem.size = size;
-        }
-        cart.items.push(newItem);
-      }
-  
-      await cart.save();
-      res.status(200).json({ message: "Product added to cart successfully" });
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-      res.status(500).json({ message: "Error adding to cart", error: error.message });
+  try {
+    const { productId, size, quantity } = req.body;
+    const userId = req.session.user?.id;
+
+    // Check if the user is authenticated
+    if (!userId) {
+      return res.status(401).json({ message: "User not authenticated" });
     }
-  };
+
+    // Validate productId
+    if (!productId) {
+      return res.status(400).json({ message: "Product ID is required" });
+    }
+
+    // Validate quantity (ensure it's a positive integer)
+    const validQuantity = parseInt(quantity, 10);
+    if (isNaN(validQuantity) || validQuantity <= 0) {
+      return res.status(400).json({ message: "Invalid quantity" });
+    }
+
+    // Find or create a cart for the user
+    let cart = await Cart.findOne({ userId });
+    if (!cart) {
+      cart = new Cart({ userId, items: [] });
+    }
+
+    // Find the product
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Helper function to find an existing cart item
+    const findCartItem = () => {
+      return size 
+        ? cart.items.find(item => item.productId.toString() === productId && item.size === size)
+        : cart.items.find(item => item.productId.toString() === productId);
+    };
+
+    // Check if the product is already in the cart
+    let cartItem = findCartItem();
+
+    if (cartItem) {
+      // Update the quantity and total price if the product is already in the cart
+      cartItem.quantity += validQuantity;
+      cartItem.totalPrice = cartItem.quantity * product.salePrice;
+    } else {
+      // Add a new product to the cart
+      const newItem = {
+        productId,
+        quantity: validQuantity,
+        price: product.salePrice,
+        totalPrice: validQuantity * product.salePrice,
+        ...(size && { size })
+      };
+      cart.items.push(newItem);
+    }
+
+    // Save the cart
+    await cart.save();
+
+    // Return success response
+    res.status(200).json({ message: "Product added to cart successfully" });
+  } catch (error) {
+    console.error("Error adding to cart:", error);
+    res.status(500).json({ message: "Error adding to cart", error: error.message });
+  }
+};
 
 
 

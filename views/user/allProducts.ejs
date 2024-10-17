@@ -41,22 +41,32 @@
             <aside class="w-1/5 p-4 bg-white rounded-lg shadow-md">
                 <h5 class="text-lg font-semibold mb-4">Filter by Category</h5>
                 <ul>
-                    <li><a href="?category=pant" class="block text-gray-700 hover:text-blue-500 mb-2">Pant</a></li>
-                    <li><a href="?category=shirt" class="block text-gray-700 hover:text-blue-500 mb-2">Shirt</a></li>
-                    <li><a href="?category=hoodie" class="block text-gray-700 hover:text-blue-500 mb-2">Hoodie</a></li>
-                    <li><a href="?category=tshirt" class="block text-gray-700 hover:text-blue-500 mb-2">T-shirt</a></li>
+                    <li><a href="/products" class="<%= currentCategory === 'All' ? 'font-bold' : '' %>">All</a></li>
+                    <% categories.forEach(category => { %>
+                        <li>
+                            <a href="/products?category=<%= category.name %>" 
+                               class="<%= currentCategory === category.name ? 'font-bold' : '' %>">
+                                <%= category.name %>
+                            </a>
+                        </li>
+                    <% }) %>
                 </ul>
+                
             </aside>
 
             <!-- Product List -->
             <div class="flex-1 ml-8">
                 <!-- Sorting Dropdown -->
                 <div class="mb-4 flex justify-end">
-                    <select id="priceFilter" class="border border-gray-300 rounded p-2">
-                        <option value="low-high">Price: Low to High</option>
-                        <option value="high-low">Price: High to Low</option>
+                    <select id="priceFilter" name="sort">
+                        <option value="default" <%= currentSort === 'default' ? 'selected' : '' %>>Default Sorting</option>
+                        <option value="low-high" <%= currentSort === 'low-high' ? 'selected' : '' %>>Price: Low to High</option>
+                        <option value="high-low" <%= currentSort === 'high-low' ? 'selected' : '' %>>Price: High to Low</option>
+                        <option value="az" <%= currentSort === 'az' ? 'selected' : '' %>>Name: A to Z</option>
+                        <option value="za" <%= currentSort === 'za' ? 'selected' : '' %>>Name: Z to A</option>
                     </select>
                 </div>
+                
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
                     <% if (products.length > 0) { %>
@@ -66,7 +76,7 @@
                                 <% const discount = Math.abs(((product.regularPrice - product.salePrice) / product.regularPrice) * 100); %>
                                 <% if (discount > 0) { %>
                                     <div class="absolute top-2 left-2 bg-red-500 text-white rounded-full px-3 py-1 text-xs font-bold">
-                                        <%= discount.toFixed(0) %>% OFF
+                                        <%= discount.toFixed(0) %>% 
                                     </div>
                                 <% } %>
                 
@@ -132,13 +142,35 @@
             window.location.href = `/products?sort=${value}`;
         });
 
-        function addToCart(productId) {
-            console.log(`Product ${productId} added to cart`);
-        }
 
         function addToWishlist(productId) {
             console.log(`Product ${productId} added to wishlist`);
         }
+
+        document.getElementById('priceFilter').addEventListener('change', function() {
+        const value = this.value;
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('sort', value);
+        window.location.href = currentUrl.toString();
+        });
+
+        async function addToCart(productId) {
+        try {
+            const response = await fetch('/addToCart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId })
+            });
+            if (response.ok) {
+                alert('Product added to cart!');
+                window.location.reload();
+            } else {
+                alert('Failed to add to cart. Try again.');
+            }
+        } catch (error) {
+            alert('Error occurred. Try again.');
+        }
+    }
     </script>
 </body>
 </html>

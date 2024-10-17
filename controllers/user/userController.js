@@ -304,18 +304,33 @@ const loadProfile = async (req, res) => {
             return res.status(404).render('page-404', { message: 'User not found' });
         }
 
-        const addresses = await Address.find({ userId: userData._id });
+        const addresses = await Address.find({ userId: userData.id });
         console.log("Addresses:", addresses);
 
-        const orders = await Order.find({ userId: userData._id }); // Ensure Order is a valid Mongoose model
-        console.log("Orders:", orders); // Check what orders are fetched
+        const orders = await Order.find({ user: userData._id })
+            .populate('orderedItems.product')  // Populate product details
+            .sort({ createdOn: -1 });  // Sort by creation date, most recent first
 
-        // Check if orders exist
+        console.log("Orders:", orders);
+
         if (orders.length === 0) {
             console.log("No orders found for this user");
         }
 
-        res.render('profile', { user: userData, addresses, orders });
+        res.render('profile', { 
+            user: userData, 
+            addresses: addresses, 
+            orders: orders,
+            helpers: {
+                formatDate: function(date) {
+                    return new Date(date).toLocaleDateString('en-US', {
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric'
+                    });
+                }
+            }
+        });
     } catch (error) {
         console.error('Error loading profile:', error);
         res.status(500).render('page-404', { message: 'Server error occurred' });
@@ -354,6 +369,15 @@ const updateProfile = async (req, res) => {
     }
 };
 
+const success = async (req,res)=>{
+    try {
+        res.render("success")
+    } catch (error) {
+        console.error(error)
+    }
+}
+
+
 
 
 module.exports={
@@ -367,7 +391,9 @@ module.exports={
     login,
     logout,
     loadProfile,
-    updateProfile
+    updateProfile,
+    success,
+    
     
     
 }

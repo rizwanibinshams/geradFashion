@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Successful</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes checkmark {
+            0% {
+                stroke-dashoffset: 50;
+                opacity: 0;
+            }
+            100% {
+                stroke-dashoffset: 0;
+                opacity: 1;
+            }
+        }
+
+        @keyframes scaleIn {
+            0% {
+                transform: scale(0);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .checkmark {
+            animation: scaleIn 0.5s ease-in-out forwards;
+        }
+
+        .checkmark-circle {
+            stroke-dasharray: 50;
+            stroke-dashoffset: 50;
+            animation: checkmark 0.8s ease-in-out forwards;
+        }
+
+        .checkmark-check {
+            stroke-dasharray: 30;
+            stroke-dashoffset: 30;
+            animation: checkmark 0.8s ease-in-out 0.2s forwards;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 h-screen flex items-center justify-center">
+    <div class="bg-white shadow-lg rounded-lg p-8 max-w-md w-full text-center">
+        <!-- Success Icon with Animation -->
+        <div class="flex justify-center items-center mb-6">
+            <svg class="checkmark w-16 h-16 text-green-500" viewBox="0 0 52 52">
+                <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none" stroke="currentColor" stroke-width="4"></circle>
+                <path class="checkmark-check" fill="none" stroke="currentColor" stroke-width="4" d="M14 27l8 8 16-16"></path>
+            </svg>
+        </div>
+        <!-- Success Message -->
+        <h1 class="text-2xl font-semibold text-gray-800 mb-2">Order Successful!</h1>
+        <p class="text-gray-600 mb-6">Thank you for your purchase. Your order has been placed successfully.</p>
+
+        <!-- Continue Shopping Button -->
+        <a href="/" class="inline-block bg-green-500 text-white font-medium py-2 px-6 rounded-md shadow hover:bg-green-600 transition-transform transform hover:scale-105">
+            Continue Shopping
+        </a>
+    </div>
+
+    <!-- JavaScript Animation -->
+    <script>
+        // This script is just to trigger the animations when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkmark = document.querySelector('.checkmark');
+            checkmark.style.animation = 'scaleIn 0.5s ease-in-out forwards';
+        });
+    </script>
+</body>
+</html>

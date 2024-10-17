@@ -53,37 +53,63 @@ const getProductDetailsPage = async (req, res) => {
 
 const getAllProducts = async (req, res) => {
     try {
+        const { category, sort } = req.query;
+
         // Fetch categories
         const categories = await Category.find({ isListed: true });
 
-        // Determine session user email; ensure to access email correctly
+        // Determine session user email
         const sessionUser = req.user ? req.user.email : req.session.user?.email;
 
-        // Fetch products based on categories and conditions
-        let products = await Product.find({
+        // Build query
+        let query = {
             isBlocked: false,
             category: { $in: categories.map(category => category._id) },
             quantity: { $gt: 0 }
-        })
-        .sort({ createdAt: -1 }); // Sort products by creation date (most recent first)
+        };
 
-        let userData = null;
-        // Fetch user data if sessionUser exists
-        if (sessionUser) {
-            userData = await user.findOne({ email: sessionUser }); // Ensure User is the correct model
+        // Apply category filter if provided
+        if (category) {
+            const selectedCategory = await Category.findOne({ name: category, isListed: true });
+            if (selectedCategory) {
+                query.category = selectedCategory._id;
+            }
         }
 
-        // Render the products and user data
+        // Determine sort option
+        let sortOption = { createdAt: -1 }; // Default sort (most recent)
+        if (sort === 'low-high') {
+            sortOption = { salePrice: 1 }; // Sort by price low to high
+        } else if (sort === 'high-low') {
+            sortOption = { salePrice: -1 }; // Sort by price high to low
+        } else if (sort === 'az') {
+            sortOption = { productName: 1 }; // Sort by name A to Z
+        } else if (sort === 'za') {
+            sortOption = { productName: -1 }; // Sort by name Z to A
+        }
+
+        // Fetch products
+        const products = await Product.find(query).sort(sortOption);
+
+        // Fetch user data if sessionUser exists
+        let userData = null;
+        if (sessionUser) {
+            userData = await user.findOne({ email: sessionUser });
+        }
+
+        // Render the products page
         res.render("allProducts", {
             products: products,
-            user: userData || null // Pass user data to the view
+            user: userData,
+            categories: categories,
+            currentCategory: category || 'All',
+            currentSort: sort || 'default'
         });
     } catch (error) {
         console.error('Error fetching all products:', error);
-        res.redirect("/pageNotFound"); // Redirect to an error page on failure
+        res.redirect("/pageNotFound");
     }
 };
-
 
 
 module.exports ={
