@@ -9,50 +9,91 @@
                 <div class="mb-4 mt-30">
                     <label for="categoryName" class="form-label">Name</label>
                     <input type="text" id="categoryName" name="categoryName" value="<%= category.name %>" class="form-control border" />
-                    <div id="name-error" class="text-danger"></div> 
                 </div>
                 
                 <div class="mb-4">
                     <label class="form-label">Description</label>
                     <textarea id="description" name="description" class="form-control border"><%= category.description %></textarea>
-                    <div id="description-error" class="text-danger"></div> 
                 </div>
             </form>
         </div>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.getElementById('categoryForm').addEventListener('submit', function(event) {
-       
-        document.getElementById('name-error').textContent = '';
-        document.getElementById('description-error').textContent = '';
-
+        event.preventDefault();
         
         const categoryName = document.getElementById('categoryName').value.trim();
         const description = document.getElementById('description').value.trim();
-
         
         const namePattern = /^[A-Za-z\s]+$/; 
         let valid = true;
+        let errorMessage = "";
 
-       
         if (!namePattern.test(categoryName)) {
-            document.getElementById('name-error').textContent = "Category name should contain only alphabets and spaces.";
+            errorMessage += "Category name should contain only alphabets and spaces.\n";
             valid = false;
         }
 
-      
         if (description === "") {
-            document.getElementById('description-error').textContent = "Description cannot be empty.";
+            errorMessage += "Description cannot be empty.";
             valid = false;
         }
 
-        
         if (!valid) {
-            event.preventDefault();
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: errorMessage,
+                confirmButtonText: 'OK'
+            });
+        } else {
+            // If valid, submit the form
+            submitForm();
         }
     });
+
+    function submitForm() {
+        const form = document.getElementById('categoryForm');
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.error,
+                    confirmButtonText: 'OK'
+                });
+            } else {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Category updated successfully',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = "/admin/category";
+                    }
+                });
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An unexpected error occurred. Please try again.',
+                confirmButtonText: 'OK'
+            });
+        });
+    }
 </script>
 
 <%- include("../partials/admin/footer") %>

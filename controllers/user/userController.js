@@ -12,45 +12,144 @@ const bcrypt = require('bcrypt')
 
 
 
+// const loadHomepage = async (req, res) => {
+//     try {
+//         // Correctly retrieve the session user email
+//         const sessionUser = req.user ? req.user.email : req.session.user?.email;
+
+//         // Log the session user for debugging
+//         console.log("Session User Email:", sessionUser);
+
+//         const categories = await Category.find({ isListed: true });
+
+//         // Fetch product data based on the categories
+//         let productData = await Product.find({
+//             isBlocked: false,
+//             category: { $in: categories.map(category => category._id) },
+//             quantity: { $gt: 0 }
+//         })
+//         .sort({ createdAt: -1 }) 
+//         .limit(4);
+
+//         let userData = null;
+
+//         // Only query for user data if sessionUser is a valid email string
+//         if (sessionUser) {
+//             userData = await user.findOne({ email: sessionUser }); // Ensure User is the correct model name
+//         }
+
+//         // Render the homepage with user data and product data
+//         return res.render('home', { 
+//             user: userData || null, 
+//             products: productData 
+//         });
+//     } catch (error) {
+//         console.error('Home page loading error:', error);
+//         res.status(500).send('Server error');
+//     }
+// };
+
 const loadHomepage = async (req, res) => {
     try {
-        // Correctly retrieve the session user email
+        const { search } = req.query;
         const sessionUser = req.user ? req.user.email : req.session.user?.email;
 
-        // Log the session user for debugging
         console.log("Session User Email:", sessionUser);
 
+        // Fetch categories
         const categories = await Category.find({ isListed: true });
 
-        // Fetch product data based on the categories
-        let productData = await Product.find({
+        // Build the base query
+        let baseQuery = {
             isBlocked: false,
             category: { $in: categories.map(category => category._id) },
             quantity: { $gt: 0 }
-        })
-        .sort({ createdAt: -1 }) 
+        };
+
+        // Add search condition if search query is provided
+        if (search) {
+            baseQuery.productName = { $regex: new RegExp(search, 'i') };
+        }
+
+        // Fetch the latest products (limit 4)
+        let productData = await Product.find(baseQuery)
+        .sort({ createdAt: -1 })
         .limit(4);
 
         let userData = null;
 
-        // Only query for user data if sessionUser is a valid email string
         if (sessionUser) {
-            userData = await user.findOne({ email: sessionUser }); // Ensure User is the correct model name
+            userData = await user.findOne({ email: sessionUser });
         }
 
-        // Render the homepage with user data and product data
-        return res.render('home', { 
-            user: userData || null, 
-            products: productData 
+        // Fetch Best Seller Products
+        const bestSellerPipeline = [
+            {
+                $match: baseQuery
+            },
+            {
+                $lookup: {
+                    from: 'orders',
+                    localField: '_id',
+                    foreignField: 'orderedItems.product',
+                    as: 'orderInfo'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$orderInfo',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $unwind: {
+                    path: '$orderInfo.orderedItems',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $match: {
+                    'orderInfo.orderedItems.product': { $exists: true }
+                }
+            },
+            {
+                $group: {
+                    _id: '$_id',
+                    productName: { $first: '$productName' },
+                    productImage: { $first: '$productImage' },
+                    regularPrice: { $first: '$regularPrice' },
+                    salePrice: { $first: '$salePrice' },
+                    rating: { $first: '$rating' },
+                    totalSold: { $sum: '$orderInfo.orderedItems.quantity' }
+                }
+            },
+            {
+                $match: {
+                    totalSold: { $gt: 0 }
+                }
+            },
+            {
+                $sort: { totalSold: -1 }
+            },
+            {
+                $limit: 4
+            }
+        ];
+
+        const bestSellerData = await Product.aggregate(bestSellerPipeline);
+
+        // Render home page with user data, latest products, and best sellers
+        return res.render('home', {
+            user: userData || null,
+            products: productData,
+            bestSellers: bestSellerData,
+            currentSearch: search || ''
         });
     } catch (error) {
         console.error('Home page loading error:', error);
         res.status(500).send('Server error');
     }
 };
-
-
-
 
 
 const pageNotFound = async (req,res)=>{

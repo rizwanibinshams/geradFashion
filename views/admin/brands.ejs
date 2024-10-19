@@ -161,7 +161,8 @@
     document.getElementById('addBrandForm').addEventListener('submit', function(event) {
     const brandName = document.getElementById('brandName').value;
     const brandImage = document.getElementById('brandImage').files[0];
-    const namePattern = /^[A-Za-z\s]+$/; 
+    const namePattern = /^[A-Za-z\s.,'&@-]+$/;
+
 
     
     document.getElementById('nameError').style.display = 'none';
@@ -171,7 +172,7 @@
 
    
     if (!namePattern.test(brandName)) {
-        document.getElementById('nameError').textContent = 'Brand name should only contain characters and spaces.';
+        document.getElementById('nameError').textContent = 'Brand name should only contain characters and Special characters.';
         document.getElementById('nameError').style.display = 'block';
         valid = false; 
     }

@@ -63,8 +63,8 @@ const placeOrder = async (req, res) => {
             })),
             totalPrice,
             finalAmount: totalPrice, // Adjust based on discounts if applicable
-            address: addressDetails, // Use the specific address details
-            status: 'Pending', // Initial order status
+            address: addressDetails, 
+            status: 'Pending', 
             createdOn: new Date()
         };
 
@@ -103,6 +103,16 @@ const cancelOrder = async (req, res) => {
         if (order.status !== 'Pending') {
             return res.status(400).json({ message: 'Only pending orders can be cancelled' });
         }
+
+        for (const item of order.orderedItems) {
+            const product = item.product;
+
+            // Update the product stock
+            await Product.findByIdAndUpdate(product._id, {
+                $inc: { quantity: item.quantity } // Add back the quantity to the product stock
+            });
+        }
+
 
         order.status = 'Cancelled';
         await order.save();

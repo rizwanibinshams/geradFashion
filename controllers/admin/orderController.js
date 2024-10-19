@@ -1,5 +1,5 @@
 const { Order } = require('../../models/orderSchema');
-
+const Product = require('../../models/productSchema'); 
 // Get all orders for the admin panel and render an EJS page
 const getAllOrders = async (req, res) => {
     const page = parseInt(req.query.page) || 1; // Get the page from query parameters
@@ -42,19 +42,43 @@ const updateOrderStatus = async (req, res) => {
     }
 
     try {
+        // First, fetch the current order
+        const currentOrder = await Order.findById(orderId).populate('orderedItems.product');
+
+        if (!currentOrder) {
+            return res.status(404).json({ message: 'Order not found.' });
+        }
+
+        // Check if the current status is already 'cancelled'
+        if (currentOrder.status.toLowerCase() === 'cancelled') {
+            return res.status(400).json({ message: 'Order is already cancelled.' });
+        }
+
+        // If the new status is 'cancelled', we need to return the products to inventory
+        if (status.toLowerCase() === 'cancelled') {
+            for (const item of currentOrder.orderedItems) {
+                if (item.product) {
+                    await Product.findByIdAndUpdate(
+                        item.product._id,
+                        { $inc: { quantity: item.quantity } }
+                    );
+                }
+            }
+        }
+
+        // Update the order status
         const updatedOrder = await Order.findByIdAndUpdate(
             orderId,
             { status },
             { new: true, runValidators: true }
         );
         
-         return res.status(200).json({ message: 'Order status updated successfully.', order: updatedOrder });
+        return res.status(200).json({ message: 'Order status updated successfully.', order: updatedOrder });
     } catch (error) {
         console.error('Error updating order status:', error);
         return res.status(500).json({ message: 'Error updating order status. Please try again.' });
     }
 };
-
 
 function getStatusColor(status) {
     switch(status.toLowerCase()) {

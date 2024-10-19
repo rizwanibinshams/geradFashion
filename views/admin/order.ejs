@@ -87,7 +87,6 @@
                                         <%= order.status %>
                                     </span>
                                 </td>
-                                <td class="py-3 px-4"><%= new Date(order.createdOn).toLocaleDateString('en-GB') %></td>
                                 <td class="py-3 px-4">
                                     <button class="bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-700 transition duration-300" onclick="openModal('<%= JSON.stringify(order) %>')">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
@@ -127,7 +126,7 @@
     </div>
 
     <script>
-        function openModal(orderJSON) {
+            function openModal(orderJSON) {
             const order = JSON.parse(orderJSON);
             const modal = document.getElementById('orderModal');
             const orderDetails = document.getElementById('orderDetails');
@@ -140,16 +139,17 @@
                 </div>
             `).join('');
 
+            const isOrderCancelled = order.status.toLowerCase() === 'cancelled';
             const statusOptions = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
                 .map(status => `<option value="${status}" ${order.status === status ? 'selected' : ''}>${status}</option>`)
                 .join('');
 
             orderDetails.innerHTML = `
                 <p><strong>Order ID:</strong> ${order._id}</p>
-                <p><strong>Customer Name:</strong> ${ order.address.name }</p>
+                <p><strong>Customer Name:</strong> ${order.address.name}</p>
                 <p><strong>Address:</strong> ${order.address ? `${order.address.street}, ${order.address.city}, ${order.address.state} ${order.address.zipCode}` : 'N/A'}</p>
                 <p><strong>Phone:</strong> ${order.address ? order.address.phone : 'N/A'}</p>
-               <p><strong>Payment Method:</strong> ${order.paymentMethod ? order.paymentMethod : 'N/A'}</p> 
+                <p><strong>Payment Method:</strong> ${order.paymentMethod ? order.paymentMethod : 'N/A'}</p> 
                 
                 <h3 class="text-xl font-semibold mt-4 mb-2">Ordered Items:</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -158,14 +158,16 @@
                 <p class="mt-4"><strong>Total Price:</strong> ₹${order.totalPrice}</p>
                 <div class="mt-4">
                     <label for="orderStatus" class="block text-sm font-medium text-gray-700">Order Status:</label>
-                    <select id="orderStatus" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" onchange="updateOrderStatus('${order._id}', this.value)">
+                    <select id="orderStatus" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" onchange="updateOrderStatus('${order._id}', this.value)" ${isOrderCancelled ? 'disabled' : ''}>
                         ${statusOptions}
                     </select>
+                    ${isOrderCancelled ? '<p class="text-red-500 mt-2">This order is cancelled and cannot be updated.</p>' : ''}
                 </div>
             `;
 
             gsap.to(modal, {duration: 0.3, opacity: 1, display: 'block', ease: 'power2.out'});
         }
+
 
         function closeModal() {
             const modal = document.getElementById('orderModal');

@@ -1,31 +1,18 @@
 <%- include("../partials/user/header") %>
 
 <body class="bg-gray-100">
-    <!-- Breadcrumb Section -->
-   
-
-    <!-- Cart Page -->
     <section class="cart-page spad py-8">
-       
         <div class="container mx-auto px-4">
-
             <nav aria-label="breadcrumb" class="mb-8">
                 <ol class="flex items-center space-x-2 text-gray-600">
                     <li><a href="/" class="hover:text-blue-600">Home</a></li>
                     <li><span class="mx-2">/</span></li>
                     <li><a href="/cart" class="hover:text-blue-600">Cart</a></li>
-                    
                 </ol>
             </nav>
 
             <h2 class="text-3xl font-bold mb-6">Your Cart</h2>
 
-            <!-- Error Message -->
-            <% if (typeof error !== 'undefined' && error) { %>
-                <div class="alert alert-danger bg-red-100 text-red-700 p-4 rounded-md"><%= error %></div>
-            <% } %>
-
-            <!-- Cart Items Table -->
             <% if (cart.length > 0) { %>
                 <div class="overflow-x-auto">
                     <table class="min-w-full bg-white border-collapse">
@@ -45,12 +32,9 @@
                                     <td class="px-4 py-2 border"><%= item.productId.productName %></td>
                                     <td class="px-4 py-2 border"><%= item.size ? item.size : 'N/A' %></td>
                                     <td class="px-4 py-2 border">
-                                        <form action="/update" method="POST" class="inline-block">
-                                            <input type="hidden" name="productId" value="<%= item.productId._id %>">
-                                            <input type="number" name="quantity" value="<%= item.quantity %>" min="1" max="10"
-                                                class="w-16 px-2 py-1 border rounded text-center focus:ring-blue-500"
-                                                onchange="this.form.submit()">
-                                        </form>
+                                        <input type="number" name="quantity" value="<%= item.quantity %>" min="1" max="10"
+                                            class="w-16 px-2 py-1 border rounded text-center focus:ring-blue-500"
+                                            onchange="updateQuantity('<%= item.productId._id %>', this.value)">
                                     </td>
                                     <td class="px-4 py-2 border">₹<%= item.productId.salePrice.toFixed(2) %></td>
                                     <td class="px-4 py-2 border">₹<%= (item.productId.salePrice * item.quantity).toFixed(2) %></td>
@@ -78,39 +62,102 @@
         </div>
     </section>
 
-    <!-- JavaScript for Removing Items with Loading Animation -->
-    <script>
-        function removeFromCart(productId) {
-            const removeButton = event.target;
-            removeButton.disabled = true;
-            removeButton.innerHTML = 'Removing...';
+    <!-- Include SweetAlert2 library -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-            fetch(`/remove/${productId}`, {
-                method: 'DELETE',
-            })
-            .then(response => {
-                if (response.ok) {
-                    // Reload the cart page after successful deletion
-                    window.location.href = '/cart';
-                } else {
-                    return response.json().then(error => {
-                        alert(error.message || 'Failed to remove item from cart');
-                        removeButton.disabled = false;
-                        removeButton.innerHTML = 'Remove';
+    <script>
+        function handleAuthError(error) {
+            if (error.redirect) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Authentication Required',
+                    text: 'Please log in to continue.',
+                    confirmButtonText: 'Go to Login',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = error.redirect;
+                    }
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'An unexpected error occurred.',
+                });
+            }
+        }
+
+        function updateQuantity(productId, quantity) {
+    if (quantity >= 10) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Maximum Quantity Limit',
+            text: 'You have reached the maximum quantity limit of 10 for this product.',
+            showConfirmButton: true
+        });
+        return; // Prevent further execution if the limit is reached
+    }
+
+    fetch('/update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ productId, quantity }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message === 'Cart updated successfully') {
+            // No alert here, just refresh the page or update the UI
+            window.location.reload(); // You can replace this with dynamic UI update if you prefer not to reload the page
+        } else if (data.redirect) {
+            handleAuthError(data);
+        } else {
+            throw new Error(data.message || 'Failed to update cart');
+        }
+    })
+    .catch(error => {
+        handleAuthError(error);
+    });
+}
+
+        function removeFromCart(productId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, remove it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/remove/${productId}`, {
+                        method: 'DELETE',
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message === 'Item removed from cart successfully') {
+                            Swal.fire(
+                                'Removed!',
+                                'The item has been removed from your cart.',
+                                'success'
+                            ).then(() => {
+                                window.location.reload();
+                            });
+                        } else if (data.redirect) {
+                            handleAuthError(data);
+                        } else {
+                            throw new Error(data.message || 'Failed to remove item from cart');
+                        }
+                    })
+                    .catch(error => {
+                        handleAuthError(error);
                     });
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while trying to remove the item from the cart');
-                removeButton.disabled = false;
-                removeButton.innerHTML = 'Remove';
             });
         }
     </script>
-
-
 </body>
-
 
 <%- include("../partials/user/footer") %>

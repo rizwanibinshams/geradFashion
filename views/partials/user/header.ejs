@@ -11,44 +11,75 @@
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out;
+        }
+        .dropdown-content {
+            transform: translateY(-10px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease-in-out;
+        }
+        .group:hover .dropdown-content {
+            transform: translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50">
-    <!-- Header Section Begin -->
-    <header class="bg-white shadow-lg">
+    <header class="bg-white shadow-lg w-full z-50 transition-all duration-300" id="header">
         <div class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <!-- Logo Section -->
                 <div class="header__logo">
                     <a href="/" class="text-3xl font-extrabold text-gray-800 hover:text-orange-500 transition-all duration-300">Gerad-Fashion</a>
                 </div>
-                
+    
                 <!-- Navigation Menu -->
-                <nav class="header__menu hidden md:flex space-x-8">
+                <nav class="header__menu hidden lg:flex space-x-8">
                     <ul class="flex items-center space-x-6 text-lg font-semibold text-gray-800">
-                        <li><a href="/" class="hover:text-orange-500 transition-all duration-300">Home</a></li>
-                        <li><a href="/products" class="hover:text-orange-500 transition-all duration-300">Products</a></li>
-                        <li class="relative group">
-                            <a href="#" class="hover:text-orange-500 transition-all duration-300">Pages</a>
-                            <ul class="dropdown absolute hidden group-hover:block bg-white shadow-lg rounded-md py-2">
-                                <li><a href="/aboutus" class="block px-4 py-2 hover:bg-orange-500 hover:text-white">About Us</a></li>
-                                <li><a href="./shop-details.html" class="block px-4 py-2 hover:bg-orange-500 hover:text-white">Shop Details</a></li>
-                                <li><a href="/cart" class="block px-4 py-2 hover:bg-orange-500 hover:text-white">Shopping Cart</a></li>
-                                <li><a href="./checkout.html" class="block px-4 py-2 hover:bg-orange-500 hover:text-white">Check Out</a></li>
-                            </ul>
-                        </li>
-                        <li><a href="./contact.ejs" class="hover:text-orange-500 transition-all duration-300">Contacts</a></li>
+                        <li><a href="/" class="hover:text-orange-500 transition-all duration-300 relative group">Home
+                            <span class="absolute left-0 bottom-0 w-full h-0.5 bg-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
+                        </a></li>
+                        <li><a href="/products" class="hover:text-orange-500 transition-all duration-300 relative group">Products
+                            <span class="absolute left-0 bottom-0 w-full h-0.5 bg-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
+                        </a></li>
+                        <li><a href="./contact.ejs" class="hover:text-orange-500 transition-all duration-300 relative group">Contacts
+                            <span class="absolute left-0 bottom-0 w-full h-0.5 bg-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
+                        </a></li>
+                        <li><a href="#" class="hover:text-orange-500 transition-all duration-300 relative group">About Us
+                            <span class="absolute left-0 bottom-0 w-full h-0.5 bg-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
+                        </a></li>
                     </ul>
                 </nav>
+                <!-- Search Input -->
+                <div class="relative hidden md:block">
+                    <input type="text" id="search-input" placeholder="Search..." class="pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300">
+                    <button id="search-button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-orange-500">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </button>
+                </div>
 
                 <!-- User Options and Icons -->
                 <div class="header__nav__option flex items-center space-x-6">
                     <% if (typeof user !== 'undefined' && user !== null) { %> 
                         <div class="relative group">
                             <a href="/" class="text-lg font-semibold text-gray-800 hover:text-orange-500 transition-all duration-300"><%= user.name %></a>
-                            <ul class="dropdown-content absolute hidden group-hover:block right-0 bg-white shadow-lg rounded-md py-2">
-                                <li><a href="/profile" class="block px-4 py-2 hover:bg-orange-500 hover:text-white">Profile</a></li>
-                                <li><a href="/logout" class="block px-4 py-2 hover:bg-orange-500 hover:text-white">Logout</a></li>
+                            <ul class="dropdown-content absolute right-0 bg-white shadow-lg rounded-md py-2 w-48">
+                                <li><a href="/profile" class="block px-4 py-2 hover:bg-orange-500 hover:text-white transition-all duration-300">Profile</a></li>
+                                <li><a href="/logout" class="block px-4 py-2 hover:bg-orange-500 hover:text-white transition-all duration-300">Logout</a></li>
                             </ul>
                         </div>
                     <% } else { %>
@@ -57,15 +88,43 @@
                     <% } %>
 
                     <!-- Icons Section -->
-                    <a href="#" class="transition-transform duration-300 hover:scale-110"><img src="img/icon/search.png" alt="Search" class="w-5"></a>
+                    <button class="transition-transform duration-300 hover:scale-110 lg:hidden" id="mobile-menu-button">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
+                   
                     <a href="/wishlist" class="transition-transform duration-300 hover:scale-110"><img src="img/icon/heart.png" alt="Favorites" class="w-5"></a>
-                    <button id="cart-button" class="transition-transform duration-300 hover:scale-110" onclick="fetchCart()">
+                    <button id="cart-button" class="transition-transform duration-300 hover:scale-110 relative" onclick="fetchCart()">
                         <img src="img/icon/cart.png" alt="Cart" class="w-5">
+                        <span class="absolute -top-2 -right-2 bg-orange-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">0</span>
                     </button>
                 </div>
             </div>
         </div>
     </header>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed inset-0 bg-gray-800 bg-opacity-75 z-50 hidden">
+        <div class="flex flex-col h-full bg-white w-64 ml-auto">
+            <div class="p-4 flex justify-between items-center border-b">
+                <h2 class="text-2xl font-bold text-gray-800">Menu</h2>
+                <button id="close-mobile-menu" class="text-gray-600 hover:text-gray-800">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <nav class="flex-grow">
+                <ul class="p-4 space-y-4">
+                    <li><a href="/" class="block text-lg font-semibold text-gray-800 hover:text-orange-500 transition-all duration-300">Home</a></li>
+                    <li><a href="/products" class="block text-lg font-semibold text-gray-800 hover:text-orange-500 transition-all duration-300">Products</a></li>
+                    <li><a href="./contact.ejs" class="block text-lg font-semibold text-gray-800 hover:text-orange-500 transition-all duration-300">Contacts</a></li>
+                    <li><a href="#" class="block text-lg font-semibold text-gray-800 hover:text-orange-500 transition-all duration-300">About Us</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
 
     <script>
         // Cart fetch function
@@ -90,19 +149,67 @@
             }
         }
 
-        // Dropdown hover effect (in case Tailwind's group-hover isn't enough)
-        document.addEventListener('DOMContentLoaded', function () {
-            const dropdowns = document.querySelectorAll('.dropdown-content');
-            dropdowns.forEach(dropdown => {
-                dropdown.parentElement.addEventListener('mouseover', () => {
-                    dropdown.classList.remove('hidden');
-                });
-                dropdown.parentElement.addEventListener('mouseout', () => {
-                    dropdown.classList.add('hidden');
-                });
+        // Header scroll effect
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('header');
+            if (window.scrollY > 50) {
+                header.classList.add('py-2', 'shadow-md');
+                header.classList.remove('py-4');
+            } else {
+                header.classList.add('py-4');
+                header.classList.remove('py-2', 'shadow-md');
+            }
+        });
+
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const closeMobileMenuButton = document.getElementById('close-mobile-menu');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.remove('hidden');
+            gsap.from(mobileMenu.querySelector('div'), {x: '100%', duration: 0.3, ease: 'power2.out'});
+        });
+
+        closeMobileMenuButton.addEventListener('click', () => {
+            gsap.to(mobileMenu.querySelector('div'), {
+                x: '100%', 
+                duration: 0.3, 
+                ease: 'power2.in',
+                onComplete: () => mobileMenu.classList.add('hidden')
             });
         });
+
+        // Animate header elements on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            gsap.from('.header__logo, .header__menu, .header__nav__option', {
+                opacity: 0,
+                y: -20,
+                duration: 0.5,
+                stagger: 0.1,
+                ease: 'power2.out'
+            });
+        });
+
+        // search 
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+
+        function performSearch() {
+            const searchQuery = searchInput.value.trim();
+            if (searchQuery) {
+                window.location.href = `/products?search=${encodeURIComponent(searchQuery)}`;
+            }
+        }
+
+        searchButton.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+
     </script>
-    <!-- Header Section End -->
 </body>
 </html>

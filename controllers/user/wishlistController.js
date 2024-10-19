@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const Wishlist = require("../../models/wishlistSchema"); // Adjust the path as needed
 const Product = require("../../models/productSchema"); // Adjust the path as needed
-
+const path = require("path");
+const user = require("../../models/userSchema");
 // Add to Wishlist
 const addToWishlist = async (req, res) => {
   try {
@@ -87,45 +88,64 @@ const removeFromWishlist = async (req, res) => {
   };
 
 // Get User's Wishlist
+// Get User's Wishlist
 const getWishlist = async (req, res) => {
-    try {
-        const userId = req.session.user?.id; // Retrieve user ID from session
-        
-        // Redirect to login if user is not authenticated
-        if (!userId) {
-            return res.redirect('/login');
-        }
-
-        // Fetch the wishlist and populate product details
-        const wishlist = await Wishlist.findOne({ userId }).populate('products.productId');
-
-        // Initialize wishlist items array
-        let wishlistItems = [];
-        if (wishlist && wishlist.products) {
-            wishlistItems = wishlist.products.map(item => ({
-                _id: item.productId._id,
-                product: {
-                    productName: item.productId.productName,
-                    price: item.productId.salePrice,
-                    discountedPrice: item.productId.discountedPrice,
-                    productImage: item.productId.productImage?.[0], // Take first image if available
-                    brand: item.productId.brand,
-                    rating: item.productId.rating,
-                    reviewCount: item.productId.reviewCount,
-                    discount: item.productId.discount,
-                    description: item.productId.description,
-                }
-            }));
-        }
-
-        // Render the wishlist page
-        res.render('wishlist', { wishlistItems });
-    } catch (error) {
-        console.error('Error fetching wishlist:', error);
-        res.status(500).render('error', { message: 'An error occurred while fetching your wishlist.' });
+  try {
+    const userId = req.session.user?.id;
+    
+    const userData = await user.findById(req.session.user.id);
+    if (!userId) {
+      return res.redirect('/login');
     }
+
+    const wishlist = await Wishlist.findOne({ userId }).populate({
+      path: 'products.productId',
+      model: 'Product'
+    });
+
+    let wishlistItems = [];
+    if (wishlist && wishlist.products) {
+      wishlistItems = wishlist.products.map(item => {
+        if (item.productId) {
+          const productImage = item.productId.productImage && item.productId.productImage.length > 0
+            ? path.join('/uploads/product-images', item.productId.productImage[0])
+            : '/placeholder-image.jpg';
+
+          return {
+            _id: item.productId._id,
+            product: {
+              productName: item.productId.productName,
+              price: item.productId.regularPrice,
+              salePrice: item.productId.salePrice,
+              discountedPrice: item.productId.salePrice,  // You may want to calculate this
+              productImage: productImage,
+              brand: item.productId.brand,
+              rating: item.productId.rating,
+              reviewCount: 0,  // Add this field to your schema if needed
+              discount: calculateDiscount(item.productId.regularPrice, item.productId.salePrice),
+              description: item.productId.description,
+            }
+          };
+        }
+        return null;
+      }).filter(item => item !== null);
+    }
+
+    res.render('wishlist', { wishlistItems,
+      user:userData
+     });
+  } catch (error) {
+    console.error('Error fetching wishlist:', error);
+    res.status(500).render('page-404', { message: 'An error occurred while fetching your wishlist.' });
+  }
 };
 
+function calculateDiscount(regularPrice, salePrice) {
+  if (regularPrice > salePrice) {
+    return Math.round(((regularPrice - salePrice) / regularPrice) * 100);
+  }
+  return 0;
+}
 
 
 

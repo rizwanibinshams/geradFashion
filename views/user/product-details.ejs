@@ -10,6 +10,8 @@
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
          .zoom-container {
             position: relative;
@@ -155,12 +157,12 @@
                         <span>Add to Cart</span>
                     </button>
                 
-                    <a href="/addToWishlist?id=<%= product._id %>" 
-                        class="wishlist-button bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors duration-200 flex items-center justify-center space-x-2">
-                         <i class="fas fa-heart"></i>
-                         <span>Wishlist</span>
-                     </a>
-                    </div>
+                    <button data-product-id="<%= product._id %>" class="wishlist-button bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors duration-200 flex items-center justify-center space-x-2">
+                        <i class="fas fa-heart"></i>
+                        <span>Wishlist</span>
+                    </button>
+                    
+                                        </div>
                 </div>
             </div>
         </div>
@@ -280,86 +282,173 @@
     }
 
     function addToCart(productId) {
-        const quantity = document.getElementById('quantity-input').value;
+    const quantity = document.getElementById('quantity-input').value;
 
-        $.ajax({
-            url: '/addToCart',  // Replace with your actual add-to-cart route
-            method: 'POST',
-            data: {
-                productId: productId,
-                quantity: quantity
-            },
-            success: function(response) {
-                // Handle success, e.g., update the cart counter or show a success message
-                alert('Product added to cart successfully!');
-                location.reload();
-            },
-            error: function(err) {
-                // Handle error, e.g., show an error message
-                alert('Failed to add product to cart.');
+    $.ajax({
+        url: '/addToCart',  // Replace with your actual add-to-cart route
+        method: 'POST',
+        data: {
+            productId: productId,
+            quantity: quantity
+        },
+        success: function(response) {
+            // Show SweetAlert for success
+            Swal.fire({
+                icon: 'success',
+                title: 'Added!',
+                text: 'Product added to cart successfully!',
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                location.reload(); // Reload the page to reflect cart changes
+            });
+        },
+        error: function(xhr) {
+            if (xhr.status === 401) {
+                // Show SweetAlert for unauthorized (not logged in) error
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Not Logged In',
+                    text: 'You are not logged in. Redirecting to login page...',
+                    showConfirmButton: false,
+                    timer: 2000
+                }).then(() => {
+                    window.location.href = '/login'; // Redirect to the login page
+                });
+            } else {
+                // Show SweetAlert for other errors
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Failed to add product to cart.',
+                });
             }
-        });
-    }
+        }
+    });
+}
+
 
 
 
     // Add this script to your main JavaScript file or include it in your HTML
 
-document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {
     // Select all wishlist buttons
-    const wishlistButtons = document.querySelectorAll('a[href^="/addToWishlist"]');
+    const wishlistButtons = document.querySelectorAll('.wishlist-button');
 
     wishlistButtons.forEach(button => {
-        button.addEventListener('click', function(event) {
-            event.preventDefault(); // Prevent the default link behavior
+        button.addEventListener('click', function() {
+            const productId = button.getAttribute('data-product-id');
 
-            const productId = new URLSearchParams(this.href.split('?')[1]).get('id');
-
-            addToWishlist(productId, this);
+            // Toggle action based on the button's current state
+            if (button.querySelector('span').textContent === 'In Wishlist') {
+                removeFromWishlist(productId, button);
+            } else {
+                addToWishlist(productId, button);
+            }
         });
     });
 
-    function addToWishlist(productId, button) {
-        // Show loading state
+    // Function to add product to wishlist
+    async function addToWishlist(productId, button) {
+    try {
         button.classList.add('opacity-50', 'cursor-not-allowed');
         button.querySelector('span').textContent = 'Adding...';
 
-        fetch('/wishlist/add', {
+        const response = await fetch('/wishlist/add', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                // Include CSRF token if your app uses it
-                // 'X-CSRF-Token': getCsrfToken()
             },
-            body: JSON.stringify({ productId: productId }),
-            credentials: 'same-origin' // This is important for including cookies
+            body: JSON.stringify({ productId }),
+            credentials: 'same-origin'
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message); // Throw the error message
+        }
+
+        const data = await response.json();
+        console.log(data.message); // Log the success message
+
+        // Update button state based on success
+        button.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+        button.classList.add('bg-red-500', 'text-white', 'hover:bg-red-600');
+        button.querySelector('span').textContent = 'In Wishlist';
+        button.querySelector('i').classList.add('text-white');
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Added!',
+            text: data.message,
+            showConfirmButton: false,
+            timer: 1500
+        });
+    } catch (error) {
+        console.error('Error:', error.message);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: error.message || 'Failed to add to wishlist. Please try again.',
+        });
+
+        // Reset button state
+        button.classList.remove('opacity-50', 'cursor-not-allowed');
+        button.querySelector('span').textContent = 'Wishlist';
+    }
+}
+
+    // Function to remove product from wishlist
+    function removeFromWishlist(productId, button) {
+        // Show loading state
+        button.classList.add('opacity-50', 'cursor-not-allowed');
+        button.querySelector('span').textContent = 'Removing...';
+
+        fetch(`/wishlist/remove/${productId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
         })
         .then(response => response.json())
         .then(data => {
             // Reset button state
             button.classList.remove('opacity-50', 'cursor-not-allowed');
-            
-            if (data.message === "Product added to wishlist successfully") {
-                // Update button to show it's in the wishlist
-                button.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
-                button.classList.add('bg-red-500', 'text-white', 'hover:bg-red-600');
-                button.querySelector('span').textContent = 'In Wishlist';
-                button.querySelector('i').classList.add('text-white');
-            } else if (data.message === "Product is already in the wishlist") {
-                button.querySelector('span').textContent = 'In Wishlist';
+
+            if (data.message === "Product removed from wishlist successfully") {
+                // Revert button to original state
+                button.classList.remove('bg-red-500', 'text-white', 'hover:bg-red-600');
+                button.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                button.querySelector('span').textContent = 'Wishlist';
+                button.querySelector('i').classList.remove('text-white');
+
+                // Show SweetAlert for success
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Removed!',
+                    text: 'Product removed from wishlist successfully!',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
             } else {
                 throw new Error(data.message);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            // Reset button state
             button.classList.remove('opacity-50', 'cursor-not-allowed');
-            button.querySelector('span').textContent = 'Wishlist';
-            // Show error to user (you can replace this with a more user-friendly notification)
-            alert('Failed to add to wishlist. Please try again.');
+            button.querySelector('span').textContent = 'In Wishlist';
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Failed to remove from wishlist. Please try again.',
+            });
         });
     }
 });
+
 </script>
 <%- include("../partials/user/footer") %>

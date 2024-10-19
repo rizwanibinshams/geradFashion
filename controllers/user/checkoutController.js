@@ -1,6 +1,11 @@
 const Cart = require('../../models/cartSchema');
 const Address = require('../../models/addressSchema');
 const user = require("../../models/userSchema")
+
+
+
+
+
 const getCheckoutPage = async (req, res) => {
     try {
         console.log('Session User:', req.session.user); // Log session user for debugging

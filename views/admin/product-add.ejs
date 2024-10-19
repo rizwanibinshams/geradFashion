@@ -235,7 +235,7 @@
         if (name.trim() === "") {
             displayErrorMessage('productName-error', 'Please enter a product name.');
             isValid = false;
-        } else if (!/^[a-zA-Z\s]+$/.test(name.trim())) {
+        } else if (!/^[A-Za-z\s.,'&@-]+$/.test(name.trim())) {
             displayErrorMessage('productName-error', 'Product name should contain only alphabetic characters.');
             isValid = false;
         }
@@ -243,7 +243,7 @@
         if (description.trim() === "") {
             displayErrorMessage('description-error', 'Please enter a product description.');
             isValid = false;
-        } else if (!/^[a-zA-Z\s]+$/.test(description.trim())) {
+        } else if (!/^[A-Za-z\s.,'&@-]+$/.test(description.trim())) {
             displayErrorMessage('description-error', 'Product description should contain only alphabetic characters.');
             isValid = false;
         }

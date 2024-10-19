@@ -16,14 +16,17 @@ const getProductDetailsPage = async (req, res) => {
     try {
         const productId = req.query.id; 
         const product = await Product.findById(productId).populate('category');
-        const user = req.session.user || null;
+        const sessionUser = req.user ? req.user.email : req.session.user?.email;
         const categories = await Category.find({ isListed: true });
 
         if (!product) {
             return res.redirect("/pageNotFound");
         }
 
-        
+        let userData = null;
+        if (sessionUser) {
+            userData = await user.findOne({ email: sessionUser });
+        }
         const relatedProducts = await Product.find({
             
             $or: [
@@ -41,7 +44,7 @@ const getProductDetailsPage = async (req, res) => {
         res.render("product-details", {
             product: product,
             relatedProducts: relatedProducts, 
-            user: user,
+            user: userData,
             // products: relatedProducts 
         });
     } catch (error) {
@@ -53,7 +56,7 @@ const getProductDetailsPage = async (req, res) => {
 
 const getAllProducts = async (req, res) => {
     try {
-        const { category, sort } = req.query;
+        const { category, sort, search } = req.query;
 
         // Fetch categories
         const categories = await Category.find({ isListed: true });
@@ -74,6 +77,11 @@ const getAllProducts = async (req, res) => {
             if (selectedCategory) {
                 query.category = selectedCategory._id;
             }
+        }
+
+        // Apply search filter if provided
+        if (search) {
+            query.productName = { $regex: new RegExp(search, 'i') };
         }
 
         // Determine sort option
@@ -103,14 +111,14 @@ const getAllProducts = async (req, res) => {
             user: userData,
             categories: categories,
             currentCategory: category || 'All',
-            currentSort: sort || 'default'
+            currentSort: sort || 'default',
+            currentSearch: search || ''
         });
     } catch (error) {
         console.error('Error fetching all products:', error);
         res.redirect("/pageNotFound");
     }
 };
-
 
 module.exports ={
     getProductDetailsPage,

@@ -262,7 +262,7 @@ function validateForm() {
     let isValid = true;
 
   
-    if (!/^[a-zA-Z\s]+$/.test(name)) {  
+    if (!/^[A-Za-z\s.,'&@-]+$/.test(name)) {  
         displayErrorMessage('productName-error', 'Please enter a valid product name (alphabets only).');
         isValid = false;
     }
