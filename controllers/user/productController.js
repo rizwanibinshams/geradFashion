@@ -2,6 +2,7 @@ const user = require('../../models/userSchema')
 const mongoose = require('mongoose')
 const Category = require("../../models/categorySchema")
 const Product = require("../../models/productSchema")
+const Brand = require("../../models/brandSchema")
 const env = require('dotenv').config()
 const nodemailer = require('nodemailer')
 const otpgenerator = require('otp-generator')
@@ -52,7 +53,6 @@ const getProductDetailsPage = async (req, res) => {
         res.redirect("/pageNotFound");
     }
 };
-
 
 const getAllProducts = async (req, res) => {
     try {
@@ -119,6 +119,10 @@ const getAllProducts = async (req, res) => {
         res.redirect("/pageNotFound");
     }
 };
+
+
+
+
 
 module.exports ={
     getProductDetailsPage,

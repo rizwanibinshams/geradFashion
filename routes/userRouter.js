@@ -8,6 +8,8 @@ const checkoutController = require('../controllers/user/checkoutController')
 const addressController = require('../controllers/user/addressController')
 const  orderController = require('../controllers/user/orderController')
 const wishlistController = require('../controllers/user/wishlistController')
+const couponController = require('../controllers/admin/couponController')
+const walletController = require("../controllers/user/walletController")
 const passport = require('passport')
 const auth = require('../middlewares/auth')
 
@@ -116,5 +118,23 @@ router.post('/orders/:orderId/cancel', orderController.cancelOrder);
 router.post('/wishlist/add', wishlistController.addToWishlist);
 router.delete('/wishlist/remove/:productId', wishlistController.removeFromWishlist);
 router.get('/wishlist', wishlistController.getWishlist);
+
+
+// User route for applying a coupon
+
+
+
+// Route to add money to the wallet
+router.post('/wallet/add', walletController.addMoneyToWallet);
+
+// Route to view wallet balance
+router.get('/wallet/:userId/balance', walletController.getWalletBalance);
+
+// Route to deduct money from the wallet (if needed)
+router.post('/wallet/deduct', walletController.deductMoneyFromWallet);
+
+// User route for applying a coupon
+ router.post('/applyCoupon',couponController.applyCoupon)
+
 
 module.exports = router

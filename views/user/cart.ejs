@@ -1,70 +1,158 @@
 <%- include("../partials/user/header") %>
 
-<body class="bg-gray-100">
-    <section class="cart-page spad py-8">
-        <div class="container mx-auto px-4">
-            <nav aria-label="breadcrumb" class="mb-8">
-                <ol class="flex items-center space-x-2 text-gray-600">
-                    <li><a href="/" class="hover:text-blue-600">Home</a></li>
+<body class="bg-gray-50 font-sans">
+    <section class="cart-page py-6 sm:py-12">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <!-- Responsive Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4 sm:mb-8 overflow-x-auto whitespace-nowrap">
+                <ol class="flex items-center space-x-2 text-xs sm:text-sm text-gray-500 uppercase tracking-wide">
+                    <li><a href="/" class="hover:text-black transition-colors">Home</a></li>
                     <li><span class="mx-2">/</span></li>
-                    <li><a href="/cart" class="hover:text-blue-600">Cart</a></li>
+                    <li><a href="/cart" class="hover:text-black transition-colors">Shopping Bag</a></li>
                 </ol>
             </nav>
 
-            <h2 class="text-3xl font-bold mb-6">Your Cart</h2>
+            <!-- Responsive Header -->
+            <h2 class="text-2xl sm:text-3xl font-light mb-6 sm:mb-8 uppercase tracking-wider">Shopping Bag</h2>
 
             <% if (cart.length > 0) { %>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white border-collapse">
-                        <thead>
-                            <tr>
-                                <th class="px-4 py-2 border">Product</th>
-                                <th class="px-4 py-2 border">Size</th>
-                                <th class="px-4 py-2 border">Quantity</th>
-                                <th class="px-4 py-2 border">Price</th>
-                                <th class="px-4 py-2 border">Subtotal</th>
-                                <th class="px-4 py-2 border">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% cart.forEach(item => { %>
-                                <tr class="text-center">
-                                    <td class="px-4 py-2 border"><%= item.productId.productName %></td>
-                                    <td class="px-4 py-2 border"><%= item.size ? item.size : 'N/A' %></td>
-                                    <td class="px-4 py-2 border">
-                                        <input type="number" name="quantity" value="<%= item.quantity %>" min="1" max="10"
-                                            class="w-16 px-2 py-1 border rounded text-center focus:ring-blue-500"
-                                            onchange="updateQuantity('<%= item.productId._id %>', this.value)">
-                                    </td>
-                                    <td class="px-4 py-2 border">₹<%= item.productId.salePrice.toFixed(2) %></td>
-                                    <td class="px-4 py-2 border">₹<%= (item.productId.salePrice * item.quantity).toFixed(2) %></td>
-                                    <td class="px-4 py-2 border">
-                                        <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
-                                            onclick="removeFromCart('<%= item.productId._id %>')">Remove</button>
-                                    </td>
+                <!-- Responsive Cart Layout -->
+                <div class="bg-white shadow-sm rounded-lg overflow-hidden mb-6 sm:mb-8">
+                    <!-- Large Screen Table -->
+                    <div class="hidden md:block overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead>
+                                <tr class="border-b">
+                                    <th class="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                                    <th class="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
+                                    <th class="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                                    <th class="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                    <th class="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                                    <th class="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
-                            <% }) %>
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th colspan="4" class="px-4 py-2 text-right border">Total</th>
-                                <th colspan="2" class="px-4 py-2 text-left border">₹<%= total.toFixed(2) %></th>
-                            </tr>
-                        </tfoot>
-                    </table>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                <% cart.forEach(item => { %>
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-4 sm:px-6 py-3 sm:py-4">
+                                            <div class="font-medium text-gray-900"><%= item.productId.productName %></div>
+                                        </td>
+                                        <td class="px-4 sm:px-6 py-3 sm:py-4 text-gray-500">
+                                            <%= item.size ? item.size : 'N/A' %>
+                                        </td>
+                                        <td class="px-4 sm:px-6 py-3 sm:py-4">
+                                            <input 
+                                                type="number" 
+                                                name="quantity" 
+                                                value="<%= item.quantity %>" 
+                                                min="1" 
+                                                max="10"
+                                                class="w-16 sm:w-20 px-2 sm:px-3 py-1 sm:py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                                                onchange="updateQuantity('<%= item.productId._id %>', this.value)"
+                                            >
+                                        </td>
+                                        <td class="px-4 sm:px-6 py-3 sm:py-4 text-gray-900">₹<%= item.productId.salePrice.toFixed(2) %></td>
+                                        <td class="px-4 sm:px-6 py-3 sm:py-4 font-medium text-gray-900">₹<%= (item.productId.salePrice * item.quantity).toFixed(2) %></td>
+                                        <td class="px-4 sm:px-6 py-3 sm:py-4">
+                                            <button 
+                                                class="text-gray-500 hover:text-red-600 transition-colors text-sm uppercase tracking-wide"
+                                                onclick="removeFromCart('<%= item.productId._id %>')"
+                                            >
+                                                Remove
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Mobile Card Layout -->
+                    <div class="md:hidden">
+                        <% cart.forEach(item => { %>
+                            <div class="p-4 border-b border-gray-200 last:border-b-0">
+                                <div class="flex flex-col space-y-3">
+                                    <!-- Product Name -->
+                                    <div class="font-medium text-gray-900"><%= item.productId.productName %></div>
+                                    
+                                    <!-- Size -->
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="text-gray-500">Size:</span>
+                                        <span class="text-gray-900"><%= item.size ? item.size : 'N/A' %></span>
+                                    </div>
+
+                                    <!-- Price -->
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="text-gray-500">Price:</span>
+                                        <span class="text-gray-900">₹<%= item.productId.salePrice.toFixed(2) %></span>
+                                    </div>
+
+                                    <!-- Quantity -->
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-500">Quantity:</span>
+                                        <input 
+                                            type="number" 
+                                            name="quantity" 
+                                            value="<%= item.quantity %>" 
+                                            min="1" 
+                                            max="10"
+                                            class="w-20 px-3 py-1 border border-gray-200 rounded-md focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                                            onchange="updateQuantity('<%= item.productId._id %>', this.value)"
+                                        >
+                                    </div>
+
+                                    <!-- Subtotal -->
+                                    <div class="flex justify-between items-center font-medium">
+                                        <span class="text-sm text-gray-500">Subtotal:</span>
+                                        <span class="text-gray-900">₹<%= (item.productId.salePrice * item.quantity).toFixed(2) %></span>
+                                    </div>
+
+                                    <!-- Remove Button -->
+                                    <button 
+                                        class="w-full mt-2 py-2 text-red-600 text-sm uppercase tracking-wide border border-red-600 rounded-md hover:bg-red-600 hover:text-white transition-colors"
+                                        onclick="removeFromCart('<%= item.productId._id %>')"
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            </div>
+                        <% }) %>
+                    </div>
+
+                    <!-- Responsive Order Summary -->
+                    <div class="border-t border-gray-200 bg-gray-50">
+                        <div class="px-4 sm:px-6 py-4 lg:px-8">
+                            <div class="flex justify-between items-center">
+                                <div class="text-sm sm:text-base font-medium text-gray-900">Order Total</div>
+                                <div class="text-xl sm:text-2xl font-light text-gray-900">₹<%= total.toFixed(2) %></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="mt-6 text-right">
-                    <a href="/checkout" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-md">Proceed to Checkout</a>
+
+                <!-- Responsive Action Buttons -->
+                <div class="flex flex-col sm:flex-row justify-end space-y-4 sm:space-y-0 sm:space-x-4">
+                    <a href="/" class="w-full sm:w-auto px-6 py-3 text-center text-sm text-gray-600 hover:text-gray-800 uppercase tracking-wide transition-colors border border-gray-300 hover:border-gray-400">
+                        Continue Shopping
+                    </a>
+                    <a href="/checkout" class="w-full sm:w-auto px-6 py-3 text-center bg-black text-white hover:bg-gray-800 text-sm uppercase tracking-wide transition-colors">
+                        Proceed to Checkout
+                    </a>
                 </div>
             <% } else { %>
-                <p class="text-xl text-gray-700 mt-6">Your cart is empty.</p>
+                <!-- Responsive Empty Cart State -->
+                <div class="text-center py-12 sm:py-16 bg-white shadow-sm rounded-lg">
+                    <p class="text-lg sm:text-xl text-gray-500 mb-6 sm:mb-8 px-4">Your shopping bag is empty</p>
+                    <a href="/" class="inline-block px-6 sm:px-8 py-3 bg-black text-white hover:bg-gray-800 text-sm uppercase tracking-wide transition-colors">
+                        Start Shopping
+                    </a>
+                </div>
             <% } %>
         </div>
     </section>
 
-    <!-- Include SweetAlert2 library -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+    <!-- Your existing JavaScript remains unchanged -->
     <script>
         function handleAuthError(error) {
             if (error.redirect) {
@@ -88,38 +176,37 @@
         }
 
         function updateQuantity(productId, quantity) {
-    if (quantity >= 10) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Maximum Quantity Limit',
-            text: 'You have reached the maximum quantity limit of 10 for this product.',
-            showConfirmButton: true
-        });
-        return; // Prevent further execution if the limit is reached
-    }
+            if (quantity >= 10) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Maximum Quantity Limit',
+                    text: 'You have reached the maximum quantity limit of 10 for this product.',
+                    showConfirmButton: true
+                });
+                return;
+            }
 
-    fetch('/update', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ productId, quantity }),
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.message === 'Cart updated successfully') {
-            // No alert here, just refresh the page or update the UI
-            window.location.reload(); // You can replace this with dynamic UI update if you prefer not to reload the page
-        } else if (data.redirect) {
-            handleAuthError(data);
-        } else {
-            throw new Error(data.message || 'Failed to update cart');
+            fetch('/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ productId, quantity }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === 'Cart updated successfully') {
+                    window.location.reload();
+                } else if (data.redirect) {
+                    handleAuthError(data);
+                } else {
+                    throw new Error(data.message || 'Failed to update cart');
+                }
+            })
+            .catch(error => {
+                handleAuthError(error);
+            });
         }
-    })
-    .catch(error => {
-        handleAuthError(error);
-    });
-}
 
         function removeFromCart(productId) {
             Swal.fire({

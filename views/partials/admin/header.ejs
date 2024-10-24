@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Men Fashion Admin</title>
+    <title>Gerad-Fashion Admin</title>
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -42,6 +42,21 @@ body {
     background-color: #33053d;
     color: #ffffff;
 }
+.brand-wrap {
+        font-family: 'Arial', sans-serif; /* You can use custom Google fonts as well */
+        font-size: 16px;
+        letter-spacing: 2px;
+        font-weight: bold;
+        text-transform: uppercase;
+        color: #333; /* Darker shade for modern look */
+        text-decoration: none; /* Remove underline */
+    }
+
+    .brand-wrap:hover {
+        color: #ff5733; /* Add hover color */
+        transition: color 0.3s ease; /* Smooth transition */
+    }
+
 
 </style>
 </head>
@@ -49,8 +64,8 @@ body {
     <div class="screen-overlay"></div>
     <aside class="navbar-aside" id="offcanvas_aside">
         <div class="aside-top">
-            <a href="#" class="brand-wrap">
-                <img src="/img/logo.png"  class="logo" alt="Men Fashion Dashboard">
+            <a  class="brand-wrap">
+                Gerad-Fashion
             </a>
             <div>
                 <button class="btn btn-icon btn-aside-minimize"> <i class="text-muted material-icons md-menu_open"></i> </button>
@@ -91,7 +106,7 @@ body {
                 </li>
             
                 <li class="menu-item">
-                    <a class="menu-link" href="/admin/coupon"> <i class="icon material-icons md-class"></i>
+                    <a class="menu-link" href="/admin/coupons"> <i class="icon material-icons md-class"></i>
                         <span class="text">Coupon</span> </a>
                 </li>
                 <li class="menu-item">
@@ -115,7 +130,7 @@ body {
                 <button class="btn btn-icon btn-mobile me-auto " data-trigger="#offcanvas_aside"> <i class="material-icons md-apps"></i> </button>
                 <ul class="nav">
                     <li class="dropdown nav-item">
-                        <a class="dropdown-toggle font-weight-bold" data-bs-toggle="dropdown" href="#" id="dropdownAccount" aria-expanded="false"> Admin</a>
+                        <a class="dropdown-toggle font-weight-bold" data-bs-toggle="dropdown"  id="dropdownAccount" aria-expanded="false"> Admin</a>
                         <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownAccount">
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item text-danger" href="/admin/logout"><i class="material-icons md-exit_to_app"></i>Logout</a>

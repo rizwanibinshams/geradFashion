@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="description" content="Male_Fashion Template">
@@ -15,58 +14,104 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
 
     <style>
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+       
+        header {
+            position: scroll;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            z-index: 1000;
         }
+
+       
+      
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .animate-fadeIn {
             animation: fadeIn 0.5s ease-out;
         }
+
         .dropdown-content {
             transform: translateY(-10px);
             opacity: 0;
             visibility: hidden;
             transition: all 0.3s ease-in-out;
         }
+
         .group:hover .dropdown-content {
             transform: translateY(0);
             opacity: 1;
             visibility: visible;
         }
+
+        /* Enhanced hover effects */
+        .nav-link {
+            position: relative;
+            padding-bottom: 2px;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #f97316;
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            transform: scaleX(1);
+        }
+
+        /* Cart badge animation */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .cart-badge {
+            animation: pulse 2s infinite;
+        }
     </style>
 </head>
 
 <body class="bg-gray-50">
-    <header class="bg-white shadow-lg w-full z-50 transition-all duration-300" id="header">
+    <header class="bg-white shadow-lg w-full transition-all duration-300" id="header">
         <div class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <!-- Logo Section -->
                 <div class="header__logo">
-                    <a href="/" class="text-3xl font-extrabold text-gray-800 hover:text-orange-500 transition-all duration-300">Gerad-Fashion</a>
+                    <a href="/" class="text-3xl font-extrabold text-gray-800 hover:text-orange-500 transition-all duration-300">
+                        Gerad-Fashion
+                    </a>
                 </div>
     
                 <!-- Navigation Menu -->
                 <nav class="header__menu hidden lg:flex space-x-8">
-                    <ul class="flex items-center space-x-6 text-lg font-semibold text-gray-800">
-                        <li><a href="/" class="hover:text-orange-500 transition-all duration-300 relative group">Home
-                            <span class="absolute left-0 bottom-0 w-full h-0.5 bg-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
-                        </a></li>
-                        <li><a href="/products" class="hover:text-orange-500 transition-all duration-300 relative group">Products
-                            <span class="absolute left-0 bottom-0 w-full h-0.5 bg-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
-                        </a></li>
-                        <li><a href="./contact.ejs" class="hover:text-orange-500 transition-all duration-300 relative group">Contacts
-                            <span class="absolute left-0 bottom-0 w-full h-0.5 bg-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
-                        </a></li>
-                        <li><a href="#" class="hover:text-orange-500 transition-all duration-300 relative group">About Us
-                            <span class="absolute left-0 bottom-0 w-full h-0.5 bg-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
-                        </a></li>
+                    <ul class="flex items-center space-x-8 text-lg font-semibold text-gray-800">
+                        <li><a href="/" class="nav-link hover:text-orange-500 transition-all duration-300">Home</a></li>
+                        <li><a href="/products" class="nav-link hover:text-orange-500 transition-all duration-300">Products</a></li>
+                        <li><a href="./contact.ejs" class="nav-link hover:text-orange-500 transition-all duration-300">Contacts</a></li>
+                        <li><a href="#" class="nav-link hover:text-orange-500 transition-all duration-300">About Us</a></li>
                     </ul>
                 </nav>
+
                 <!-- Search Input -->
                 <div class="relative hidden md:block">
-                    <input type="text" id="search-input" placeholder="Search..." class="pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300">
-                    <button id="search-button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-orange-500">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <input type="text" id="search-input" 
+                           placeholder="Search..." 
+                           class="w-64 pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300">
+                    <button id="search-button" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-orange-500">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                     </button>
@@ -76,7 +121,9 @@
                 <div class="header__nav__option flex items-center space-x-6">
                     <% if (typeof user !== 'undefined' && user !== null) { %> 
                         <div class="relative group">
-                            <a href="/" class="text-lg font-semibold text-gray-800 hover:text-orange-500 transition-all duration-300"><%= user.name %></a>
+                            <a href="/" class="text-lg font-semibold text-gray-800 hover:text-orange-500 transition-all duration-300">
+                                <%= user.name %>
+                            </a>
                             <ul class="dropdown-content absolute right-0 bg-white shadow-lg rounded-md py-2 w-48">
                                 <li><a href="/profile" class="block px-4 py-2 hover:bg-orange-500 hover:text-white transition-all duration-300">Profile</a></li>
                                 <li><a href="/logout" class="block px-4 py-2 hover:bg-orange-500 hover:text-white transition-all duration-300">Logout</a></li>
@@ -87,17 +134,18 @@
                         <a href="/login" class="text-lg font-semibold text-gray-800 hover:text-orange-500 transition-all duration-300">Log in</a>
                     <% } %>
 
-                    <!-- Icons Section -->
                     <button class="transition-transform duration-300 hover:scale-110 lg:hidden" id="mobile-menu-button">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
                         </svg>
                     </button>
                    
-                    <a href="/wishlist" class="transition-transform duration-300 hover:scale-110"><img src="img/icon/heart.png" alt="Favorites" class="w-5"></a>
+                    <a href="/wishlist" class="transition-transform duration-300 hover:scale-110">
+                        <img src="img/icon/heart.png" alt="Favorites" class="w-5">
+                    </a>
                     <button id="cart-button" class="transition-transform duration-300 hover:scale-110 relative" onclick="fetchCart()">
                         <img src="img/icon/cart.png" alt="Cart" class="w-5">
-                        <span class="absolute -top-2 -right-2 bg-orange-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">0</span>
+                        <span class="cart-badge absolute -top-2 -right-2 bg-orange-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">0</span>
                     </button>
                 </div>
             </div>
@@ -105,12 +153,12 @@
     </header>
 
     <!-- Mobile Menu -->
-    <div id="mobile-menu" class="fixed inset-0 bg-gray-800 bg-opacity-75 z-50 hidden">
+    <div id="mobile-menu" class="fixed inset-0 bg-gray-800 bg-opacity-75 z-[1001] hidden">
         <div class="flex flex-col h-full bg-white w-64 ml-auto">
             <div class="p-4 flex justify-between items-center border-b">
                 <h2 class="text-2xl font-bold text-gray-800">Menu</h2>
                 <button id="close-mobile-menu" class="text-gray-600 hover:text-gray-800">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
@@ -161,20 +209,24 @@
             }
         });
 
-        // Mobile menu toggle
+        // Mobile menu toggle with enhanced animation
         const mobileMenuButton = document.getElementById('mobile-menu-button');
         const closeMobileMenuButton = document.getElementById('close-mobile-menu');
         const mobileMenu = document.getElementById('mobile-menu');
 
         mobileMenuButton.addEventListener('click', () => {
             mobileMenu.classList.remove('hidden');
-            gsap.from(mobileMenu.querySelector('div'), {x: '100%', duration: 0.3, ease: 'power2.out'});
+            gsap.from(mobileMenu.querySelector('div'), {
+                x: '100%',
+                duration: 0.3,
+                ease: 'power2.out'
+            });
         });
 
         closeMobileMenuButton.addEventListener('click', () => {
             gsap.to(mobileMenu.querySelector('div'), {
-                x: '100%', 
-                duration: 0.3, 
+                x: '100%',
+                duration: 0.3,
                 ease: 'power2.in',
                 onComplete: () => mobileMenu.classList.add('hidden')
             });
@@ -191,7 +243,7 @@
             });
         });
 
-        // search 
+        // Enhanced search functionality
         const searchInput = document.getElementById('search-input');
         const searchButton = document.getElementById('search-button');
 
@@ -208,8 +260,6 @@
                 performSearch();
             }
         });
-
-
     </script>
 </body>
 </html>

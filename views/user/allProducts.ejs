@@ -1,176 +1,276 @@
 <%- include("../partials/user/header") %>
 
-<!-- Tailwind CSS -->
-<script src="https://cdn.tailwindcss.com"></script>
-
-<style>
-    .product-card {
-        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-    }
-
-    .product-card:hover {
-        transform: scale(1.05);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    }
-</style>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shop - Product List</title>
-</head>
-<body class="bg-gray-100">
-   
-    <!-- Breadcrumbs -->
+    <title>Luxe Collection - Premium Fashion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     
+    <style>
+        .product-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .category-link {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .category-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 1px;
+            bottom: -2px;
+            left: 0;
+            background-color: #000;
+            transition: width 0.3s ease;
+        }
+        
+        .category-link:hover::after {
+            width: 100%;
+        }
+        
+        .offer-tag {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 8px 12px;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 10% 100%);
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            z-index: 10;
+            min-width: 120px;
+            text-align: right;
+        }
 
-    <main class="container mx-auto mt-8">
+        .seasonal-tag {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            background: white;
+            color: black;
+            padding: 6px 15px;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            z-index: 10;
+        }
 
-        <nav aria-label="breadcrumb" class="mb-8">
-            <ol class="flex items-center space-x-2 text-gray-600">
-                <li><a href="/" class="hover:text-blue-600">Home</a></li>
-                <li><span class="mx-2">/</span></li>
-                <li><a href="/products" class="hover:text-blue-600">Products</a></li>
-                
+        .sale-badge {
+            background: linear-gradient(45deg, #ff4646, #ff8080);
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <main class="container mx-auto px-4 py-12">
+        <!-- Elegant Breadcrumbs -->
+        <nav aria-label="breadcrumb" class="mb-12">
+            <ol class="flex items-center space-x-2 text-sm text-gray-500">
+                <li><a href="/" class="hover:text-black transition-colors">Home</a></li>
+                <li><span class="mx-2">•</span></li>
+                <li><a href="/products" class="hover:text-black transition-colors">Collection</a></li>
             </ol>
         </nav>
-        <div class="flex">
-            <!-- Sidebar: Category Filter -->
-            <aside class="w-1/5 p-4 bg-white rounded-lg shadow-md">
-                <h5 class="text-lg font-semibold mb-4">Filter by Category</h5>
-                <ul>
-                    <li><a href="/products" class="<%= currentCategory === 'All' ? 'font-bold' : '' %>">All</a></li>
-                    <% categories.forEach(category => { %>
-                        <li>
-                            <a href="/products?category=<%= category.name %>" 
-                               class="<%= currentCategory === category.name ? 'font-bold' : '' %>">
-                                <%= category.name %>
-                            </a>
-                        </li>
-                    <% }) %>
-                </ul>
-                
+
+        <div class="flex flex-col md:flex-row gap-8">
+            <!-- Refined Sidebar -->
+            <aside class="md:w-1/4 lg:w-1/5">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <h5 class="text-xl font-light mb-6 tracking-wide">Categories</h5>
+                    <ul class="space-y-4">
+                        <li><a href="/products" class="category-link <%= currentCategory === 'All' ? 'font-medium text-black' : 'text-gray-600' %>">All Collections</a></li>
+                        <% categories.forEach(category => { %>
+                            <li>
+                                <a href="/products?category=<%= category.name %>" 
+                                   class="category-link <%= currentCategory === category.name ? 'font-medium text-black' : 'text-gray-600' %>">
+                                    <%= category.name %>
+                                </a>
+                            </li>
+                        <% }) %>
+                    </ul>
+                </div>
             </aside>
 
-            <!-- Product List -->
-            <div class="flex-1 ml-8">
-                <!-- Sorting Dropdown -->
-                <div class="mb-4 flex justify-end">
-                    <select id="priceFilter" name="sort">
-                        <option value="default" <%= currentSort === 'default' ? 'selected' : '' %>>Default Sorting</option>
+            <!-- Main Content -->
+            <div class="flex-1">
+                <!-- Sophisticated Sorting -->
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-2xl font-light tracking-wide">Our Collection</h2>
+                    <select id="priceFilter" class="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent">
+                        <option value="default" <%= currentSort === 'default' ? 'selected' : '' %>>Curated Selection</option>
                         <option value="low-high" <%= currentSort === 'low-high' ? 'selected' : '' %>>Price: Low to High</option>
                         <option value="high-low" <%= currentSort === 'high-low' ? 'selected' : '' %>>Price: High to Low</option>
                         <option value="az" <%= currentSort === 'az' ? 'selected' : '' %>>Name: A to Z</option>
                         <option value="za" <%= currentSort === 'za' ? 'selected' : '' %>>Name: Z to A</option>
                     </select>
                 </div>
-                
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                <!-- Refined Product Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     <% if (products.length > 0) { %>
                         <% products.forEach(product => { %>
-                            <div class="product-card bg-white p-4 rounded-lg shadow-lg relative">
-                                <!-- Discount Badge -->
+                            <div class="product-card bg-white rounded-xl overflow-hidden relative">
+                                <!-- Elegant Discount Badge -->
                                 <% const discount = Math.abs(((product.regularPrice - product.salePrice) / product.regularPrice) * 100); %>
                                 <% if (discount > 0) { %>
-                                    <div class="absolute top-2 left-2 bg-red-500 text-white rounded-full px-3 py-1 text-xs font-bold">
-                                        <%= discount.toFixed(0) %>% 
+                                    <!-- Modern Sale Badge -->
+                                    <div class="sale-badge">
+                                        <%= discount.toFixed(0) %>% OFF
                                     </div>
-                                <% } %>
-                
-                                <!-- Product Image -->
-                                <a href="/productDetails?id=<%= product._id %>" class="product-link" style="text-decoration: none; color: inherit;">
-                                    <img src="/uploads/product-images/<%= product.productImage[0] %>" alt="<%= product.productName %>" class="w-full h-48 object-cover rounded-lg mb-3">
-                                </a>
-                
-                                <!-- Product Info -->
-                                <h5 class="font-semibold text-lg mb-2"><%= product.productName %></h5>
-                                <p class="text-gray-500 mb-2">Brand: <%= product.brand %></p>
-                
-                                <!-- Price Info -->
-                                <div class="flex items-center space-x-2 mb-2">
-                                    <span class="text-gray-400 line-through">$<%= product.regularPrice %></span>
-                                    <span class="text-green-500 font-bold">$<%= product.salePrice %></span>
-                                </div>
-                
-                                <!-- Rating -->
-                                <div class="flex mb-2">
-                                    <% for (let i = 1; i <= 5; i++) { %>
-                                        <% if (i <= product.rating) { %>
-                                            <i class="fas fa-star text-yellow-400"></i>
-                                        <% } else { %>
-                                            <i class="far fa-star text-yellow-400"></i>
-                                        <% } %>
+
+                                    <!-- Premium Offer Tag -->
+                                    <div class="offer-tag">
+                                        LIMITED TIME
+                                    </div>
+
+                                    <!-- Seasonal Tag (shows only for discounts > 20%) -->
+                                    <% if (discount > 20) { %>
+                                        <div class="offer-tag">
+                                            Season Special
+                                        </div>
                                     <% } %>
-                                </div>
-                
-                                <p class="text-sm text-gray-600 mb-4">Status: <%= product.status %></p>
-                                <p class="text-sm text-gray-600 mb-4">Stock: <%= product.quantity %></p>
-                
-                                <!-- Add to Cart Button and Wishlist Heart Icon -->
-                                <div class="flex justify-between items-center">
-                                    <!-- Add to Cart Button -->
-                                    <button class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600" onclick="addToCart('<%= product._id %>')">Add to Cart</button>
-                                    
-                                    <!-- Heart Icon for Wishlist -->
-                                    <i class="fas fa-heart text-red-500 text-2xl cursor-pointer" onclick="addToWishlist('<%= product._id %>')" title="Add to Wishlist"></i>
+                                <% } %>
+
+                                <!-- Product Image with Hover Effect -->
+                                <a href="/productDetails?id=<%= product._id %>" class="block overflow-hidden relative">
+                                    <img class="h-80 w-full object-cover transform hover:scale-105 transition-transform duration-500" 
+                                         src="/uploads/product-images/<%= product.productImage[0] %>" 
+                                         alt="<%= product.productName %>">
+                                </a>
+
+                                <!-- Product Details -->
+                                <div class="p-6">
+                                    <div class="mb-4">
+                                        <h5 class="text-lg font-medium mb-2"><%= product.productName %></h5>
+                                        <p class="text-gray-500 text-sm"><%= product.brand %></p>
+                                    </div>
+
+                                    <!-- Price Display -->
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-2xl font-light">₹<%= product.salePrice %></span>
+                                            <span class="text-sm text-gray-400 line-through">₹<%= product.regularPrice %></span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <span class="text-sm bg-gray-100 px-2 py-1 rounded"><%= product.rating %> ★</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Stock Status -->
+                                    <p class="text-sm text-gray-500 mb-4">Available: <%= product.quantity %></p>
+
+                                    <!-- Wishlist Button -->
+                                    <button onclick="addToWishlist('<%= product._id %>', this)" 
+                                            data-product-id="<%= product._id %>" 
+                                            class="w-full bg-black hover:bg-gray-900 text-white py-3 rounded-lg transition-colors duration-300 flex items-center justify-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                        </svg>
+                                        Add to Wishlist
+                                    </button>
                                 </div>
                             </div>
                         <% }) %>
                     <% } else { %>
-                        <p class="text-center col-span-4">No products available.</p>
+                        <div class="col-span-full text-center py-12">
+                            <p class="text-gray-500">No products available in this collection.</p>
+                        </div>
                     <% } %>
                 </div>
-                
-                
             </div>
         </div>
     </main>
-
-    <footer class="bg-gray-800 text-white text-center py-4 mt-8">
-        &copy; 2024 Your Company Name
-    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
 
     <script>
+        // Preserve existing JavaScript functionality
         document.getElementById('priceFilter').addEventListener('change', function() {
             const value = this.value;
-            window.location.href = `/products?sort=${value}`;
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('sort', value);
+            window.location.href = currentUrl.toString();
         });
 
+        async function addToWishlist(productId, button) {
+    try {
+        // Disable button and show spinner
+        button.classList.add('opacity-50', 'cursor-not-allowed');
+        const originalContent = button.innerHTML;
+        button.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
 
-        function addToWishlist(productId) {
-            console.log(`Product ${productId} added to wishlist`);
-        }
-
-        document.getElementById('priceFilter').addEventListener('change', function() {
-        const value = this.value;
-        const currentUrl = new URL(window.location.href);
-        currentUrl.searchParams.set('sort', value);
-        window.location.href = currentUrl.toString();
+        // Send the request to add the product to the wishlist
+        const response = await fetch('/wishlist/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId }),
+            credentials: 'same-origin'
         });
 
-        async function addToCart(productId) {
-        try {
-            const response = await fetch('/addToCart', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId })
-            });
-            if (response.ok) {
-                alert('Product added to cart!');
-                window.location.reload();
-            } else {
-                alert('Failed to add to cart. Try again.');
-            }
-        } catch (error) {
-            alert('Error occurred. Try again.');
-        }
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.message);
+
+        // Change button to indicate success
+        button.classList.remove('bg-black');
+        button.classList.add('bg-green-600');
+        button.innerHTML = '<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>';
+
+        // Display SweetAlert success message
+        Swal.fire({
+            title: 'Success!',
+            text: 'The product has been added to your wishlist.',
+            icon: 'success',
+            confirmButtonText: 'OK',
+            timer: 2000
+        });
+
+        // Revert button back to original after 2 seconds
+        setTimeout(() => {
+            button.innerHTML = originalContent;
+            button.classList.remove('bg-green-600');
+            button.classList.add('bg-black');
+            button.classList.remove('opacity-50', 'cursor-not-allowed');
+        }, 2000);
+
+    } catch (error) {
+        console.error('Error:', error);
+
+        // Revert button to original content
+        button.innerHTML = originalContent;
+        button.classList.remove('opacity-50', 'cursor-not-allowed');
+
+        // Display SweetAlert error message
+        Swal.fire({
+            title: 'Error!',
+            text: 'Something went wrong. Please try again.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
     }
+}
+
     </script>
 </body>
 </html>

@@ -1,0 +1,335 @@
+<%- include("../partials/admin/header") %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coupon Admin Page</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-6 fade-in">Coupon Management</h1>
+        
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6 fade-in">
+            <h2 class="text-2xl font-bold mb-4">Add/Edit Coupon</h2>
+            <form id="couponForm" action="/admin/coupons" method="POST">
+                <input type="hidden" id="couponId" name="couponId">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="code" class="block text-gray-700 text-sm font-bold mb-2">Code</label>
+                        <input type="text" id="code" name="code" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div>
+                        <label for="discountType" class="block text-gray-700 text-sm font-bold mb-2">Discount Type</label>
+                        <select id="discountType" name="discountType" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            <option value="percentage">Percentage</option>
+                            <option value="flat">Flat Amount</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="discountValue" class="block text-gray-700 text-sm font-bold mb-2">Discount Value</label>
+                        <input type="number" id="discountValue" name="discountValue" min="0" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div>
+                        <label for="minPurchase" class="block text-gray-700 text-sm font-bold mb-2">Min Purchase Amount</label>
+                        <input type="number" id="minPurchase" name="minPurchase" min="0" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div>
+                        <label for="validFrom" class="block text-gray-700 text-sm font-bold mb-2">Valid From</label>
+                        <input type="datetime-local" id="validFrom" name="validFrom" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div>
+                        <label for="validUntil" class="block text-gray-700 text-sm font-bold mb-2">Valid Until</label>
+                        <input type="datetime-local" id="validUntil" name="validUntil" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div>
+                        <label for="maxUses" class="block text-gray-700 text-sm font-bold mb-2">Max Uses</label>
+                        <input type="number" id="maxUses" name="maxUses" min="1" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div>
+                        <label for="isActive" class="inline-flex items-center mt-6">
+                            <input type="checkbox" id="isActive" name="isActive" class="form-checkbox h-5 w-5 text-blue-600" checked>
+                            <span class="ml-2 text-gray-700">Is Active</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <button type="submit" id="submitButton" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        Save Coupon
+                    </button>
+                    <button type="button" id="cancelButton" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2" style="display: none;">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="couponList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <% if (coupons && coupons.length > 0) { %>
+                <% coupons.forEach(coupon => { %>
+                    <div class="bg-white p-4 rounded-lg shadow-md fade-in">
+                        <h3 class="text-xl font-bold mb-2"><%= coupon.code %></h3>
+                        <p>Discount: <%= coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}` %></p>
+                        <p>Minimum Purchase: ₹<%= coupon.minPurchase %></p>
+                        <p>Valid From: <%= coupon.validFrom.toDateString() %></p>
+                        <p>Valid Until: <%= coupon.validUntil.toDateString() %></p>
+                        <p>Max Uses: <%= coupon.maxUses %></p>
+                        <p>Status: <%= coupon.isActive ? 'Active' : 'Inactive' %></p>
+                        <div class="mt-4">
+                            <button onclick="editCoupon('<%= coupon._id %>')" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded mr-2">
+                                Edit
+                            </button>
+                            <button onclick="deleteCoupon('<%= coupon._id %>')" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <p>No coupons available at the moment.</p>
+            <% } %>
+        </div>
+    </div>
+
+    <script>
+       document.addEventListener('DOMContentLoaded', function() {
+            const couponForm = document.getElementById('couponForm');
+            const submitButton = document.getElementById('submitButton');
+            const cancelButton = document.getElementById('cancelButton');
+            const errorMessage = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+
+            // Form validation configuration
+            const validationRules = {
+                code: {
+                    required: true,
+                    minLength: 3,
+                    message: 'Code must be at least 3 characters long'
+                },
+                discountType: {
+                    required: true,
+                    message: 'Please select a discount type'
+                },
+                discountValue: {
+                    required: true,
+                    min: 0,
+                    validate: (value, type) => {
+                        const numValue = parseFloat(value);
+                        return type === 'percentage' ? numValue <= 100 : true;
+                    },
+                    message: 'Invalid discount value'
+                },
+                minPurchase: {
+                    required: true,
+                    min: 0,
+                    message: 'Minimum purchase must be a positive number'
+                },
+                validFrom: {
+                    required: true,
+                    validate: (value) => new Date(value) >= new Date(),
+                    message: 'Valid from date must be in the future'
+                },
+                validUntil: {
+                    required: true,
+                    validate: (value, _, form) => {
+                        const validFrom = new Date(form.validFrom.value);
+                        return new Date(value) > validFrom;
+                    },
+                    message: 'Valid until must be after valid from date'
+                },
+                maxUses: {
+                    required: true,
+                    min: 1,
+                    message: 'Maximum uses must be at least 1'
+                }
+            };
+    // Form submission handler
+    couponForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearErrorMessages();
+
+        if (!validateForm()) {
+            return;
+        }
+
+        const formData = new FormData(e.target);
+        const formObject = Object.fromEntries(formData.entries());
+        
+        // Handle isActive checkbox
+        formObject.isActive = formObject.isActive === 'on';
+
+        const url = formObject.couponId ? 
+            `/admin/coupons/${formObject.couponId}` : 
+            '/admin/coupons';
+        
+        const method = formObject.couponId ? 'PUT' : 'POST';
+
+        try {
+            submitButton.disabled = true;
+            submitButton.textContent = 'Saving...';
+
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formObject)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.text();
+                throw new Error(errorData || 'Failed to save coupon');
+            }
+
+            const result = await response.text();
+            document.body.innerHTML = result;
+            
+            // Show success message
+            showMessage('Coupon saved successfully!', 'success');
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            showMessage(error.message, 'error');
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = formObject.couponId ? 'Update Coupon' : 'Save Coupon';
+        }
+    });
+
+    // Edit coupon handler
+    window.editCoupon = async function(couponId) {
+        try {
+            const response = await fetch(`/admin/coupons/${couponId}`);
+            if (!response.ok) throw new Error('Failed to fetch coupon');
+            
+            const coupon = await response.json();
+            
+            // Populate form fields
+            Object.keys(coupon).forEach(key => {
+                const input = document.getElementById(key);
+                if (!input) return;
+
+                if (key === 'validFrom' || key === 'validUntil') {
+                    input.value = new Date(coupon[key]).toISOString().slice(0, 16);
+                } else if (key === 'isActive') {
+                    input.checked = coupon[key];
+                } else {
+                    input.value = coupon[key];
+                }
+            });
+
+            document.getElementById('couponId').value = coupon._id;
+            cancelButton.style.display = 'inline-block';
+            submitButton.textContent = 'Update Coupon';
+            
+        } catch (error) {
+            console.error('Error fetching coupon:', error);
+            showMessage('Failed to load coupon data', 'error');
+        }
+    };
+
+    // Delete coupon handler
+    window.deleteCoupon = async function(couponId) {
+        if (!confirm('Are you sure you want to delete this coupon?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/admin/coupons/${couponId}`, { 
+                method: 'DELETE' 
+            });
+            
+            if (!response.ok) throw new Error('Failed to delete coupon');
+            
+            const result = await response.text();
+            document.body.innerHTML = result;
+            showMessage('Coupon deleted successfully!', 'success');
+        } catch (error) {
+            console.error('Error deleting coupon:', error);
+            showMessage(error.message, 'error');
+        }
+    };
+
+    // Cancel button handler
+    cancelButton.addEventListener('click', () => {
+        couponForm.reset();
+        document.getElementById('couponId').value = '';
+        submitButton.textContent = 'Save Coupon';
+        cancelButton.style.display = 'none';
+        clearErrorMessages();
+    });
+
+    // Validation functions
+    function validateForm() {
+        let isValid = true;
+        clearErrorMessages();
+
+        Object.entries(validationRules).forEach(([fieldName, rules]) => {
+            const input = document.getElementById(fieldName);
+            if (!input) return;
+
+            const value = input.value.trim();
+            
+            // Required check
+            if (rules.required && !value) {
+                displayError(input, `${fieldName} is required`);
+                isValid = false;
+                return;
+            }
+
+            // Minimum length check
+            if (rules.minLength && value.length < rules.minLength) {
+                displayError(input, rules.message);
+                isValid = false;
+                return;
+            }
+
+            // Minimum value check
+            if (rules.min !== undefined && parseFloat(value) < rules.min) {
+                displayError(input, rules.message);
+                isValid = false;
+                return;
+            }
+
+            // Custom validation
+            if (rules.validate && !rules.validate(value, input.type, couponForm)) {
+                displayError(input, rules.message);
+                isValid = false;
+            }
+        });
+
+        return isValid;
+    }
+
+    function displayError(input, message) {
+        const errorElement = document.createElement('p');
+        errorElement.className = 'text-red-500 text-xs italic mt-1';
+        errorElement.textContent = message;
+        input.parentNode.appendChild(errorElement);
+        input.classList.add('border-red-500');
+    }
+
+    function clearErrorMessages() {
+        document.querySelectorAll('.text-red-500').forEach(el => el.remove());
+        document.querySelectorAll('.border-red-500').forEach(el => el.classList.remove('border-red-500'));
+    }
+
+    function showMessage(message, type = 'error') {
+        errorText.textContent = message;
+        errorMessage.style.display = 'block';
+        errorMessage.className = type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            errorMessage.style.display = 'none';
+        }, 5000);
+    }
+});
+    </script>
+</body>
+</html>
+
+<%- include("../partials/admin/footer") %>

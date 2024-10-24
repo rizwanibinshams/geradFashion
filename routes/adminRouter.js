@@ -7,6 +7,7 @@ const categoryController = require('../controllers/admin/categoryController')
 const brandController = require("../controllers/admin/brandController")
 const productController = require("../controllers/admin/productController")
 const orderController = require("../controllers/admin/orderController")
+const couponController = require("../controllers/admin/couponController")
 const multer = require("multer")
 const storage = require("../helpers/multer")
 const uploads = multer({storage:storage})
@@ -65,5 +66,17 @@ router.post("/deleteImage",auth.adminAuth,productController.deleteSingleImage)
 
 router.get("/order",auth.adminAuth, orderController.getAllOrders)
 router.post('/update-order-status',auth.adminAuth, orderController.updateOrderStatus);
+
+//coupon management 
+
+router.get('/coupons', auth.adminAuth, couponController.getAllCoupons);
+router.post('/coupons', auth.adminAuth, couponController.createCoupon);
+router.get('/coupons/:id', auth.adminAuth, couponController.getCouponById);
+router.put('/coupons/:id', auth.adminAuth, couponController.updateCoupon);
+router.delete('/coupons/:id', auth.adminAuth, couponController.deleteCoupon);
+
+// User route for applying a coupon
+// router.post('/applyCoupon',couponController.applyCoupon)
+
 
 module.exports = router           

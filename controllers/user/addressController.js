@@ -75,7 +75,11 @@ const addAddress = async (req, res) => {
 
         await userAddress.save();
         // Redirect to the profile page after successfully adding the address
-        res.redirect('/profile'); // Adjust the route to your actual profile page route
+        //res.redirect('/profile'); // Adjust the route to your actual profile page route
+
+        // Instead of redirecting on success, return JSON response
+res.status(201).json({ address: userAddress.address[userAddress.address.length - 1] }); // Send the newly added address back to the client
+
     } catch (error) {
         console.error("Error adding address:", error.message); // Log specific error message
         res.status(500).json({ error: 'An error occurred while adding the address' });

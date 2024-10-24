@@ -1,3 +1,4 @@
+
 <%- include("../partials/user/header") %>
 
 <!DOCTYPE html>
@@ -6,9 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout Page</title>
-    <!-- <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet"> -->
+   
     <style>
         .checkout-container {
             background: linear-gradient(135deg, #f6f9fc 0%, #e9f1f7 100%);
@@ -98,54 +97,66 @@
                         <!-- New Address Form -->
                         <h5 class="text-xl font-medium mb-4 text-gray-700">Add New Address</h5>
                         <form id="newAddressForm" onsubmit="handleSubmit(event)" class="space-y-4">
+                            <div id="error-message" class="text-red-500 mb-2"></div> <!-- General error message container -->
+                        
                             <div class="mb-4">
                                 <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
-                                <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="name" name="name" required>
+                                <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="name" name="name" >
+                                <div id="nameError" class="text-red-500 mt-1"></div> <!-- Specific error message for name -->
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label for="type" class="block text-sm font-medium text-gray-700">Type</label>
-                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="type" name="addressType" required>
+                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="type" name="addressType" >
+                                    <div id="typeError" class="text-red-500 mt-1"></div> <!-- Specific error message for type -->
                                 </div>
                                 <div>
                                     <label for="street" class="block text-sm font-medium text-gray-700">Street</label>
-                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="street" name="street" required>
+                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="street" name="street" >
+                                    <div id="streetError" class="text-red-500 mt-1"></div> <!-- Specific error message for street -->
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label for="landMark" class="block text-sm font-medium text-gray-700">Landmark</label>
                                     <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="landMark" name="landMark">
+                                    <div id="landMarkError" class="text-red-500 mt-1"></div> <!-- Specific error message for landmark -->
                                 </div>
                                 <div>
                                     <label for="pincode" class="block text-sm font-medium text-gray-700">Pincode</label>
-                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="pincode" name="pincode" required>
+                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="pincode" name="pincode" >
+                                    <div id="pincodeError" class="text-red-500 mt-1"></div> <!-- Specific error message for pincode -->
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label for="city" class="block text-sm font-medium text-gray-700">City</label>
-                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="city" name="city" required>
+                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="city" name="city" >
+                                    <div id="cityError" class="text-red-500 mt-1"></div> <!-- Specific error message for city -->
                                 </div>
                                 <div>
                                     <label for="state" class="block text-sm font-medium text-gray-700">State</label>
-                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="state" name="state" required>
+                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="state" name="state" >
+                                    <div id="stateError" class="text-red-500 mt-1"></div> <!-- Specific error message for state -->
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label for="phone" class="block text-sm font-medium text-gray-700">Phone</label>
-                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="phone" name="phone" required>
+                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="phone" name="phone" >
+                                    <div id="phoneError" class="text-red-500 mt-1"></div> <!-- Specific error message for phone -->
                                 </div>
                                 <div>
                                     <label for="altPhone" class="block text-sm font-medium text-gray-700">Alternate Phone</label>
                                     <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="altPhone" name="altPhone">
+                                    <div id="altPhoneError" class="text-red-500 mt-1"></div> <!-- Specific error message for alternate phone -->
                                 </div>
                             </div>
                             <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-blue-500 transition duration-300 ease-in-out mt-4 animate-scale">
                                 Save Address
                             </button>
                         </form>
+                        
                     </div>
                 </div>
                 
@@ -163,68 +174,88 @@
                                 </thead>
                                 <tbody id="cartItems">
                                     <% cart.forEach(item => { %>
-                                        <tr class="animate__animated animate__fadeIn border-b">
-                                            <td class="px-4 py-2 text-gray-700"><%= item.productId.productName %> (x<%= item.quantity %>)</td>
-                                            <td class="px-4 py-2 text-right text-gray-700">₹<%= (item.productId.salePrice * item.quantity).toFixed(2) %></td>
+                                        <tr class="border-b">
+                                            <td class="px-4 py-2 text-gray-700">
+                                                <%= item.productId.productName %> (x<%= item.quantity %>)
+                                            </td>
+                                            <td class="px-4 py-2 text-right text-gray-700">
+                                                ₹<%= (item.productId.salePrice * item.quantity).toFixed(2) %>
+                                            </td>
                                         </tr>
                                     <% }) %>
+                                    <tr class="border-b">
+                                        <td class="px-4 py-2 text-gray-700">Subtotal</td>
+                                        <td class="px-4 py-2 text-right text-gray-700">₹<%= total.toFixed(2) %></td>
+                                    </tr>
                                 </tbody>
                                 <tfoot>
+                                   
+                                    <tr class="border-b">
+                                        <td class="px-4 py-2 text-gray-700">Delivery Charge</td>
+                                        <td class="px-4 py-2 text-right text-gray-700">
+                                            <% if (total < 1000) { %>
+                                                ₹250.00
+                                                <div class="text-xs text-gray-500 mt-1">
+                                                    Add ₹<%= (1000 - total).toFixed(2) %> more to get free delivery
+                                                </div>
+                                            <% } else { %>
+                                                <span class="text-green-600">Free</span>
+                                            <% } %>
+                                        </td>
+                                    </tr>
                                     <tr class="font-bold">
                                         <td class="px-4 py-2 text-gray-700">Total</td>
-                                        <td class="px-4 py-2 text-right text-gray-700">₹<%= total.toFixed(2) %></td>
+                                        <td class="px-4 py-2 text-right text-gray-700">
+                                            ₹<%= (total < 1000 ? total + 250 : total).toFixed(2) %>
+                                        </td>
                                     </tr>
                                 </tfoot>
                             </table>
-                        </div>
-                        
-                        <!-- Coupon Code -->
-                        <div class="mt-6">
-                            <label for="couponCode" class="block text-sm font-medium text-gray-700 mb-2">Coupon Code</label>
-                            <div class="flex">
-                                <input type="text" class="form-control flex-grow mr-2 rounded-l-md" id="couponCode" name="couponCode" placeholder="Enter coupon code">
-                                <button onclick="applyCoupon()" class="bg-blue-500 text-white px-4 py-2 rounded-r-md hover:bg-blue-600 transition duration-300 ease-in-out">Apply</button>
+                            
+                            <div class="mt-6">
+                                <label for="couponCode" class="block text-sm font-medium text-gray-700 mb-2">Coupon Code</label>
+                                <div class="flex">
+                                    <input type="text" class="form-control flex-grow mr-2 rounded-l-md" id="couponCode" name="couponCode" placeholder="Enter coupon code">
+                                    <button onclick="applyCoupon()" class="bg-blue-500 text-white px-4 py-2 rounded-r-md hover:bg-blue-600 transition duration-300 ease-in-out">Apply</button>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <!-- Discount Applied -->
-                        <div class="mt-4 hidden" id="discountApplied">
-                            <p class="text-green-600 font-medium">Discount Applied: <span id="discountAmount"></span></p>
-                        </div>
-                        
-                        <!-- Payment Methods -->
-                        <div class="mt-6">
-                            <h5 class="text-xl font-medium mb-4 text-gray-700">Payment Method</h5>
-                            <div class="space-y-2">
-                                <label class="flex items-center space-x-3 cursor-pointer">
-                                    <input type="radio" name="paymentMethod" id="cashOnDelivery" value="cashOnDelivery" class="form-radio text-blue-600">
-                                    <span class="text-gray-700">Cash on Delivery</span>
-                                </label>
-                                <label class="flex items-center space-x-3 cursor-pointer">
-                                    <input type="radio" name="paymentMethod" id="razorpay" value="razorpay" class="form-radio text-blue-600">
-                                    <span class="text-gray-700">Razorpay</span>
-                                </label>
+                            
+                            <div id="discountApplied" class="mt-4 hidden">
+                                <p class="text-green-600 font-medium">
+                                    Discount Applied: <span id="discountAmount">₹0.00</span>
+                                </p>
                             </div>
+                
+                            <!-- Payment Methods -->
+                            <div class="mt-6">
+                                <h5 class="text-xl font-medium mb-4 text-gray-700">Payment Method</h5>
+                                <div class="space-y-2">
+                                    <label class="flex items-center space-x-3 cursor-pointer">
+                                        <input type="radio" name="paymentMethod" id="cashOnDelivery" value="cashOnDelivery" class="form-radio text-blue-600">
+                                        <span class="text-gray-700">Cash on Delivery</span>
+                                    </label>
+                                    <label class="flex items-center space-x-3 cursor-pointer">
+                                        <input type="radio" name="paymentMethod" id="razorpay" value="razorpay" class="form-radio text-blue-600">
+                                        <span class="text-gray-700">Razorpay</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button onclick="confirmOrder()" class="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:bg-blue-700 transition duration-300 ease-in-out mt-6 animate-scale" id="placeOrderBtn">
+                                Place Order
+                            </button>
                         </div>
-                        
-                        <button onclick="confirmOrder()" class="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:bg-blue-700 transition duration-300 ease-in-out mt-6 animate-scale" id="placeOrderBtn">
-                            Place Order
-                        </button>
                     </div>
                 </div>
-            </div>
         </div>
     </div>
 
-    <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script> -->
+   
     <script>
         function applyCoupon() {
             const couponCode = document.getElementById('couponCode').value;
             if (couponCode) {
-                // Here you would typically make an API call to validate the coupon
-                // For this example, we'll just simulate a successful coupon application
+                
                 $('#discountApplied').removeClass('hidden').addClass('animate__animated animate__fadeIn');
                 $('#discountAmount').text('₹50.00'); // Example discount
                 alert('Coupon applied successfully!');
@@ -239,6 +270,90 @@
     const formData = new FormData(form);
     const formObject = Object.fromEntries(formData.entries());
 
+    // Validation Regular Expressions
+    const nameRegex = /^[A-Za-z\s'-.]+$/; // Name: letters, spaces, hyphens, apostrophes
+    const phoneRegex = /^[0-9]{10}$/; // Phone: followed by 10digits
+    const pincodeRegex = /^[0-9]{6}$/; // Pincode: exactly 6 digits
+    const streetCityStateRegex = /^[A-Za-z0-9\s.,'-]+$/; // Allows alphanumeric characters, spaces, and some punctuation
+
+    // Clear previous error messages
+    const errorFields = [
+        'nameError',
+        'typeError',
+        'streetError',
+        'landMarkError',
+        'pincodeError',
+        'cityError',
+        'stateError',
+        'phoneError',
+        'altPhoneError'
+    ];
+    
+    errorFields.forEach(field => {
+        document.getElementById(field).textContent = '';
+    });
+
+    let hasError = false; // Track if there are any errors
+
+    // Validate Full Name
+    if (!nameRegex.test(formObject.name)) {
+        document.getElementById('nameError').textContent = "Please enter a valid name.";
+        hasError = true;
+    }
+
+    // Validate Address Type
+    if (!streetCityStateRegex.test(formObject.addressType)) {
+        document.getElementById('typeError').textContent = "Please enter a valid address type .";
+        hasError = true;
+    }
+
+    // Validate Street
+    if (!streetCityStateRegex.test(formObject.street)) {
+        document.getElementById('streetError').textContent = "Please enter a valid street .";
+        hasError = true;
+    }
+
+    // Validate Landmark (optional)
+    if (formObject.landMark && !streetCityStateRegex.test(formObject.landMark)) {
+        document.getElementById('landMarkError').textContent = "Please enter a valid landmark .";
+        hasError = true;
+    }
+
+    // Validate Pincode
+    if (!pincodeRegex.test(formObject.pincode)) {
+        document.getElementById('pincodeError').textContent = "Please enter a valid pincode (6 digits).";
+        hasError = true;
+    }
+
+    // Validate City
+    if (!streetCityStateRegex.test(formObject.city)) {
+        document.getElementById('cityError').textContent = "Please enter a valid city.";
+        hasError = true;
+    }
+
+    // Validate State
+    if (!streetCityStateRegex.test(formObject.state)) {
+        document.getElementById('stateError').textContent = "Please enter a valid state .";
+        hasError = true;
+    }
+
+    // Validate Phone
+    if (!phoneRegex.test(formObject.phone)) {
+        document.getElementById('phoneError').textContent = "Please enter a valid phone number (10 Digit).";
+        hasError = true;
+    }
+
+    // Validate Alternate Phone (optional)
+    if (formObject.altPhone && !phoneRegex.test(formObject.altPhone)) {
+        document.getElementById('altPhoneError').textContent = "Please enter a valid alternate phone number (10 digit).";
+        hasError = true;
+    }
+
+    // If there are any errors, stop form submission
+    if (hasError) {
+        return; // Stop form submission
+    }
+
     try {
         const response = await fetch('/addAddress', {
             method: 'POST',
@@ -248,7 +363,10 @@
             body: JSON.stringify(formObject),
         });
 
-        const result = await response.json();
+        const textResponse = await response.text(); // Get response as text first
+        console.log("Response Text:", textResponse); // Log the raw response text
+
+        const result = JSON.parse(textResponse); // Then parse it to JSON
 
         if (!response.ok) {
             throw new Error(result.error || 'An error occurred');
@@ -274,51 +392,65 @@
         // Clear the form
         form.reset();
 
-        alert( 'Address saved successfully!');
+        alert('Address saved successfully!');
     } catch (error) {
         console.error('Error saving address:', error);
         alert(`There was an error saving the address: ${error.message}`);
     }
 }
+
+
+       
         function confirmOrder() {
-            const addressId = document.querySelector('input[name="address"]:checked');
-            const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+    const addressId = document.querySelector('input[name="address"]:checked');
+    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+    const couponCode = document.querySelector('input[name="couponCode"]').value; // Get coupon code
 
-            if (!addressId) {
-                alert("Please select an address before placing the order.");
-                return;
-            }
+    if (!addressId) {
+        alert("Please select an address before placing the order.");
+        return;
+    }
 
-            if (!paymentMethod) {
-                alert("Please select a payment method before placing the order.");
-                return;
-            }
+    if (!paymentMethod) {
+        alert("Please select a payment method before placing the order.");
+        return;
+    }
 
-            fetch("/place-order", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ 
-                    addressId: addressId.value,
-                    paymentMethod: paymentMethod.value
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data); // Log the response data for debugging
-                if (data.success) {
-                    alert(data.message);
-                    window.location.href = '/success';
-                } else {
-                    alert(data.message || "An error occurred while placing the order.");
-                }
-            })
-            .catch(error => {
-                console.error("Error placing order:", error);
-                alert("An error occurred while placing the order.");
-            });
+    // Prepare the request body with the coupon code
+    const requestBody = {
+        addressId: addressId.value,
+        paymentMethod: paymentMethod.value
+    };
+
+    // Add coupon code if provided
+    if (couponCode) {
+        requestBody.couponCode = couponCode; 
+    }
+
+    fetch("/place-order", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            window.location.href = '/success';
+        } else {
+            alert(data.message || "An error occurred while placing the order.");
         }
+    })
+    .catch(error => {
+        console.error("Error placing order:", error);
+        alert("An error occurred while placing the order.");
+    });
+}
+
+
+
 
         // Add animation to form inputs
         const formInputs = document.querySelectorAll('.form-control, .form-check-input');
@@ -339,6 +471,100 @@
                 this.classList.remove('animate__animated', 'animate__pulse');
             }, 1000);
         });
+
+
+
+       // applycoupon 
+        async function applyCoupon() {
+    const couponCode = document.getElementById('couponCode').value.trim();
+    
+    if (!couponCode) {
+        alert('Please enter a valid coupon code.');
+        return;
+    }
+
+    try {
+        const response = await fetch('/applyCoupon', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ couponCode: couponCode }) // Match the backend expected parameter name
+        });
+
+        const data = await response.json();
+        console.log('Received response:', data);
+
+        if (data.success) {
+            updateCartDisplay(data);
+        } else {
+            handleError(data.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        handleError('Error applying coupon');
+    }
+}
+
+// Helper functions to improve code organization
+function updateCartDisplay(data) {
+    // Get elements
+    const cartItemsTable = document.getElementById('cartItems');
+    const totalElement = document.querySelector('tfoot tr:last-child td:last-child');
+    const discountAppliedDiv = document.getElementById('discountApplied');
+    const discountAmountSpan = document.getElementById('discountAmount');
+
+    // Remove existing discount row
+    removeExistingDiscountRow();
+
+    // Format numbers
+    const discountAmount = parseFloat(data.discountAmount);
+    const newTotal = parseFloat(data.newTotal);
+
+    // Add new discount row
+    addDiscountRow(cartItemsTable, discountAmount);
+
+    // Update total and discount display
+    totalElement.textContent = `₹${newTotal.toFixed(2)}`;
+    discountAppliedDiv.classList.remove('hidden');
+    discountAmountSpan.textContent = `₹${discountAmount.toFixed(2)}`;
+
+    // Disable coupon inputs
+    disableCouponInputs();
+
+    alert('Coupon applied successfully!');
+}
+
+function removeExistingDiscountRow() {
+    const existingDiscountRow = document.querySelector('.discount-row');
+    if (existingDiscountRow) {
+        existingDiscountRow.remove();
+    }
+}
+
+function addDiscountRow(cartItemsTable, discountAmount) {
+    const discountRow = `
+        <tr class="discount-row border-b">
+            <td class="px-4 py-2 text-green-600">Discount Applied</td>
+            <td class="px-4 py-2 text-right text-green-600">-₹${discountAmount.toFixed(2)}</td>
+        </tr>
+    `;
+    cartItemsTable.insertAdjacentHTML('beforeend', discountRow);
+}
+
+function disableCouponInputs() {
+    document.getElementById('couponCode').disabled = true;
+    document.querySelector('button[onclick="applyCoupon()"]').disabled = true;
+}
+
+function handleError(message) {
+    alert(message || 'Error applying coupon');
+    document.getElementById('discountApplied').classList.add('hidden');
+}
+
+
+
+
     </script>
 </body>
 </html>

@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const Wishlist = require("../../models/wishlistSchema"); // Adjust the path as needed
 const Product = require("../../models/productSchema"); // Adjust the path as needed
 const path = require("path");
-const user = require("../../models/userSchema");
+const User = require("../../models/userSchema");
 // Add to Wishlist
 const addToWishlist = async (req, res) => {
   try {
@@ -87,16 +87,27 @@ const removeFromWishlist = async (req, res) => {
     }
   };
 
-// Get User's Wishlist
-// Get User's Wishlist
+
+
+
 const getWishlist = async (req, res) => {
   try {
-    const userId = req.session.user?.id;
-    
-    const userData = await user.findById(req.session.user.id);
-    if (!userId) {
+    const user = req.session.user;
+
+    // Check if the user is logged in
+    if (!user) {
+      return res.redirect('/login'); // If user is not logged in, redirect to login
+    }
+
+    const userId = user.id; // Now safely access the user ID
+    const userData = await User.findById(userId); // Fetch user data
+
+    // Check if the user data is found, if not, redirect to login
+    if (!userData) {
       return res.redirect('/login');
     }
+
+    
 
     const wishlist = await Wishlist.findOne({ userId }).populate({
       path: 'products.productId',
@@ -131,22 +142,22 @@ const getWishlist = async (req, res) => {
       }).filter(item => item !== null);
     }
 
-    res.render('wishlist', { wishlistItems,
-      user:userData
-     });
+    // Render wishlist with items and user data
+    res.render('wishlist', { wishlistItems, user: userData });
+    
   } catch (error) {
     console.error('Error fetching wishlist:', error);
     res.status(500).render('page-404', { message: 'An error occurred while fetching your wishlist.' });
   }
 };
 
+// Helper function to calculate discount
 function calculateDiscount(regularPrice, salePrice) {
   if (regularPrice > salePrice) {
     return Math.round(((regularPrice - salePrice) / regularPrice) * 100);
   }
   return 0;
 }
-
 
 
 module.exports = {

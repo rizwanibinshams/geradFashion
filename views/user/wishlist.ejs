@@ -1,69 +1,92 @@
-
-
 <%- include("../partials/user/header") %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Wishlist</title>
+    <title>Fashion Wishlist</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Poppins', sans-serif;
+            background-color: #FAFAFA;
+        }
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+        }
+        .wishlist-item {
+            backdrop-filter: blur(10px);
+        }
+        .product-image {
+            transition: transform 0.3s ease;
+        }
+        .wishlist-item:hover .product-image {
+            transform: scale(1.05);
+        }
+        .price-tag {
+            font-family: 'Playfair Display', serif;
         }
     </style>
 </head>
-<body class="bg-gray-100">
-    <div class="container mx-auto px-4 py-8">
-        <h1 class="text-4xl font-bold mb-8 text-gray-800 text-center">My Wishlist</h1>
-        <div id="wishlist-items" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<body class="bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        <nav aria-label="breadcrumb" class="mb-4 sm:mb-8 overflow-x-auto whitespace-nowrap">
+            <ol class="flex items-center space-x-2 text-xs sm:text-sm text-gray-500 uppercase tracking-wide">
+                <li><a href="/" class="hover:text-black transition-colors">Home</a></li>
+                <li><span class="mx-2">/</span></li>
+                <li><a href="/wishlist" class="hover:text-black transition-colors">Whishlist</a></li>
+            </ol>
+        </nav>
+        <h1 class="text-5xl font-bold mb-2 text-gray-900 text-center tracking-tight">Your Wishlist</h1>
+        <p class="text-center text-gray-600 mb-12 text-lg">Your personally selected fashion pieces</p>
+        
+        <div id="wishlist-items" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <% if (wishlistItems && wishlistItems.length > 0) { %>
                 <% wishlistItems.forEach(function(item) { %>
-                    <div class="wishlist-item bg-white rounded-lg shadow-lg overflow-hidden transition-transform duration-300 hover:scale-105" data-item-id="<%= item._id %>">
-                        <div class="relative">
-                            
-                            <img src="<%= item.product.productImage %>" alt="<%= item.product.productName %>" class="w-full h-64 object-cover">
+                    <div class="wishlist-item bg-white rounded-xl shadow-sm overflow-hidden transition-all duration-300 hover:shadow-xl" data-item-id="<%= item._id %>">
+                        <div class="relative overflow-hidden">
+                            <img src="<%= item.product.productImage %>" alt="<%= item.product.productName %>" class="product-image w-full h-80 object-cover">
                             <% if (item.product.discount > 0) { %>
-                                <div class="absolute top-0 right-0 bg-red-500 text-white px-2 py-1 m-2 rounded-full text-xs font-semibold">
+                                <div class="absolute top-4 right-4 bg-black text-white px-3 py-1 rounded-full text-sm font-medium">
                                     <%= item.product.discount %>% OFF
                                 </div>
                             <% } %>
                         </div>
-                        <div class="p-4">
-                            <h3 class="font-semibold text-xl mb-2"><%= item.product.productName %></h3>
-                            <p class="text-gray-600 mb-2"><%= item.product.brand %></p>
+                        <div class="p-6">
+                            <div class="text-sm text-gray-500 uppercase tracking-wide mb-2"><%= item.product.brand %></div>
+                            <h3 class="font-semibold text-xl mb-3 text-gray-900"><%= item.product.productName %></h3>
+                            
                             <div class="flex justify-between items-center mb-4">
-                                <div>
-                                    <span class="text-2xl font-bold text-gray-800">$<%= item.product.salePrice.toFixed(2) %></span>
+                                <div class="price-tag">
+                                    <span class="text-2xl font-bold text-gray-900">₹<%= item.product.salePrice.toFixed(2) %></span>
                                     <% if (item.product.discount > 0) { %>
-                                        <span class="text-sm text-gray-500 line-through ml-2">
-                                            $<%= item.product.price.toFixed(2) %>
+                                        <span class="text-sm text-gray-400 line-through ml-2">
+                                            ₹<%= item.product.price.toFixed(2) %>
                                         </span>
                                     <% } %>
                                 </div>
                                 <div class="flex items-center">
                                     <% for (let i = 0; i < 5; i++) { %>
-                                        <svg class="w-4 h-4 <%= i < (item.product.rating || 0) ? 'text-yellow-400' : 'text-gray-300' %> fill-current" viewBox="0 0 20 20">
+                                        <svg class="w-4 h-4 <%= i < (item.product.rating || 0) ? 'text-yellow-400' : 'text-gray-200' %> fill-current" viewBox="0 0 20 20">
                                             <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
                                         </svg>
                                     <% } %>
-                                    <span class="text-gray-600 ml-1"><%= item.product.reviewCount || 0 %> reviews</span>
+                                    <span class="text-sm text-gray-500 ml-2"><%= item.product.reviewCount || 0 %> reviews</span>
                                 </div>
                             </div>
-                            <p class="text-gray-600 mb-4"><%= item.product.description %></p>
+                            <p class="text-gray-600 text-sm mb-6"><%= item.product.description %></p>
                             <div class="flex justify-between items-center">
-                                <button class="add-to-cart bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-200 flex items-center">
+                                <button  class="add-to-cart bg-black hover:bg-gray-900 text-white font-medium py-2.5 px-6 rounded-full transition-colors duration-200 flex items-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+                                        <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z"/>
                                     </svg>
-                                    Add to Cart
+                                    Add to Bag
                                 </button>
-                                <button class="remove-item text-red-500 hover:text-red-700 transition-colors duration-200">
+                                <button class="remove-item text-gray-400 hover:text-red-500 transition-colors duration-200">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                     </svg>
                                 </button>
                             </div>
@@ -71,12 +94,12 @@
                     </div>
                 <% }); %>
             <% } else { %>
-                <div class="col-span-full text-center py-12">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                <div class="col-span-full text-center py-16">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-gray-300 mx-auto mb-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                     </svg>
-                    <p class="text-xl text-gray-600">Your wishlist is empty.</p>
-                    <p class="text-gray-500 mt-2">Start adding items to your wishlist to see them here!</p>
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-2">Your Wishlist is Empty</h2>
+                    <p class="text-gray-600 max-w-md mx-auto">Discover our latest collections and add your favorite pieces to create your perfect wardrobe.</p>
                 </div>
             <% } %>
         </div>
@@ -89,64 +112,68 @@
         }
 
         function removeItem(itemId) {
-    fetch(`/wishlist/remove/${itemId}`, {
-        method: 'DELETE',
-        credentials: 'same-origin'
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.message === "Product removed from wishlist successfully") {
-            const itemElement = document.querySelector(`[data-item-id="${itemId}"]`);
-            if (itemElement) {
-                itemElement.remove();
-
-                // Show SweetAlert for successful removal
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Removed!',
-                    text: 'Product removed from wishlist successfully!',
-                    showConfirmButton: false,
-                    timer: 1500
-                });
-
-                // Check if the wishlist is now empty and update the UI
-                if (document.querySelectorAll('.wishlist-item').length === 0) {
-                    document.getElementById('wishlist-items').innerHTML = '<p class="text-gray-500">Your wishlist is empty.</p>';
+    // Show confirmation dialog before removing the item
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "Do you want to remove the product from your wishlist?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, remove it!',
+        cancelButtonText: 'Cancel',
+        backdrop: 'rgba(0,0,0,0.4)'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Proceed with the removal if confirmed
+            fetch(`/wishlist/remove/${itemId}`, {
+                method: 'DELETE',
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-            }
-        } else {
-            throw new Error(data.message || 'Unknown error occurred');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
+                return response.json();
+            })
+            .then(data => {
+                if (data.message === "Product removed from wishlist successfully") {
+                    const itemElement = document.querySelector(`[data-item-id="${itemId}"]`);
+                    if (itemElement) {
+                        itemElement.remove();
+                        if (document.querySelectorAll('.wishlist-item').length === 0) {
+                            location.reload();
+                        }
 
-        // Show SweetAlert for error
-        Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: `Failed to remove item from wishlist. Error: ${error.message}`,
-        });
+                        // Show success alert after removal
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Removed',
+                            text: 'Item removed from your wishlist',
+                            showConfirmButton: false,
+                            timer: 1500,
+                            backdrop: 'rgba(0,0,0,0.1)'
+                        });
+                    }
+                } else {
+                    throw new Error(data.message || 'Unknown error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Show error alert if the removal fails
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Unable to Remove Item',
+                    text: 'Please try again later',
+                    confirmButtonColor: '#000'
+                });
+            });
+        }
     });
 }
 
 
-        function animateItems() {
-            gsap.from('.wishlist-item', {
-                opacity: 0,
-                y: 20,
-                stagger: 0.1,
-                duration: 0.5,
-                ease: 'power2.out'
-            });
-        }
-
-        // Add event listeners
         document.getElementById('wishlist-items').addEventListener('click', function(event) {
             const addToCartButton = event.target.closest('.add-to-cart');
             const removeItemButton = event.target.closest('.remove-item');
@@ -159,11 +186,7 @@
                 removeItem(itemId);
             }
         });
-
-        // Animate items on page load
-        animateItems();
     </script>
 </body>
 </html>
-
 <%- include("../partials/user/footer") %>

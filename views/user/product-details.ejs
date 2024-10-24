@@ -1,5 +1,3 @@
-
-<%- include("../partials/user/header") %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,113 +11,181 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-         .zoom-container {
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .zoom-container {
             position: relative;
             overflow: hidden;
             width: 100%;
-            max-width: 600px; /* Adjust based on your layout */
+            max-width: 600px;
             margin: 0 auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
         .zoom-lens {
             position: absolute;
-            border: 1px solid #d4d4d4;
-            width: 100px;
-            height: 100px;
-            background-color: rgba(255, 255, 255, 0.4);
+            border: 2px solid #ffffff;
+            width: 150px;
+            height: 150px;
+            background-color: rgba(255, 255, 255, 0.3);
             cursor: none;
             display: none;
+            backdrop-filter: blur(2px);
         }
+
         .zoom-result {
             position: absolute;
             top: 0;
-            right: -320px; /* Adjust based on your layout */
-            width: 300px;
-            height: 300px;
-            border: 1px solid #d4d4d4;
+            right: -400px;
+            width: 380px;
+            height: 380px;
+            border: 2px solid #e5e7eb;
             background-repeat: no-repeat;
             display: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .thumbnail {
+            transition: all 0.3s ease;
+        }
+
+        .thumbnail:hover {
+            transform: scale(1.05);
+        }
+
+        .thumbnail.active {
+            border: 2px solid #3b82f6;
+            transform: scale(1.05);
+        }
+
+        .product-transition {
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        /* Custom scrollbar for thumbnail container */
+        .thumbnail-container::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .thumbnail-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .thumbnail-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .thumbnail-container::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
     </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-50">
+    <%- include("../partials/user/header") %>
+    
     <section class="product-details py-16">
-        <div class="container mx-auto px-4">
-            <!-- Breadcrumb Navigation -->
+        <div class="container mx-auto px-4 max-w-7xl">
+            <!-- Breadcrumb -->
             <nav aria-label="breadcrumb" class="mb-8">
-                <ol class="flex items-center space-x-2 text-gray-600">
-                    <li><a href="/" class="hover:text-blue-600">Home</a></li>
-                    <li><span class="mx-2">/</span></li>
-                    <li><a href="/products" class="hover:text-blue-600">Products</a></li>
-                    <li><span class="mx-2">/</span></li>
-                    <li class="text-gray-800 font-semibold"><%= product.productName %></li>
+                <ol class="flex items-center space-x-2 text-gray-600 text-sm">
+                    <li><a href="/" class="hover:text-blue-600 transition-colors">Home</a></li>
+                    <li><span class="mx-2">›</span></li>
+                    <li><a href="/products" class="hover:text-blue-600 transition-colors">Products</a></li>
+                    <li><span class="mx-2">›</span></li>
+                    <li class="text-gray-800 font-medium"><%= product.productName %></li>
                 </ol>
             </nav>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 <!-- Image Section -->
                 <div class="product__details__pic space-y-6">
-                    <!-- Main large image with zoom -->
-                    <div class="zoom-container rounded-lg shadow-lg">
+                    <div class="zoom-container bg-white p-4">
                         <img id="main-image"
                              src="/uploads/re-image/<%= product.productImage[0] %>" 
                              alt="<%= product.productName %>" 
-                             class="w-full h-auto object-cover">
+                             class="w-full h-auto object-cover transition-opacity duration-300">
                         <div class="zoom-lens"></div>
                         <div class="zoom-result"></div>
                     </div>
-                    <!-- Thumbnail images -->
-                    <div class="flex space-x-4 overflow-x-auto pb-2">
+                    
+                    <!-- Thumbnails -->
+                    <div class="thumbnail-container flex space-x-4 overflow-x-auto pb-4">
                         <% product.productImage.forEach(function(image, index) { %>
                             <img src="/uploads/re-image/<%= image %>" 
-                                 class="thumbnail w-20 h-20 object-cover rounded-md cursor-pointer transition-all duration-300 <%= index === 0 ? 'ring-2 ring-blue-500' : 'opacity-60 hover:opacity-100' %>" 
+                                 class="thumbnail w-24 h-24 object-cover rounded-lg cursor-pointer <%= index === 0 ? 'active' : 'opacity-60' %>" 
                                  onclick="changeImage('/uploads/re-image/<%= image %>', this)" 
                                  alt="<%= product.productName %>">
                         <% }) %>
                     </div>
                 </div>
 
-                <!-- Product Details Section -->
-                <div class="product__details__text bg-white p-8 rounded-lg shadow-lg">
+                <!-- Product Details -->
+                <div class="product__details__text bg-white p-8 rounded-xl shadow-sm">
                     <h3 class="text-3xl font-bold mb-6 text-gray-900"><%= product.productName %></h3>
 
-                    <!-- Pricing -->
-                    <div class="mb-6">
-                        <h4 class="text-2xl font-semibold">
-                            <span class="text-red-600">₹ <%= product.salePrice %></span>
-                            <span class="text-gray-500 line-through text-xl ml-2">₹ <%= product.regularPrice %></span>
-                        </h4>
+                    <!-- Price -->
+                    <div class="mb-6 space-y-2">
+                        <div class="flex items-baseline">
+                            <span class="text-2xl font-bold text-red-600">₹<%= product.salePrice %></span>
+                            <span class="text-lg text-gray-400 line-through ml-3">₹<%= product.regularPrice %></span>
+                        </div>
                         <% if (product.regularPrice > product.salePrice) { 
                             let discountPercentage = Math.round(((product.regularPrice - product.salePrice) / product.regularPrice) * 100); %>
-                            <p class="text-green-500 font-semibold mt-2">Save <%= discountPercentage %>%</p>
+                            <span class="inline-block bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">
+                                Save <%= discountPercentage %>%
+                            </span>
                         <% } %>
                     </div>
 
-                    <!-- Rating Stars -->
-                    <div class="flex items-center mb-4">
+                    <!-- Rating -->
+                    <div class="flex items-center mb-6 bg-gray-50 p-3 rounded-lg">
                         <div class="flex">
                             <% for (let i = 1; i <= 5; i++) { %>
-                                <svg class="w-5 h-5 <%= i <= product.rating ? 'text-yellow-400' : 'text-gray-300' %>" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <svg class="w-5 h-5 <%= i <= product.rating ? 'text-yellow-400' : 'text-gray-300' %>" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                                 </svg>
                             <% } %>
                         </div>
-                        <span class="ml-2 text-gray-600">(<%= product.rating %> out of 5)</span>
+                        <span class="ml-2 text-gray-600 text-sm">(<%= product.rating %> out of 5)</span>
                     </div>
 
                     <!-- Description -->
-                    <p class="mb-6 text-gray-700 leading-relaxed"><%= product.description %></p>
+                    <div class="prose prose-sm max-w-none mb-8">
+                        <p class="text-gray-600 leading-relaxed"><%= product.description %></p>
+                    </div>
 
-                    <!-- Additional Info -->
-                    <div class="space-y-2 mb-6">
-                        <p class="text-gray-600"><i class="fas fa-tags mr-2"></i>Category: <%= product.category.name %></p>
-                        <p class="text-gray-600"><i class="fas fa-copyright mr-2"></i>Brand: <%= product.brand %></p>
-                        <p class="text-gray-600"><i class="fas fa-palette mr-2"></i>Colors: <%= product.color.join(', ') %></p>
+                    <!-- Product Info -->
+                    <div class="grid grid-cols-2 gap-4 mb-8">
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <p class="text-gray-600 text-sm"><i class="fas fa-tags mr-2"></i>Category</p>
+                            <p class="font-medium"><%= product.category.name %></p>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <p class="text-gray-600 text-sm"><i class="fas fa-copyright mr-2"></i>Brand</p>
+                            <p class="font-medium"><%= product.brand %></p>
+                        </div>
+                        <!-- <div class="bg-gray-50 p-3 rounded-lg">
+                            <p class="text-gray-600 text-sm"><i class="fas fa-palette mr-2"></i>Colors</p>
+                            <p class="font-medium"><%= product.color.join(', ') %></p>
+                        </div> -->
                     </div>
 
                     <!-- Size Selection -->
-                    <div class="mb-6">
-                        <label for="size-select" class="block text-gray-700 font-semibold mb-2">Select Size:</label>
-                        <select id="size-select" class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <div class="mb-8">
+                        <label for="size-select" class="block text-gray-700 font-medium mb-2">Select Size</label>
+                        <select id="size-select" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
                             <% if (product.size && product.size.length > 0) { %>
                                 <% product.size.forEach(size => { %>
                                     <option value="<%= size %>"><%= size %></option>
@@ -130,100 +196,119 @@
                         </select>
                     </div>
 
-                    <!-- Quantity Selection -->
-                     
-                    <div class="mb-6">
-                        <label for="quantity-input" class="block text-gray-700 font-semibold mb-2">Quantity:</label>
-                        <div class="flex items-center">
-                            <!-- Decrease Button -->
-                            <button onclick="updateQuantity(-1)" class="bg-gray-200 text-gray-700 px-3 py-2 rounded-l-md hover:bg-gray-300 transition-colors duration-200">-</button>
-                    
-                            <!-- Quantity Input with max set to 10 -->
-                            <input type="number" id="quantity-input" class="border-t border-b border-gray-300 text-center w-16 py-2" value="1" min="1" max="10">
-                    
-                            <!-- Increase Button -->
-                            <button onclick="updateQuantity(1)" class="bg-gray-200 text-gray-700 px-3 py-2 rounded-r-md hover:bg-gray-300 transition-colors duration-200">+</button>
+                    <!-- Quantity -->
+                    <div class="mb-8">
+                        <label for="quantity-input" class="block text-gray-700 font-medium mb-2">Quantity</label>
+                        <div class="flex items-center w-full max-w-xs">
+                            <button onclick="updateQuantity(-1)" 
+                                    class="bg-gray-100 text-gray-600 px-4 py-2 rounded-l-lg hover:bg-gray-200 transition-colors">
+                                −
+                            </button>
+                            <input type="number" 
+                                   id="quantity-input" 
+                                   class="border-y border-gray-200 text-center w-20 py-2 focus:outline-none" 
+                                   value="1" 
+                                   min="1" 
+                                   max="10">
+                            <button onclick="updateQuantity(1)" 
+                                    class="bg-gray-100 text-gray-600 px-4 py-2 rounded-r-lg hover:bg-gray-200 transition-colors">
+                                +
+                            </button>
                         </div>
                     </div>
-                    
-                    
 
-                    <!-- Add to Cart & Wishlist -->
+                    <!-- Action Buttons -->
                     <div class="flex space-x-4">
                         <button data-product-id="<%= product._id %>" 
-                            onclick="addToCart('<%= product._id %>')" 
-                            class="flex-grow bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span>Add to Cart</span>
-                    </button>
-                
-                    <button data-product-id="<%= product._id %>" class="wishlist-button bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors duration-200 flex items-center justify-center space-x-2">
-                        <i class="fas fa-heart"></i>
-                        <span>Wishlist</span>
-                    </button>
-                    
-                                        </div>
+                                onclick="addToCart('<%= product._id %>')" 
+                                class="flex-grow bg-blue-600 text-white px-6 py-3 rounded-lg shadow-sm hover:bg-blue-700 transition-all duration-200 flex items-center justify-center space-x-2 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>Add to Cart</span>
+                        </button>
+                        
+                        <button data-product-id="<%= product._id %>" 
+                                class="wishlist-button bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-all duration-200 flex items-center justify-center space-x-2">
+                            <i class="fas fa-heart"></i>
+                            <span>Wishlist</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-<!-- Related Products -->
-<section class="related-products py-12 bg-gray-50">
-    <div class="container mx-auto">
-        <h4 class="text-2xl font-semibold mb-8">Related Products</h4>
-        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
-            <% if (relatedProducts.length > 0) { %>
-                <% relatedProducts.forEach(product => { %>
-                    <div class="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition duration-300">
-                        <a href="/productDetails?id=<%= product._id %>">
-                            <div class="relative">
-                                <% const discount = Math.abs(((product.regularPrice - product.salePrice) / product.regularPrice) * 100); %>
-                                <% if (discount > 0) { %>
-                                    <div class="absolute top-2 left-2 bg-red-500 text-white text-sm rounded px-2 py-1"><%= discount.toFixed(2) %>%</div>
-                                <% } %>
-                                <img src="/uploads/product-images/<%= product.productImage[0] %>" alt="<%= product.productName %>" class="w-full h-48 object-cover rounded-lg">
-                            </div>
-                            <h5 class="mt-4 text-lg font-semibold text-gray-900"><%= product.productName %></h5>
-                            <p class="text-gray-600">Brand: <%= product.brand %></p>
-                            <div class="text-lg">
-                                <span class="text-gray-500 line-through">₹<%= product.regularPrice %></span>
-                                <span class="text-red-500 font-bold">₹<%= product.salePrice %></span>
-                            </div>
-                            <div class="flex items-center mb-4">
-                                <div class="flex">
-                                    <% for (let i = 1; i <= 5; i++) { %>
-                                        <svg class="w-5 h-5 <%= i <= product.rating ? 'text-yellow-400' : 'text-gray-300' %>" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                        </svg>
+    <!-- Related Products -->
+    <section class="related-products py-16 bg-white">
+        <div class="container mx-auto px-4 max-w-7xl">
+            <h4 class="text-2xl font-bold mb-8">You May Also Like</h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                <% if (relatedProducts.length > 0) { %>
+                    <% relatedProducts.forEach(product => { %>
+                        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
+                            <a href="/productDetails?id=<%= product._id %>" class="block">
+                                <div class="relative">
+                                    <% const discount = Math.abs(((product.regularPrice - product.salePrice) / product.regularPrice) * 100); %>
+                                    <% if (discount > 0) { %>
+                                        <div class="absolute top-3 left-3 bg-red-500 text-white text-xs font-medium px-2 py-1 rounded-full">
+                                            <%= discount.toFixed(0) %>% OFF
+                                        </div>
                                     <% } %>
+                                    <img src="/uploads/product-images/<%= product.productImage[0] %>" 
+                                         alt="<%= product.productName %>" 
+                                         class="w-full h-64 object-cover rounded-t-xl">
                                 </div>
-                                <span class="ml-2 text-gray-600">(<%= product.rating %> out of 5)</span>
-                            </div>
-                        </a>
-                    </div>
-                <% }) %>
-            <% } else { %>
-                <p class="text-center">No related products available.</p>
-            <% } %>
+                                <div class="p-4">
+                                    <h5 class="text-lg font-medium text-gray-900 mb-2"><%= product.productName %></h5>
+                                    <p class="text-gray-600 text-sm mb-2">Brand: <%= product.brand %></p>
+                                    <div class="flex items-baseline space-x-2 mb-2">
+                                        <span class="text-lg font-bold text-gray-900">₹<%= product.salePrice %></span>
+                                        <span class="text-sm text-gray-400 line-through">₹<%= product.regularPrice %></span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="flex">
+                                            <% for (let i = 1; i <= 5; i++) { %>
+                                                <svg class="w-4 h-4 <%= i <= product.rating ? 'text-yellow-400' : 'text-gray-300' %>" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                                </svg>
+                                            <% } %>
+                                        </div>
+                                        <span class="ml-2 text-sm text-gray-600">(<%= product.rating %>)</span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <p class="text-center col-span-full text-gray-600">No related products available at the moment.</p>
+                <% } %>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<script>
-    function changeImage(imageSrc, clickedThumbnail) {
-        const mainImage = document.getElementById('main-image');
-        mainImage.classList.add('opacity-0');
-        setTimeout(() => {
-            mainImage.src = imageSrc;
-            mainImage.classList.remove('opacity-0');
-        }, 300);
+    <script>
+        // Image zoom and thumbnail functionality
+        function changeImage(imageSrc, clickedThumbnail) {
+            const mainImage = document.getElementById('main-image');
+            mainImage.style.opacity = '0';
+            
+            // Remove active class from all thumbnails
+            document.querySelectorAll('.thumbnail').forEach(thumb => {
+                thumb.classList.remove('active');
+                thumb.classList.add('opacity-60');
+            });
+            
+            // Add active class to clicked thumbnail
+            clickedThumbnail.classList.add('active');
+            clickedThumbnail.classList.remove('opacity-60');
+            
+            setTimeout(() => {
+                mainImage.src = imageSrc;
+                mainImage.style.opacity = '1';
+            }, 300);
+        }
 
-        document.querySelectorAll('.thumbnail').forEach(thumb => thumb.classList.remove('border-gray-500'));
-        clickedThumbnail.classList.add('border-gray-500');
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
+        // Enhanced zoom functionality
+        document.addEventListener('DOMContentLoaded', function() {
             const container = document.querySelector('.zoom-container');
             const img = document.getElementById('main-image');
             const lens = document.querySelector('.zoom-lens');
@@ -236,6 +321,10 @@
             function showZoom() {
                 lens.style.display = 'block';
                 result.style.display = 'block';
+                result.style.opacity = '0';
+                setTimeout(() => {
+                    result.style.opacity = '1';
+                }, 100);
             }
 
             function hideZoom() {
@@ -248,207 +337,224 @@
                 let x = pos.x - (lens.offsetWidth / 2);
                 let y = pos.y - (lens.offsetHeight / 2);
 
-                if (x > img.width - lens.offsetWidth) {x = img.width - lens.offsetWidth;}
-                if (x < 0) {x = 0;}
-                if (y > img.height - lens.offsetHeight) {y = img.height - lens.offsetHeight;}
-                if (y < 0) {y = 0;}
+                // Boundary checks
+                x = Math.min(Math.max(x, 0), img.width - lens.offsetWidth);
+                y = Math.min(Math.max(y, 0), img.height - lens.offsetHeight);
 
                 lens.style.left = x + 'px';
                 lens.style.top = y + 'px';
 
-                let cx = result.offsetWidth / lens.offsetWidth;
-                let cy = result.offsetHeight / lens.offsetHeight;
+                const cx = result.offsetWidth / lens.offsetWidth;
+                const cy = result.offsetHeight / lens.offsetHeight;
 
                 result.style.backgroundImage = `url('${img.src}')`;
-                result.style.backgroundSize = (img.width * cx) + 'px ' + (img.height * cy) + 'px';
-                result.style.backgroundPosition = '-' + (x * cx) + 'px -' + (y * cy) + 'px';
+                result.style.backgroundSize = `${img.width * cx}px ${img.height * cy}px`;
+                result.style.backgroundPosition = `-${x * cx}px -${y * cy}px`;
             }
 
             function getCursorPos(e) {
-                let rect = img.getBoundingClientRect();
-                let x = e.pageX - rect.left - window.pageXOffset;
-                let y = e.pageY - rect.top - window.pageYOffset;
-                return {x, y};
+                const rect = img.getBoundingClientRect();
+                return {
+                    x: e.pageX - rect.left - window.pageXOffset,
+                    y: e.pageY - rect.top - window.pageYOffset
+                };
             }
         });
 
+        // Quantity update with animation
         function updateQuantity(change) {
-        const quantityInput = document.getElementById('quantity-input');
-        let currentQuantity = parseInt(quantityInput.value);
-        let newQuantity = currentQuantity + change;
-        if (newQuantity >= 1 && newQuantity <= 10) {  // Limit between 1 and 10
-            quantityInput.value = newQuantity;
+            const quantityInput = document.getElementById('quantity-input');
+            let currentQuantity = parseInt(quantityInput.value);
+            let newQuantity = currentQuantity + change;
+            
+            if (newQuantity >= 1 && newQuantity <= 10) {
+                quantityInput.classList.add('scale-110');
+                quantityInput.value = newQuantity;
+                
+                setTimeout(() => {
+                    quantityInput.classList.remove('scale-110');
+                }, 200);
+            }
         }
-    }
 
-    function addToCart(productId) {
-    const quantity = document.getElementById('quantity-input').value;
+        // Enhanced Add to Cart functionality
+        function addToCart(productId) {
+            const quantity = document.getElementById('quantity-input').value;
+            const size = document.getElementById('size-select').value;
 
-    $.ajax({
-        url: '/addToCart',  // Replace with your actual add-to-cart route
-        method: 'POST',
-        data: {
-            productId: productId,
-            quantity: quantity
-        },
-        success: function(response) {
-            // Show SweetAlert for success
-            Swal.fire({
-                icon: 'success',
-                title: 'Added!',
-                text: 'Product added to cart successfully!',
-                showConfirmButton: false,
-                timer: 1500
-            }).then(() => {
-                location.reload(); // Reload the page to reflect cart changes
+            $.ajax({
+                url: '/addToCart',
+                method: 'POST',
+                data: {
+                    productId: productId,
+                    quantity: quantity,
+                    size: size
+                },
+                beforeSend: function() {
+                    Swal.fire({
+                        title: 'Adding to Cart...',
+                        html: 'Please wait',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                },
+                success: function(response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Added to Cart!',
+                        text: 'Product added successfully',
+                        showConfirmButton: false,
+                        timer: 1500,
+                        customClass: {
+                            popup: 'animate__animated animate__fadeInUp'
+                        }
+                    }).then(() => {
+                        location.reload();
+                    });
+                },
+                error: function(xhr) {
+                    if (xhr.status === 401) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Not Logged In',
+                            text: 'Please log in to add items to your cart',
+                            showConfirmButton: true,
+                            confirmButtonText: 'Log In',
+                            showCancelButton: true,
+                            cancelButtonText: 'Cancel',
+                            customClass: {
+                                popup: 'animate__animated animate__fadeInDown'
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = '/login';
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Something went wrong! Please try again.',
+                        });
+                    }
+                }
             });
-        },
-        error: function(xhr) {
-            if (xhr.status === 401) {
-                // Show SweetAlert for unauthorized (not logged in) error
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Not Logged In',
-                    text: 'You are not logged in. Redirecting to login page...',
-                    showConfirmButton: false,
-                    timer: 2000
-                }).then(() => {
-                    window.location.href = '/login'; // Redirect to the login page
-                });
-            } else {
-                // Show SweetAlert for other errors
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'Failed to add product to cart.',
-                });
-            }
-        }
-    });
-}
-
-
-
-
-    // Add this script to your main JavaScript file or include it in your HTML
-
-    document.addEventListener('DOMContentLoaded', function() {
-    // Select all wishlist buttons
-    const wishlistButtons = document.querySelectorAll('.wishlist-button');
-
-    wishlistButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const productId = button.getAttribute('data-product-id');
-
-            // Toggle action based on the button's current state
-            if (button.querySelector('span').textContent === 'In Wishlist') {
-                removeFromWishlist(productId, button);
-            } else {
-                addToWishlist(productId, button);
-            }
-        });
-    });
-
-    // Function to add product to wishlist
-    async function addToWishlist(productId, button) {
-    try {
-        button.classList.add('opacity-50', 'cursor-not-allowed');
-        button.querySelector('span').textContent = 'Adding...';
-
-        const response = await fetch('/wishlist/add', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ productId }),
-            credentials: 'same-origin'
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message); // Throw the error message
         }
 
-        const data = await response.json();
-        console.log(data.message); // Log the success message
+        // Wishlist functionality with enhanced UI feedback
+        document.addEventListener('DOMContentLoaded', function() {
+            const wishlistButtons = document.querySelectorAll('.wishlist-button');
 
-        // Update button state based on success
-        button.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
-        button.classList.add('bg-red-500', 'text-white', 'hover:bg-red-600');
-        button.querySelector('span').textContent = 'In Wishlist';
-        button.querySelector('i').classList.add('text-white');
-
-        Swal.fire({
-            icon: 'success',
-            title: 'Added!',
-            text: data.message,
-            showConfirmButton: false,
-            timer: 1500
-        });
-    } catch (error) {
-        console.error('Error:', error.message);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: error.message || 'Failed to add to wishlist. Please try again.',
-        });
-
-        // Reset button state
-        button.classList.remove('opacity-50', 'cursor-not-allowed');
-        button.querySelector('span').textContent = 'Wishlist';
-    }
-}
-
-    // Function to remove product from wishlist
-    function removeFromWishlist(productId, button) {
-        // Show loading state
-        button.classList.add('opacity-50', 'cursor-not-allowed');
-        button.querySelector('span').textContent = 'Removing...';
-
-        fetch(`/wishlist/remove/${productId}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            credentials: 'same-origin'
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Reset button state
-            button.classList.remove('opacity-50', 'cursor-not-allowed');
-
-            if (data.message === "Product removed from wishlist successfully") {
-                // Revert button to original state
-                button.classList.remove('bg-red-500', 'text-white', 'hover:bg-red-600');
-                button.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
-                button.querySelector('span').textContent = 'Wishlist';
-                button.querySelector('i').classList.remove('text-white');
-
-                // Show SweetAlert for success
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Removed!',
-                    text: 'Product removed from wishlist successfully!',
-                    showConfirmButton: false,
-                    timer: 1500
+            wishlistButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const productId = button.getAttribute('data-product-id');
+                    const isInWishlist = button.querySelector('span').textContent === 'In Wishlist';
+                    
+                    if (isInWishlist) {
+                        removeFromWishlist(productId, button);
+                    } else {
+                        addToWishlist(productId, button);
+                    }
                 });
-            } else {
-                throw new Error(data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            button.classList.remove('opacity-50', 'cursor-not-allowed');
-            button.querySelector('span').textContent = 'In Wishlist';
-
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: 'Failed to remove from wishlist. Please try again.',
             });
-        });
-    }
-});
 
-</script>
-<%- include("../partials/user/footer") %>
+            async function addToWishlist(productId, button) {
+                try {
+                    button.classList.add('opacity-50');
+                    button.querySelector('span').textContent = 'Adding...';
+
+                    const response = await fetch('/wishlist/add', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ productId }),
+                        credentials: 'same-origin'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to add to wishlist');
+                    }
+
+                    const data = await response.json();
+                    
+                    button.classList.remove('bg-gray-100', 'opacity-50');
+                    button.classList.add('bg-pink-100', 'text-pink-600');
+                    button.querySelector('span').textContent = 'In Wishlist';
+                    button.querySelector('i').classList.add('text-pink-600');
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Added to Wishlist',
+                        text: data.message,
+                        showConfirmButton: false,
+                        timer: 1500,
+                        customClass: {
+                            popup: 'animate__animated animate__fadeIn'
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error:', error);
+                    button.classList.remove('opacity-50');
+                    button.querySelector('span').textContent = 'Wishlist';
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to add to wishlist. Please try again.',
+                    });
+                }
+            }
+
+            async function removeFromWishlist(productId, button) {
+                try {
+                    button.classList.add('opacity-50');
+                    button.querySelector('span').textContent = 'Removing...';
+
+                    const response = await fetch(`/wishlist/remove/${productId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'same-origin'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to remove from wishlist');
+                    }
+
+                    button.classList.remove('bg-pink-100', 'text-pink-600', 'opacity-50');
+                    button.classList.add('bg-gray-100');
+                    button.querySelector('span').textContent = 'Wishlist';
+                    button.querySelector('i').classList.remove('text-pink-600');
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Removed',
+                        text: 'Product removed from wishlist',
+                        showConfirmButton: false,
+                        timer: 1500,
+                        customClass: {
+                            popup: 'animate__animated animate__fadeIn'
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error:', error);
+                    button.classList.remove('opacity-50');
+                    button.querySelector('span').textContent = 'In Wishlist';
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to remove from wishlist. Please try again.',
+                    });
+                }
+            }
+        });
+    </script>
+
+    <%- include("../partials/user/footer") %>
+</body>
+</html>

@@ -1,43 +1,41 @@
 <%-include("../partials/user/header")%>
 
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f8f9fa;
-        text-align: center;
-        padding: 50px;
-    }
-    h1 {
-        font-size: 100px;
-        margin-bottom: 20px;
-    }
-    p {
-        font-size: 24px;
-        margin-bottom: 40px;
-    }
-    a {
-        font-size: 20px;
-        color: #007bff;
-        text-decoration: none;
-    }
-    a:hover {
-        text-decoration: underline;
-    }
-    .error-container {
-        max-width: 600px;
-        margin: 0 auto;
-    }
-</style>
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center px-4 py-16">
+    <div class="max-w-lg w-full text-center">
+        <!-- 404 Number -->
+        <h1 class="text-9xl font-extrabold text-gray-800 animate-pulse mb-8">
+            4<span class="text-indigo-600">0</span>4
+        </h1>
+        
+        <!-- Error Icon -->
+        <div class="mb-8">
+            <svg class="w-24 h-24 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        </div>
 
+        <!-- Error Message -->
+        <div class="mb-8">
+            <p class="text-3xl font-semibold text-gray-700 mb-4">Page Not Found</p>
+            <p class="text-lg text-gray-600">Oops! The page you're looking for seems to have vanished into the digital void.</p>
+        </div>
 
-<body>
-    <div class="error-container">
-        <h1>404</h1>
-        <p>Oops! The page you're looking for doesn't exist.</p>
-        <a href="/">Go back to Home</a>
+        <!-- Back to Home Button -->
+        <div class="flex justify-center space-x-4">
+            <a href="/" class="inline-flex items-center px-6 py-3 rounded-lg bg-indigo-600 text-white font-medium transition-colors duration-200 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+                Back to Home
+            </a>
+            <button onclick="history.back()" class="inline-flex items-center px-6 py-3 rounded-lg border-2 border-gray-300 text-gray-700 font-medium transition-colors duration-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Go Back
+            </button>
+        </div>
     </div>
-</body>
-
-
+</div>
 
 <%-include("../partials/user/footer.ejs")%>

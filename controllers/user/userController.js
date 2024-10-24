@@ -5,66 +5,43 @@ const Category = require("../../models/categorySchema")
 const Product = require("../../models/productSchema")
 const Address = require("../../models/addressSchema")
 const {Order} = require("../../models/orderSchema"); 
+const Wallet = require("../../models/walletSchema")
 const env = require('dotenv').config()
 const nodemailer = require('nodemailer')
 const otpgenerator = require('otp-generator')
 const bcrypt = require('bcrypt')
+const path = require("path");
 
 
 
-// const loadHomepage = async (req, res) => {
-//     try {
-//         // Correctly retrieve the session user email
-//         const sessionUser = req.user ? req.user.email : req.session.user?.email;
 
-//         // Log the session user for debugging
-//         console.log("Session User Email:", sessionUser);
-
-//         const categories = await Category.find({ isListed: true });
-
-//         // Fetch product data based on the categories
-//         let productData = await Product.find({
-//             isBlocked: false,
-//             category: { $in: categories.map(category => category._id) },
-//             quantity: { $gt: 0 }
-//         })
-//         .sort({ createdAt: -1 }) 
-//         .limit(4);
-
-//         let userData = null;
-
-//         // Only query for user data if sessionUser is a valid email string
-//         if (sessionUser) {
-//             userData = await user.findOne({ email: sessionUser }); // Ensure User is the correct model name
-//         }
-
-//         // Render the homepage with user data and product data
-//         return res.render('home', { 
-//             user: userData || null, 
-//             products: productData 
-//         });
-//     } catch (error) {
-//         console.error('Home page loading error:', error);
-//         res.status(500).send('Server error');
-//     }
-// };
 
 const loadHomepage = async (req, res) => {
     try {
-        const { search } = req.query;
+        const { search, category } = req.query;
         const sessionUser = req.user ? req.user.email : req.session.user?.email;
 
         console.log("Session User Email:", sessionUser);
 
-        // Fetch categories
+        // Fetch categories (needed for category filter)
         const categories = await Category.find({ isListed: true });
 
         // Build the base query
         let baseQuery = {
             isBlocked: false,
-            category: { $in: categories.map(category => category._id) },
-            quantity: { $gt: 0 }
+            quantity: { $gt: 0 }  // Only show products with stock
         };
+
+        // Add category filter if a category is provided
+        if (category) {
+            const selectedCategory = await Category.findOne({ name: category });
+            if (selectedCategory) {
+                baseQuery.category = selectedCategory._id;
+            }
+        } else {
+            // If no category is selected, show all categories
+            baseQuery.category = { $in: categories.map(cat => cat._id) };
+        }
 
         // Add search condition if search query is provided
         if (search) {
@@ -73,8 +50,8 @@ const loadHomepage = async (req, res) => {
 
         // Fetch the latest products (limit 4)
         let productData = await Product.find(baseQuery)
-        .sort({ createdAt: -1 })
-        .limit(4);
+            .sort({ createdAt: -1 })
+            .limit(4);
 
         let userData = null;
 
@@ -143,7 +120,9 @@ const loadHomepage = async (req, res) => {
             user: userData || null,
             products: productData,
             bestSellers: bestSellerData,
-            currentSearch: search || ''
+            categories, // Pass categories to the view for rendering
+            currentSearch: search || '',
+            currentCategory: category || ''
         });
     } catch (error) {
         console.error('Home page loading error:', error);
@@ -388,38 +367,124 @@ const logout = async (req,res)=>{
 
 
 // Example controller function for loading the profile page
+// const loadProfile = async (req, res) => {
+//     try {
+//         console.log("Session User:", req.session.user);
+      
+//         if (!req.session.user) {
+//             console.log("User not logged in");
+//             return res.redirect('/login');
+//         }
+        
+//         const userData = await user.findById(req.session.user.id);
+//         if (!userData) {
+//             console.log("User not found");
+//             return res.status(404).render('page-404', { message: 'User not found' });
+//         }
+
+//         const addresses = await Address.find({ userId: userData.id });
+//         console.log("Addresses:", addresses);
+
+//         const orders = await Order.find({ user: userData._id })
+//             .populate('orderedItems.product')
+//             .sort({ createdOn: -1 });
+
+//         console.log("Orders:", orders);
+
+//         if (orders.length === 0) {
+//             console.log("No orders found for this user");
+//         }
+
+//         // Fetch wallet information
+//         let wallet = await Wallet.findOne({ userId: userData._id });
+//         if (!wallet) {
+//             // If wallet doesn't exist, create a new one
+//             wallet = new Wallet({
+//                 userId: userData._id,
+//                 balance: 0,
+//                 transactionHistory: []
+//             });
+//             await wallet.save();
+//         }
+
+//         res.render('profile', { 
+//             user: userData, 
+//             addresses: addresses, 
+//             orders: orders,
+//             wallet: wallet,
+//             helpers: {
+//                 formatDate: function(date) {
+//                     return new Date(date).toLocaleDateString('en-US', {
+//                         year: 'numeric', 
+//                         month: 'long', 
+//                         day: 'numeric'
+//                     });
+//                 }
+//             }
+//         });
+//     } catch (error) {
+//         console.error('Error loading profile:', error);
+//         res.status(500).render('page-404', { message: 'Server error occurred' });
+//     }
+// };
+
+
 const loadProfile = async (req, res) => {
     try {
-        console.log("Session User:", req.session.user);
-        
         if (!req.session.user) {
-            console.log("User not logged in");
             return res.redirect('/login');
         }
-
+        
         const userData = await user.findById(req.session.user.id);
         if (!userData) {
-            console.log("User not found");
             return res.status(404).render('page-404', { message: 'User not found' });
         }
 
         const addresses = await Address.find({ userId: userData.id });
-        console.log("Addresses:", addresses);
-
+        
+        // Fetch orders with detailed population
         const orders = await Order.find({ user: userData._id })
-            .populate('orderedItems.product')  // Populate product details
-            .sort({ createdOn: -1 });  // Sort by creation date, most recent first
+            .populate({
+                path: 'orderedItems.product',
+                select: 'productName price productImage images' 
+            })
+            .sort({ createdOn: -1 });
 
-        console.log("Orders:", orders);
+        //console.log('Raw Orders:', JSON.stringify(orders, null, 2)); 
 
-        if (orders.length === 0) {
-            console.log("No orders found for this user");
+        // Process orders to ensure all required data is present
+        const processedOrders = orders.map(order => {
+            const orderObj = order.toObject();
+            orderObj.orderedItems = order.orderedItems.map(item => {
+                const productImage = item.product.productImage && item.product.productImage.length > 0
+                ? path.join('/uploads/product-images', item.product.productImage[0])  // Build the correct image path
+                : '/placeholder-image.jpg';  // Fallback image if no product image
+                return {
+                    product: item.product,
+                    quantity: item.quantity,  // Use direct values from the order
+                    price: item.price,        // Use direct values from the order
+                    discountAmount: item.discountAmount || 0,
+                    productImage: productImage, 
+                };
+            });
+            return orderObj;
+        });
+
+        let wallet = await Wallet.findOne({ userId: userData._id });
+        if (!wallet) {
+            wallet = new Wallet({
+                userId: userData._id,
+                balance: 0,
+                transactionHistory: []
+            });
+            await wallet.save();
         }
 
         res.render('profile', { 
             user: userData, 
             addresses: addresses, 
-            orders: orders,
+            orders: processedOrders,
+            wallet: wallet,
             helpers: {
                 formatDate: function(date) {
                     return new Date(date).toLocaleDateString('en-US', {
@@ -427,6 +492,13 @@ const loadProfile = async (req, res) => {
                         month: 'long', 
                         day: 'numeric'
                     });
+                },
+                formatCurrency: function(amount) {
+                    if (amount === undefined || amount === null) {
+                        console.log('Undefined/null amount detected');
+                        return '₹0.00';
+                    }
+                    return '₹' + Number(amount).toFixed(2);
                 }
             }
         });
@@ -435,7 +507,6 @@ const loadProfile = async (req, res) => {
         res.status(500).render('page-404', { message: 'Server error occurred' });
     }
 };
-
 
 
 
