@@ -1,0 +1,177 @@
+<%- include("../partials/user/header") %>
+
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Poppins:wght@300;400;500&display=swap');
+
+        .font-playfair { font-family: 'Playfair Display', serif; }
+        .font-poppins { font-family: 'Poppins', sans-serif; }
+
+        .tracking-line {
+            height: 2px;
+            background: #e5e7eb;
+            flex: 1;
+            margin: 0 10px;
+        }
+
+        .tracking-line.completed { background: #000; }
+
+        .tracking-step.completed .step-icon {
+            background: #000;
+            color: white;
+        }
+
+        .tracking-step.current .step-icon {
+            border-color: #000;
+            color: #000;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.2); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 0, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+        }
+
+        @media (max-width: 768px) {
+            .tracking-timeline {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 0 1rem;
+            }
+
+            .tracking-line {
+                width: 2px;
+                height: 30px;
+                margin: 10px 0;
+                margin-left: 25px;
+            }
+
+            .tracking-step {
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-poppins">
+    <div class="container mx-auto px-4 py-8">
+        <% if (error) { %>
+            <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative mb-6">
+                <%= error %>
+            </div>
+        <% } else { %>
+            <!-- Order Header -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <h1 class="font-playfair text-2xl md:text-3xl font-semibold mb-4">Track Your Order</h1>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                    <div>
+                        <p class="text-gray-500">Order Number</p>
+                        <p class="font-medium">#<%= orderData.orderId %></p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500">Order Date</p>
+                        <p class="font-medium"><%= orderData.orderDate %></p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500">Tracking Number</p>
+                        <p class="font-medium"><%= orderData.trackingNumber %></p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500">Estimated Delivery</p>
+                        <p class="font-medium"><%= orderData.estimatedDelivery %></p>
+                    </div>
+                </div>
+            </div>
+
+           
+
+            <!-- Tracking Timeline -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <div class="tracking-timeline flex items-center justify-between mb-8">
+                    <% orderData.trackingTimeline.forEach((stage, index) => { %>
+                        <div class="tracking-step <%= stage.isCompleted ? 'completed' : '' %> <%= stage.isCurrent ? 'current' : '' %> flex flex-col items-center text-center">
+                            <div class="step-icon w-12 h-12 rounded-full border-2 flex items-center justify-center mb-2 transition-all">
+                                <i class="fas fa-<%= stage.icon %>"></i>
+                            </div>
+                            <p class="text-sm font-medium"><%= stage.label %></p>
+                            <% if (stage.date) { %>
+                                <p class="text-xs text-gray-500"><%= helpers.formatDate(stage.date) %></p>
+                            <% } %>
+                        </div>
+                        <% if (index < orderData.trackingTimeline.length - 1) { %>
+                            <div class="tracking-line <%= stage.isCompleted ? 'completed' : '' %>"></div>
+                        <% } %>
+                    <% }); %>
+                </div>
+            </div>
+
+            <!-- Order Details -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <h2 class="font-playfair text-xl font-semibold mb-4">Order Details</h2>
+                <div class="space-y-4">
+                    <% orderData.items.forEach(item => { %>
+                        <div class="flex items-center space-x-4 py-4 border-b last:border-0">
+                            <img src="<%= item.image %>" alt="<%= item.name %>" class="w-20 h-20 object-cover rounded">
+                            <div class="flex-1">
+                                <h3 class="font-medium"><%= item.name %></h3>
+                                <p class="text-sm text-gray-500">Quantity: <%= item.quantity %></p>
+                                <p class="text-sm font-medium"><%= helpers.formatCurrency(item.price) %></p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-medium"><%= helpers.formatCurrency(item.subtotal) %></p>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="mt-6 pt-6 border-t space-y-3">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Subtotal</span>
+                        <span><%= helpers.formatCurrency(orderData.subtotal) %></span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Delivery Charge</span>
+                        <span><%= helpers.formatCurrency(orderData.deliveryCharge) %></span>
+                    </div>
+                    <% if (orderData.couponApplied) { %>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">Discount (<%= orderData.appliedCouponCode %>)</span>
+                            <span class="text-green-600">-<%= helpers.formatCurrency(orderData.discountAmount) %></span>
+                        </div>
+                    <% } %>
+                    <div class="flex justify-between items-center pt-3 border-t">
+                        <span class="font-medium">Total Amount</span>
+                        <span class="font-medium text-lg"><%= helpers.formatCurrency(orderData.finalAmount) %></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Address -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="font-playfair text-xl font-semibold mb-4">Shipping Address</h2>
+                <% if (orderData.shippingAddress && orderData.shippingAddress.street) { %>
+                    <address class="not-italic">
+                        <%= orderData.shippingAddress.street %><br>
+                        <%= orderData.shippingAddress.city %>, <%= orderData.shippingAddress.state %><br>
+                        <%= orderData.shippingAddress.zipCode %><br>
+                        <%= orderData.shippingAddress.country %>
+                    </address>
+                <% } else { %>
+                    <p>No shipping address available</p>
+                <% } %>
+            </div>
+        <% } %>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Automatic refresh every 5 minutes
+            setTimeout(function() {
+                window.location.reload();
+            }, 300000);
+        });
+    </script>
+</body>
+</html>
+<%- include("../partials/user/footer") %>

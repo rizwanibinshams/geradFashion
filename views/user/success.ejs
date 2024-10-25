@@ -3,9 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Successful</title>
+    <title>Order Confirmation | Fashion Boutique</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Poppins:wght@300;400;500&display=swap');
+
+        .font-playfair {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .font-poppins {
+            font-family: 'Poppins', sans-serif;
+        }
+
         @keyframes checkmark {
             0% {
                 stroke-dashoffset: 50;
@@ -17,58 +28,135 @@
             }
         }
 
-        @keyframes scaleIn {
-            0% {
-                transform: scale(0);
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
             }
-            100% {
-                transform: scale(1);
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
-        }
-
-        .checkmark {
-            animation: scaleIn 0.5s ease-in-out forwards;
         }
 
         .checkmark-circle {
             stroke-dasharray: 50;
             stroke-dashoffset: 50;
-            animation: checkmark 0.8s ease-in-out forwards;
+            animation: checkmark 1.2s ease-in-out forwards;
         }
 
         .checkmark-check {
             stroke-dasharray: 30;
             stroke-dashoffset: 30;
-            animation: checkmark 0.8s ease-in-out 0.2s forwards;
+            animation: checkmark 0.8s ease-in-out 0.4s forwards;
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        .success-card {
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
         }
     </style>
 </head>
-<body class="bg-gray-100 h-screen flex items-center justify-center">
-    <div class="bg-white shadow-lg rounded-lg p-8 max-w-md w-full text-center">
-        <!-- Success Icon with Animation -->
-        <div class="flex justify-center items-center mb-6">
-            <svg class="checkmark w-16 h-16 text-green-500" viewBox="0 0 52 52">
-                <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none" stroke="currentColor" stroke-width="4"></circle>
-                <path class="checkmark-check" fill="none" stroke="currentColor" stroke-width="4" d="M14 27l8 8 16-16"></path>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+    <div class="success-card shadow-xl rounded-lg p-8 md:p-12 max-w-lg w-full text-center fade-in-up">
+        <!-- Elegant Success Icon -->
+        <div class="flex justify-center items-center mb-8">
+            <svg class="w-20 h-20 text-black" viewBox="0 0 52 52">
+                <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none" stroke="currentColor" stroke-width="2"></circle>
+                <path class="checkmark-check" fill="none" stroke="currentColor" stroke-width="2" d="M14 27l8 8 16-16"></path>
             </svg>
         </div>
-        <!-- Success Message -->
-        <h1 class="text-2xl font-semibold text-gray-800 mb-2">Order Successful!</h1>
-        <p class="text-gray-600 mb-6">Thank you for your purchase. Your order has been placed successfully.</p>
 
-        <!-- Continue Shopping Button -->
-        <a href="/" class="inline-block bg-green-500 text-white font-medium py-2 px-6 rounded-md shadow hover:bg-green-600 transition-transform transform hover:scale-105">
-            Continue Shopping
-        </a>
+        <!-- Elegant Typography -->
+        <h1 class="font-playfair text-3xl font-semibold text-gray-900 mb-3">Thank You for Your Order</h1>
+        <p class="font-poppins text-gray-600 mb-6 leading-relaxed">
+            Your purchase has been confirmed. We're preparing your items with care and will notify you once they're on their way.
+        </p>
+
+        <!-- Order Details -->
+        <div class="font-poppins bg-white rounded-lg p-6 mb-8 shadow-sm">
+            <p class="text-sm text-gray-500 mb-2">Order confirmation sent to your email</p>
+            <div class="w-16 h-1 bg-black mx-auto mb-4"></div>
+            <p class="text-sm text-gray-600">
+                Estimated delivery time: 3-5 business days
+            </p>
+        </div>
+
+        <!-- Styled Buttons -->
+        <div class="space-y-4">
+            
+            <% if (order && order._id) { %>
+                <a href="#" 
+                   onclick="trackOrder('<%= order._id %>')" 
+                   class="block w-full bg-black text-white font-poppins font-medium py-3 px-6 rounded-md hover:bg-gray-900 transition-all duration-300">
+                    Track Your Order
+                </a>
+            <% } else { %>
+                <p>Order information not available</p>
+            <% } %>
+            
+            <a href="/" class="block w-full bg-transparent border border-black text-black font-poppins font-medium py-3 px-6 rounded-md hover:bg-black hover:text-white transition-all duration-300">
+                Continue Shopping
+            </a>
+        </div>
+
+        <!-- Footer Note -->
+        <p class="font-poppins text-sm text-gray-500 mt-8">
+            Questions? Contact our customer care team
+        </p>
     </div>
 
-    <!-- JavaScript Animation -->
     <script>
-        // This script is just to trigger the animations when the page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            const checkmark = document.querySelector('.checkmark');
-            checkmark.style.animation = 'scaleIn 0.5s ease-in-out forwards';
+   function trackOrder(orderId) {
+    if (!orderId) {
+        alert('Unable to find order ID. Please contact support.');
+        return;
+    }
+
+    const button = event.currentTarget;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<span class="inline-block">Loading...</span>';
+    button.disabled = true;
+
+    fetch(`/track-order/${orderId}`, {
+        method: 'GET',
+        headers: {
+            'Accept': 'text/html',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        window.location.href = `/track-order/${orderId}`;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Unable to track order. Please try again.');
+    })
+    .finally(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+// Add event listener to prevent default form submission if the button is within a form
+document.addEventListener('DOMContentLoaded', function() {
+    const trackButtons = document.querySelectorAll('[onclick^="trackOrder"]');
+    trackButtons.forEach(button => {
+        button.closest('form')?.addEventListener('submit', function(e) {
+            e.preventDefault();
         });
+    });
+});
+
+
     </script>
+
+
+
 </body>
 </html>

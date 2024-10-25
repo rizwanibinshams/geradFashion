@@ -68,13 +68,13 @@ const getCart = async (req, res) => {
 
     const userId = req.session.user.id;
     const cart = await Cart.findOne({ userId }).populate('items.productId');
-
+    const userData = await User.findById(req.session.user.id);
     if (!cart || cart.items.length === 0) {
-      return res.render('cart', { cart: [], total: 0 });
+      return res.render('cart', { cart: [], total: 0 , user: userData });
     }
 
     const total = cart.items.reduce((sum, item) => sum + (item.productId.salePrice * item.quantity), 0);
-    const userData = await User.findById(req.session.user.id);
+    
     res.render('cart', { cart: cart.items, total, user: userData });
   } catch (error) {
     console.error("Error fetching cart:", error);

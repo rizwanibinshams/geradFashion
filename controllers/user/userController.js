@@ -538,14 +538,25 @@ const updateProfile = async (req, res) => {
         res.status(500).json({ error: 'An error occurred while updating the profile' });
     }
 };
-
-const success = async (req,res)=>{
+const success = async (req, res) => {
     try {
-        res.render("success")
+        const orderId = req.query.orderId;
+
+        // Use `findOne` with the `orderId` field since it's a UUID string
+        const order = await Order.findOne({ orderId: orderId });
+        
+        // Check if the order exists
+        if (!order) {
+            return res.status(404).send("Order not found");
+        }
+
+        res.render("success", { order });
     } catch (error) {
-        console.error(error)
+        console.error(error);
+        res.status(500).send("An error occurred");
     }
-}
+};
+
 
 
 

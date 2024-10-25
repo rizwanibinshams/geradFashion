@@ -69,8 +69,7 @@ router.delete('/remove/:itemId', cartController.removeFromCart);
 
 
 
-// // Clear cart
-// router.delete('/clear', cartController.clearCart);
+
 
 
 router.get('/profile',userController.loadProfile)
@@ -78,9 +77,6 @@ router.get('/profile',userController.loadProfile)
 //success page 
 router.get("/success",userController.success)
 
-// router.get("/checkout",orderController.checkoutPage)
-// router.post('/checkout',orderController.placeOrder)
-// router.post('/checkout', addressController.createAddress);
 
 
 
@@ -111,16 +107,20 @@ router.post('/update-profile',auth.AdressMiddleware,userController.updateProfile
 //checkout page 
 
 router.get('/checkout',checkoutController.getCheckoutPage)
+
+
 //place order
 router.post('/place-order', orderController.placeOrder);
 router.post('/orders/:orderId/cancel', orderController.cancelOrder);
+
+
 // wishlist 
 router.post('/wishlist/add', wishlistController.addToWishlist);
 router.delete('/wishlist/remove/:productId', wishlistController.removeFromWishlist);
 router.get('/wishlist', wishlistController.getWishlist);
 
 
-// User route for applying a coupon
+
 
 
 
@@ -135,6 +135,8 @@ router.post('/wallet/deduct', walletController.deductMoneyFromWallet);
 
 // User route for applying a coupon
  router.post('/applyCoupon',couponController.applyCoupon)
+
+ router.get('/track-order/:orderId', orderController.trackOrder);
 
 
 module.exports = router

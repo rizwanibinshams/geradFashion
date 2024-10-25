@@ -37,6 +37,20 @@ const adminAuth = (req,res,next)=>{
     })
 }
 
+// const adminAuth = (req,res,next)=>{
+//     try {
+//         if(req.session.admin){
+//              next()
+//         }else{
+           
+//             res.redirect("/admin/login")
+//         }
+//     } catch (error) {
+//         console.log(error.message);
+//     }
+// }
+
+
 const AdressMiddleware = (req, res, next) => {
     if (req.session.user && req.session.user.id) {
         req.user = req.session.user; // Set user to req.user

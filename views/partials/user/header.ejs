@@ -12,20 +12,19 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
     <style>
        
-        header {
-            position: scroll;
+       header {
+            position: static;  /* Changed from fixed to sticky */
             top: 0;
             left: 0;
             right: 0;
             background: white;
             z-index: 1000;
+            transition: all 0.3s ease;
         }
-
-       
-      
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
@@ -33,7 +32,7 @@
         }
 
         .animate-fadeIn {
-            animation: fadeIn 0.5s ease-out;
+            animation: fadeIn 0.3s ease-out;
         }
 
         .dropdown-content {
@@ -43,13 +42,12 @@
             transition: all 0.3s ease-in-out;
         }
 
-        .group:hover .dropdown-content {
+        .dropdown-content.active {
             transform: translateY(0);
             opacity: 1;
             visibility: visible;
         }
 
-        /* Enhanced hover effects */
         .nav-link {
             position: relative;
             padding-bottom: 2px;
@@ -59,19 +57,18 @@
             content: '';
             position: absolute;
             bottom: -2px;
-            left: 0;
-            width: 100%;
+            left: 50%;
+            width: 0;
             height: 2px;
             background-color: #f97316;
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
         }
 
         .nav-link:hover::after {
-            transform: scaleX(1);
+            width: 100%;
         }
 
-        /* Cart badge animation */
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.1); }
@@ -81,23 +78,35 @@
         .cart-badge {
             animation: pulse 2s infinite;
         }
+
+        .logo-text {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .logo-text:hover {
+            transform: scale(1.05);
+        }
     </style>
 </head>
 
 <body class="bg-gray-50">
+    <div class="h-[72px] lg:h-[84px] hidden"><!-- Spacer div --></div>
     <header class="bg-white shadow-lg w-full transition-all duration-300" id="header">
         <div class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <!-- Logo Section -->
                 <div class="header__logo">
-                    <a href="/" class="text-3xl font-extrabold text-gray-800 hover:text-orange-500 transition-all duration-300">
+                    <a href="/" class="text-3xl font-extrabold logo-text">
                         Gerad-Fashion
                     </a>
                 </div>
     
                 <!-- Navigation Menu -->
                 <nav class="header__menu hidden lg:flex space-x-8">
-                    <ul class="flex items-center space-x-8 text-lg font-semibold text-gray-800">
+                    <ul class="flex items-center space-x-8 text-lg font-medium text-gray-800">
                         <li><a href="/" class="nav-link hover:text-orange-500 transition-all duration-300">Home</a></li>
                         <li><a href="/products" class="nav-link hover:text-orange-500 transition-all duration-300">Products</a></li>
                         <li><a href="./contact.ejs" class="nav-link hover:text-orange-500 transition-all duration-300">Contacts</a></li>
@@ -108,7 +117,7 @@
                 <!-- Search Input -->
                 <div class="relative hidden md:block">
                     <input type="text" id="search-input" 
-                           placeholder="Search..." 
+                           placeholder="Search products..." 
                            class="w-64 pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300">
                     <button id="search-button" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-orange-500">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,15 +127,19 @@
                 </div>
 
                 <!-- User Options and Icons -->
-                <div class="header__nav__option flex items-center space-x-6">
+                <div class="header__nav__option flex items-center space-x-6 ">
                     <% if (typeof user !== 'undefined' && user !== null) { %> 
-                        <div class="relative group">
-                            <a href="/" class="text-lg font-semibold text-gray-800 hover:text-orange-500 transition-all duration-300">
+                        <div class="relative">
+                            <button id="user-menu-button" 
+                                    class="text-lg font-semibold text-gray-800 hover:text-orange-500 transition-all duration-300 flex items-center">
                                 <%= user.name %>
-                            </a>
-                            <ul class="dropdown-content absolute right-0 bg-white shadow-lg rounded-md py-2 w-48">
-                                <li><a href="/profile" class="block px-4 py-2 hover:bg-orange-500 hover:text-white transition-all duration-300">Profile</a></li>
-                                <li><a href="/logout" class="block px-4 py-2 hover:bg-orange-500 hover:text-white transition-all duration-300">Logout</a></li>
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            <ul id="user-dropdown" class="dropdown-content absolute right-0 mt-2  bg-white shadow-xl rounded-lg py-2 w-48">
+                                <li><a href="/profile" class="block px-4 py-2 text-gray-800 hover:bg-orange-500 hover:text-white transition-all duration-300">Profile</a></li>
+                                <li><a href="/logout" class="block px-4 py-2 text-gray-800 hover:bg-orange-500 hover:text-white transition-all duration-300">Logout</a></li>
                             </ul>
                         </div>
                     <% } else { %>
@@ -175,6 +188,27 @@
     </div>
 
     <script>
+        // User dropdown toggle
+        const userMenuButton = document.getElementById('user-menu-button');
+        const userDropdown = document.getElementById('user-dropdown');
+        let isDropdownOpen = false;
+
+        if (userMenuButton && userDropdown) {
+            userMenuButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                isDropdownOpen = !isDropdownOpen;
+                userDropdown.classList.toggle('active', isDropdownOpen);
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (isDropdownOpen && !userDropdown.contains(e.target) && !userMenuButton.contains(e.target)) {
+                    isDropdownOpen = false;
+                    userDropdown.classList.remove('active');
+                }
+            });
+        }
+
         // Cart fetch function
         async function fetchCart() {
             try {
@@ -197,18 +231,36 @@
             }
         }
 
-        // Header scroll effect
+        // Header scroll effect with smooth transition
+        let lastScroll = 0;
+        const header = document.getElementById('header');
+        const spacer = document.querySelector('div.h-[72px]');
+
         window.addEventListener('scroll', () => {
-            const header = document.getElementById('header');
-            if (window.scrollY > 50) {
+            const currentScroll = window.pageYOffset;
+            
+            // Show/hide header based on scroll direction
+            if (currentScroll > lastScroll && currentScroll > 200) {
+                // Scrolling down & past banner
+                header.style.transform = 'translateY(-100%)';
+                spacer.classList.add('hidden');
+            } else {
+                // Scrolling up or at top
+                header.style.transform = 'translateY(0)';
+                spacer.classList.add('hidden');
+            }
+
+            // Add shadow and padding changes
+            if (currentScroll > 50) {
                 header.classList.add('py-2', 'shadow-md');
                 header.classList.remove('py-4');
             } else {
                 header.classList.add('py-4');
                 header.classList.remove('py-2', 'shadow-md');
             }
-        });
 
+            lastScroll = currentScroll;
+        });
         // Mobile menu toggle with enhanced animation
         const mobileMenuButton = document.getElementById('mobile-menu-button');
         const closeMobileMenuButton = document.getElementById('close-mobile-menu');
@@ -243,16 +295,30 @@
             });
         });
 
-        // Enhanced search functionality
+        // Enhanced search functionality with debounce
         const searchInput = document.getElementById('search-input');
         const searchButton = document.getElementById('search-button');
 
-        function performSearch() {
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        const performSearch = () => {
             const searchQuery = searchInput.value.trim();
             if (searchQuery) {
                 window.location.href = `/products?search=${encodeURIComponent(searchQuery)}`;
             }
-        }
+        };
+
+        const debouncedSearch = debounce(performSearch, 300);
 
         searchButton.addEventListener('click', performSearch);
         searchInput.addEventListener('keypress', (e) => {

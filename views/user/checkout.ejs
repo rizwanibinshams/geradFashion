@@ -401,10 +401,59 @@
 
 
        
-        function confirmOrder() {
+//         function confirmOrder() {
+//     const addressId = document.querySelector('input[name="address"]:checked');
+//     const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+//     const couponCode = document.querySelector('input[name="couponCode"]').value; // Get coupon code
+
+//     if (!addressId) {
+//         alert("Please select an address before placing the order.");
+//         return;
+//     }
+
+//     if (!paymentMethod) {
+//         alert("Please select a payment method before placing the order.");
+//         return;
+//     }
+
+//     // Prepare the request body with the coupon code
+//     const requestBody = {
+//         addressId: addressId.value,
+//         paymentMethod: paymentMethod.value
+//     };
+
+//     // Add coupon code if provided
+//     if (couponCode) {
+//         requestBody.couponCode = couponCode; 
+//     }
+
+//     fetch("/place-order", {
+//         method: "POST",
+//         headers: {
+//             "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify(requestBody),
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         if (data.success) {
+//             alert(data.message);
+//             window.location.href = `/success?orderId=${data.orderId}`;
+//         } else {
+//             alert(data.message || "An error occurred while placing the order.");
+//         }
+//     })
+//     .catch(error => {
+//         console.error("Error placing order:", error);
+//         alert("An error occurred while placing the order.");
+//     });
+// }
+
+
+function confirmOrder() {
     const addressId = document.querySelector('input[name="address"]:checked');
     const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
-    const couponCode = document.querySelector('input[name="couponCode"]').value; // Get coupon code
+    const couponCode = document.querySelector('input[name="couponCode"]').value;
 
     if (!addressId) {
         alert("Please select an address before placing the order.");
@@ -416,15 +465,13 @@
         return;
     }
 
-    // Prepare the request body with the coupon code
     const requestBody = {
         addressId: addressId.value,
         paymentMethod: paymentMethod.value
     };
 
-    // Add coupon code if provided
     if (couponCode) {
-        requestBody.couponCode = couponCode; 
+        requestBody.couponCode = couponCode;
     }
 
     fetch("/place-order", {
@@ -438,9 +485,15 @@
     .then(data => {
         if (data.success) {
             alert(data.message);
-            window.location.href = '/success';
+            window.location.href = `/success?orderId=${data.orderId}`;
         } else {
-            alert(data.message || "An error occurred while placing the order.");
+            // Handle quantity errors specifically
+            if (data.quantityErrors) {
+                const errorMessage = data.quantityErrors.join('\n');
+                alert(`Unable to place order:\n${errorMessage}`);
+            } else {
+                alert(data.message || "An error occurred while placing the order.");
+            }
         }
     })
     .catch(error => {
@@ -448,7 +501,6 @@
         alert("An error occurred while placing the order.");
     });
 }
-
 
 
 

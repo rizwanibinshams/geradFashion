@@ -19,7 +19,7 @@ const getCheckoutPage = async (req, res) => {
         // Fetch the user's cart
         const cart = await Cart.findOne({ userId }).populate('items.productId');
         if (!cart || cart.items.length === 0) {
-            return res.render('checkout', { cart: [], total: 0, addresses: [], address: {} });
+            return res.render('cart', { cart: [], total: 0, addresses: [], address: {} });
         }
 
         // Calculate total price

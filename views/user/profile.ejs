@@ -101,7 +101,7 @@
         <div class="flex flex-col lg:flex-row gap-8">
             <!-- Stylish Sidebar -->
             <div class="w-full lg:w-1/4">
-                <div class="fashion-card rounded-xl p-8 sticky top-8">
+                <div class="fashion-card rounded-xl p-8 static top-8">
                     <h2 class="text-3xl font-light mb-8 tracking-wide">ACCOUNT</h2>
                     <ul class="space-y-4">
                         <li>
@@ -212,7 +212,7 @@
                             <% addresses.forEach(function(userAddress) { %>
                                 <% userAddress.address.forEach(function(address) { %>
                                     <div class="border p-4 rounded">
-                                        <h3 class="font-semibold"><%= address.addressType || 'Default Type' %></h3>
+                                        <h3 class="inline-block bg-gray-100 text-black-700 px-3 py-0.5 text-s rounded mb-2"><%= address.addressType || 'Default Type' %></h3>
                                         <h2 class="font-semibold"><%= address.name || 'Name not provided' %></h2>
                                         <p><%= address.street || 'Street not provided' %></p>
                                         <p><%= address.phone %></p>
@@ -285,7 +285,7 @@
                 </div>
 
                 <!-- Orders Section -->
-                <div x-show="activeSection === 'orders'" x-cloak class="bg-gray-50 min-h-screen py-8 font-['Inter']">
+                <div x-show="activeSection === 'orders'" x-cloak class=" shadow-sm rounded-lg overflow-hidden">
                     <div class="max-w-6xl mx-auto px-4">
                         <div class="bg-white shadow-xl rounded-xl overflow-hidden">
                             <div class="p-8">
@@ -411,10 +411,12 @@
                                                                     Return Items
                                                                 </button>
                                                             <% } %>
+                                                           
                                                             <button onclick="trackOrder('<%= order._id %>')" 
                                                                 class="flex-1 min-w-[120px] bg-white border border-blue-200 text-blue-600 hover:bg-blue-50 px-6 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200">
                                                                 Track Order
                                                             </button>
+                                                          
                                                         </div>
                                                     </div>
                                                 </div>
@@ -486,12 +488,9 @@
                 </div>
                 
                     
-                        <!-- Return Order Modal (unchanged) -->
-                        <div id="returnOrderModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-                            <!-- Modal content remains the same -->
-                        </div>
-                    </div>
-                </div>
+                        
+                   
+                
 
                 <!-- Wallet Section -->
                 <div x-show="activeSection === 'wallet'" x-cloak class="bg-white shadow-lg rounded-lg overflow-hidden">
@@ -570,32 +569,117 @@
 
 <!-- coupon section  -->
 
-<div x-show="activeSection === 'coupons'" x-cloak class="bg-white shadow-lg rounded-lg overflow-hidden">
-    <div class="p-6">
-        <h2 class="text-2xl font-semibold text-gray-800 mb-6">Your Coupon Usage History</h2>
-        
-    </div>
 
-    <div class="overflow-x-auto">
-        <table class="min-w-full bg-white">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="py-3 px-4 text-left">Coupon Code</th>
-                    <th class="py-3 px-4 text-left">Discount</th>
-                    <th class="py-3 px-4 text-left">Used On</th>
-                    <th class="py-3 px-4 text-left">Order ID</th>
-                </tr>
-            </thead>
-        </table>
+    
+    <!-- New Professional Coupon Section -->
+   
+        
+    <div x-show="activeSection === 'coupons'" x-cloak class="bg-gray-50 min-h-screen py-8 font-['Inter']">
+        <div class="bg-white shadow-lg rounded-xl overflow-hidden">
+            <!-- Header Section -->
+            <div class="p-8 border-b">
+                <h2 class="text-3xl font-light text-gray-800 mb-4">My Coupons</h2>
+                <p class="text-gray-600">Discover your savings and special offers</p>
+            </div>
+
+            <!-- Coupon Tabs -->
+            <div class="border-b px-8">
+                <div class="flex space-x-8">
+                    <button class="py-4 text-sm font-medium text-gray-900 border-b-2 border-black">
+                        Available (3)
+                    </button>
+                    <button class="py-4 text-sm font-medium text-gray-500 hover:text-gray-700">
+                        Used (2)
+                    </button>
+                    <button class="py-4 text-sm font-medium text-gray-500 hover:text-gray-700">
+                        Expired (1)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Available Coupons Grid -->
+            <div class="p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Coupon Card 1 -->
+                    <div class="relative border rounded-lg overflow-hidden group hover:shadow-lg transition-all duration-300">
+                        <div class="absolute top-4 right-4">
+                            <button class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-sm text-gray-500">Valid until 30 Nov 2024</span>
+                                <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">Active</span>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">20% OFF</h3>
+                            <p class="text-gray-600 mb-4">On all full-price items</p>
+                            <div class="flex items-center justify-between">
+                                <code class="px-4 py-2 bg-gray-100 rounded text-sm font-mono">FASHION20</code>
+                                <button class="text-sm font-medium text-black hover:underline">Copy Code</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coupon Card 2 -->
+                    <div class="relative border rounded-lg overflow-hidden group hover:shadow-lg transition-all duration-300">
+                        <div class="absolute top-4 right-4">
+                            <button class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-sm text-gray-500">Valid until 15 Dec 2024</span>
+                                <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">Active</span>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">₹500 OFF</h3>
+                            <p class="text-gray-600 mb-4">On orders above ₹2500</p>
+                            <div class="flex items-center justify-between">
+                                <code class="px-4 py-2 bg-gray-100 rounded text-sm font-mono">SAVE500</code>
+                                <button class="text-sm font-medium text-black hover:underline">Copy Code</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Usage History Section -->
+            <div class="border-t">
+                <div class="p-8">
+                    <h3 class="text-lg font-medium text-gray-900 mb-6">Coupon Usage History</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Used On</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">SUMMER30</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">30% OFF</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">Oct 15, 2024</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">#ORD-2024-1534</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 
 
 
-
 <!-- closing -->
-
+</div>
+</div>
             </div>
         </div>
     </div>
@@ -1174,6 +1258,56 @@ document.getElementById('returnOrderForm').addEventListener('submit', function(e
     });
 });
 
+
+
+function trackOrder(orderId) {
+    // First check if orderId exists
+    if (!orderId) {
+        alert('Order ID is required');
+        return;
+    }
+
+    // Show loading indicator (optional)
+    const button = event.currentTarget;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<span class="inline-block">Loading...</span>';
+    button.disabled = true;
+
+    // Make the AJAX request
+    fetch(`/track-order/${orderId}`, {
+        method: 'GET',
+        headers: {
+            'Accept': 'text/html',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        // Since your backend renders a full page, we'll handle the navigation here
+        window.location.href = `/track-order/${orderId}`;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Unable to track order. Please try again.');
+    })
+    .finally(() => {
+        // Restore button state
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+
+// Add event listener to prevent default form submission if the button is within a form
+document.addEventListener('DOMContentLoaded', function() {
+    const trackButtons = document.querySelectorAll('[onclick^="trackOrder"]');
+    trackButtons.forEach(button => {
+        button.closest('form')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+        });
+    });
+});
 
 </script>
 

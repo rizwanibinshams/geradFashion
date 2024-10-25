@@ -3,6 +3,8 @@ const Product = require('../../models/productSchema');
 const Cart = require("../../models/cartSchema");
 const Coupon = require("../../models/couponSchema")
 const mongoose = require('mongoose');
+const { format } = require('date-fns');
+const User = require("../../models/userSchema")
 
 
 
@@ -155,6 +157,26 @@ const placeOrder = async (req, res) => {
         if (!cart || cart.items.length === 0) {
             return res.status(400).json({ success: false, message: 'Cart is empty.' });
         }
+
+        const quantityErrors = [];
+        for (const item of cart.items) {
+            const product = await Product.findById(item.productId._id);
+            if (!product) {
+                quantityErrors.push(`Product ${item.productId.productName} is no longer available`);
+            } else if (product.quantity < item.quantity) {
+                quantityErrors.push(`Only ${product.quantity} units available for ${product.productName}. You requested ${item.quantity}`);
+            }
+        }
+
+        if (quantityErrors.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Quantity issues found',
+                quantityErrors
+            });
+        }
+
+
 
         // Validate address
         const userAddress = await Address.findOne({ 
@@ -322,8 +344,115 @@ const cancelOrder = async (req, res) => {
 };
 
 
+const trackOrder = async (req, res) => {
+    try {
+
+        const user = req.session.user;
+
+        // Check if the user is logged in
+        if (!user) {
+          return res.redirect('/login'); // If user is not logged in, redirect to login
+        }
+    
+        const userId = user.id; // Now safely access the user ID
+        const userData = await User.findById(userId); // Fetch user data
+    
+        // Check if the user data is found, if not, redirect to login
+        if (!userData) {
+          return res.redirect('/login');
+        }
+
+
+        const orderId = req.params.orderId;
+
+        const order = await Order.findById(orderId)
+            .populate({
+                path: 'orderedItems.product',
+                select: 'productName price productImage'
+            })
+            .populate('user', 'name email');
+
+        if (!order) {
+            return res.status(404).render('tracking', { 
+                error: 'Order not found',
+                orderData: null
+            });
+        }
+
+        // Define tracking stages and their corresponding status codes
+        const trackingStages = [
+            { status: 'ordered', label: 'Order Placed', icon: 'shopping-bag' },
+            { status: 'confirmed', label: 'Order Confirmed', icon: 'check-circle' },
+            { status: 'processing', label: 'Processing', icon: 'clock' },
+            { status: 'shipped', label: 'Shipped', icon: 'truck' },
+            { status: 'delivered', label: 'Delivered', icon: 'package' }
+        ];
+
+        // Find current stage index
+        const currentStageIndex = trackingStages.findIndex(stage => 
+            stage.status === order.status);
+
+        // Process tracking timeline
+        const trackingTimeline = trackingStages.map((stage, index) => ({
+            ...stage,
+            isCompleted: index <= currentStageIndex,
+            isCurrent: index === currentStageIndex,
+            date: order.statusUpdates?.find(update => 
+                update.status === stage.status)?.date || null
+        }));
+
+        // Format order data for template
+        const orderData = {
+            orderId: order._id,
+            orderDate: format(order.createdOn, 'MMM dd, yyyy'),
+            status: order.status,
+            trackingNumber: order.trackingNumber || 'Pending',
+            estimatedDelivery: order.estimatedDelivery 
+                ? format(order.estimatedDelivery, 'MMM dd, yyyy')
+                : 'Calculating...',
+            items: order.orderedItems.map(item => ({
+                name: item.product.productName,
+                quantity: item.quantity,
+                price: item.price,
+                image: item.product.productImage?.[0] 
+                    ? `/uploads/product-images/${item.product.productImage[0]}`
+                    : '/images/placeholder.jpg',
+                subtotal: item.price * item.quantity
+            })),
+            subtotal: order.totalPrice,
+            deliveryCharge: order.deliveryCharge,
+            discountAmount: order.discount,
+            finalAmount: order.finalAmount,
+            couponApplied: order.coupon.applied,
+            appliedCouponCode: order.coupon.code || '',
+            shippingAddress: order.address || {},  // Ensure it's an object
+            trackingTimeline,
+            paymentStatus: order.paymentStatus
+        };
+
+        res.render('tracking', { 
+            user: userData ,
+            orderData,
+            error: null,
+            helpers: {
+                formatCurrency: (amount) => `₹${Number(amount).toFixed(2)}`,
+                formatDate: (date) => format(new Date(date), 'MMM dd, yyyy')
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error tracking order:', error);
+        res.status(500).render('tracking', { 
+            error: 'Unable to fetch order details',
+            orderData: null
+        });
+    }
+};
+
+
 
 module.exports = {
     placeOrder,
-    cancelOrder
+    cancelOrder,
+    trackOrder 
 }
