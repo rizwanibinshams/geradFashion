@@ -27,6 +27,10 @@ const returnReasonEnum = [
     'style_fit',
     'fabric_issues',
     'color_difference',
+    'wrong_size',
+    'defective',
+    'not_as_described',
+    'changed_mind',
     'other'
 ];
 
@@ -37,10 +41,20 @@ const returnStatusEnum = [
     'rejected',
     'item_received',
     'refund_processed',
-    'completed',
+    'Completed',
     'cancelled'
 ];
-
+const orderStatusEnum = [
+    'Pending',
+    'Processing',
+    'Shipped',
+    'Delivered',
+    'Cancelled',
+    'Return Requested',
+    'Return Approved',
+    'Returned',
+    'Completed'
+];
 // Order Schema
 const orderSchema = new Schema({
     orderId: {
@@ -70,8 +84,16 @@ const orderSchema = new Schema({
         price: {
             type: Number,
             default: 0
-        }
+        },
+        status: {  
+            type: String,
+            required: true,
+            enum: orderStatusEnum,
+             default: 'Pending'
+        },
+        _id: { type: mongoose.Schema.Types.ObjectId, auto: true }
     }],
+    
     totalPrice: {
         type: Number,
         required: true
@@ -182,20 +204,22 @@ orderSchema.methods.initiateReturn = function(returnData) {
     return this.save();
 };
 
-// Add method to track return status
-orderSchema.methods.updateReturnStatus = function(status, comment, adminId) {
-    this.return.status = status;
-    this.return.processedBy = adminId;
-    this.return.processedDate = new Date();
-    this.return.adminComments = comment;
-    this.return.timeline.push({
-        status: status,
-        date: new Date(),
-        comment: comment
-    });
-    return this.save();
-};
 
+// Add method to track return status
+orderSchema.methods.approveReturn = async function() {
+    this.return.status = 'approved';
+    this.return.processedDate = new Date();
+    this.return.timeline.push({
+        status: 'approved',
+        date: new Date(),
+        comment: 'Return request approved'
+    });
+
+    // Update the order status to "Returned"
+    this.status = 'Returned';
+    await this.save();
+    return this;
+};
 // Use mongoose.models to prevent overwriting the model
 const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
 const Address = mongoose.models.Address || mongoose.model("Address", addressSchema);

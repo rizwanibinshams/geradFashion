@@ -1,4 +1,3 @@
-
 <%- include("../partials/user/header") %>
 
 <!DOCTYPE html>
@@ -6,263 +5,456 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout Page</title>
-   
+    <title>Fashion Checkout</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f7f6;
+        }
+
+        h2, h4, h5 {
+            font-family: 'Playfair Display', serif;
+            letter-spacing: 0.5px;
+        }
+
         .checkout-container {
-            background: linear-gradient(135deg, #f6f9fc 0%, #e9f1f7 100%);
+            background: linear-gradient(135deg, #ffffff 0%, #f8f7f6 100%);
+            min-height: 100vh;
         }
-        .form-control:focus, .form-check-input:focus {
-            box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
-            border-color: #3b82f6;
-        }
-        .btn-primary {
-            background-color: #3b82f6;
-            border-color: #3b82f6;
-            transition: all 0.3s ease;
-        }
-        .btn-primary:hover {
-            background-color: #2563eb;
-            border-color: #2563eb;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+
         .card {
+            background: white;
+            border: none;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            border-radius: 16px;
             transition: all 0.3s ease;
-            background-color: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
         }
+
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.07);
         }
-        .animate-fade-in {
-            animation: fadeIn 0.5s ease-in-out;
+
+        .form-control {
+            border: 1.5px solid #e5e5e5;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        .form-control:focus {
+            border-color: #000;
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
         }
-        .animate-scale {
-            transition: transform 0.3s ease;
+
+        .btn-primary {
+            background-color: #000;
+            border: none;
+            padding: 14px 28px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-size: 14px;
         }
-        .animate-scale:hover {
-            transform: scale(1.05);
+
+        .btn-primary:hover {
+            background-color: #333;
+            transform: translateY(-2px);
+        }
+
+        .form-check-input:checked {
+            background-color: #000;
+            border-color: #000;
+        }
+
+        .breadcrumb-item a {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .breadcrumb-item a:hover {
+            color: #000;
+        }
+
+        table {
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        table th {
+            font-weight: 500;
+            color: #666;
+            padding: 16px;
+            background: #f8f7f6;
+            border-radius: 8px;
+        }
+
+        table td {
+            padding: 16px;
+        }
+
+        .address-card {
+            border: 1.5px solid #e5e5e5;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            transition: all 0.3s;
+        }
+
+        .address-card:hover {
+            border-color: #000;
+            background: #f8f7f6;
+        }
+
+        .form-check-label {
+            padding: 8px;
+            display: block;
+        }
+
+        #couponCode {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        #applyCouponBtn {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        .payment-method-label {
+            padding: 16px;
+            border: 1.5px solid #e5e5e5;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            transition: all 0.3s;
+        }
+
+        .payment-method-label:hover {
+            border-color: #000;
+            background: #f8f7f6;
+        }
+
+        .delivery-badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .add-more-text {
+            color: #666;
+            font-size: 12px;
+            margin-top: 4px;
         }
     </style>
 </head>
-<body class="bg-gray-50">
-    <div class="checkout-container min-h-screen py-12">
+<body>
+    <div class="checkout-container py-12">
         <div class="container mx-auto px-4">
+            <!-- Breadcrumb -->
             <nav aria-label="breadcrumb" class="mb-8">
-                <ol class="flex items-center space-x-2 text-gray-600">
-                    <li><a href="/" class="hover:text-blue-600">Home</a></li>
+                <ol class="flex items-center space-x-2">
+                    <li><a href="/" class="hover:text-black transition-colors">Home</a></li>
                     <li><span class="mx-2">/</span></li>
-                    <li><a href="/cart" class="hover:text-blue-600">Cart</a></li>
+                    <li><a href="/cart" class="hover:text-black transition-colors">Shopping Bag</a></li>
                     <li><span class="mx-2">/</span></li>
-                    <li><a href="/checkout" class="hover:text-blue-600">Checkout</a></li>
+                    <li class="text-black font-medium">Checkout</li>
                 </ol>
             </nav>
             
-            <h2 class="text-4xl font-bold mb-12 text-center text-gray-800 animate__animated animate__fadeInDown">Secure Checkout</h2>
+            <h2 class="text-4xl font-bold mb-12 text-center">Complete Your Order</h2>
             
             <div class="flex flex-wrap -mx-4">
-                <!-- Left Column -->
+                <!-- Left Column - Billing Details -->
                 <div class="w-full lg:w-1/2 px-4 mb-8">
-                    <div class="card rounded-lg shadow-lg p-6 animate__animated animate__fadeInLeft">
-                        <h4 class="text-2xl font-semibold mb-6 text-gray-700">Billing Details</h4>
+                    <div class="card p-8">
+                        <h4 class="text-2xl font-bold mb-6">Delivery Details</h4>
                         
                         <!-- Saved Addresses -->
                         <div id="savedAddresses" class="mb-8">
                             <% if (addresses && addresses.length > 0) { %>
-                                <h5 class="text-lg font-medium mb-4 text-gray-600">Saved Addresses</h5>
+                                <h5 class="text-lg font-medium mb-4">Saved Addresses</h5>
                                 <% addresses.forEach(function(address) { %>
-                                    <div class="form-check mb-4 animate__animated animate__fadeIn bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition duration-300">
+                                    <div class="address-card">
                                         <input class="form-check-input" type="radio" name="address" id="<%= address._id %>" value="<%= address._id %>">
-                                        <label class="form-check-label ml-2 cursor-pointer" for="<%= address._id %>">
-                                            <span class="font-medium text-gray-700"><%= address.name || 'Name not provided' %></span><br>
-                                            <span class="text-sm text-gray-500"><%= address.addressType || 'Default Type' %>,
-                                            <%= address.street || 'Street not provided' %>,
-                                            <%= address.city || 'City not provided' %>,
-                                            <%= address.state || 'State not provided' %> - 
-                                            <%= address.pincode || 'Zip not provided' %></span>
+                                        <label class="form-check-label" for="<%= address._id %>">
+                                            <span class="font-medium"><%= address.name || 'Name not provided' %></span><br>
+                                            <span class="text-gray-600">
+                                                <%= address.addressType || 'Default Type' %><br>
+                                                <%= address.street || 'Street not provided' %>,
+                                                <%= address.city || 'City not provided' %>,
+                                                <%= address.state || 'State not provided' %> - 
+                                                <%= address.pincode || 'Zip not provided' %>
+                                            </span>
                                         </label>
                                     </div>
                                 <% }); %>
                             <% } else { %>
-                                <p class="mb-4 text-gray-600">No addresses found. Please add an address.</p>
+                                <p class="text-gray-600 mb-4">No saved addresses found.</p>
                             <% } %>
                         </div>
                         
                         <!-- New Address Form -->
-                        <h5 class="text-xl font-medium mb-4 text-gray-700">Add New Address</h5>
-                        <form id="newAddressForm" onsubmit="handleSubmit(event)" class="space-y-4">
-                            <div id="error-message" class="text-red-500 mb-2"></div> <!-- General error message container -->
-                        
+                        <h5 class="text-xl font-medium mb-6">Add New Address</h5>
+                        <form id="newAddressForm" onsubmit="handleSubmit(event)" class="space-y-6">
+                            <div id="error-message" class="text-red-500 mb-2"></div>
+                            
+                            <!-- Form fields with enhanced styling -->
                             <div class="mb-4">
-                                <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
-                                <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="name" name="name" >
-                                <div id="nameError" class="text-red-500 mt-1"></div> <!-- Specific error message for name -->
+                                <label for="name" class="block text-sm font-medium mb-2">Full Name</label>
+                                <input type="text" class="form-control w-full" id="name" name="name">
+                                <div id="nameError" class="text-red-500 mt-1 text-sm"></div>
                             </div>
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Existing form fields with enhanced styling -->
+                                <!-- Type and Street -->
                                 <div>
-                                    <label for="type" class="block text-sm font-medium text-gray-700">Type</label>
-                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="type" name="addressType" >
-                                    <div id="typeError" class="text-red-500 mt-1"></div> <!-- Specific error message for type -->
+                                    <label for="type" class="block text-sm font-medium mb-2">Address Type</label>
+                                    <input type="text" class="form-control w-full" id="type" name="addressType">
+                                    <div id="typeError" class="text-red-500 mt-1 text-sm"></div>
                                 </div>
                                 <div>
-                                    <label for="street" class="block text-sm font-medium text-gray-700">Street</label>
-                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="street" name="street" >
-                                    <div id="streetError" class="text-red-500 mt-1"></div> <!-- Specific error message for street -->
+                                    <label for="street" class="block text-sm font-medium mb-2">Street Address</label>
+                                    <input type="text" class="form-control w-full" id="street" name="street">
+                                    <div id="streetError" class="text-red-500 mt-1 text-sm"></div>
+                                </div>
+
+                                <!-- Landmark and Pincode -->
+                                <div>
+                                    <label for="landMark" class="block text-sm font-medium mb-2">Landmark</label>
+                                    <input type="text" class="form-control w-full" id="landMark" name="landMark">
+                                    <div id="landMarkError" class="text-red-500 mt-1 text-sm"></div>
+                                </div>
+                                <div>
+                                    <label for="pincode" class="block text-sm font-medium mb-2">Pincode</label>
+                                    <input type="text" class="form-control w-full" id="pincode" name="pincode">
+                                    <div id="pincodeError" class="text-red-500 mt-1 text-sm"></div>
+                                </div>
+
+                                <!-- City and State -->
+                                <div>
+                                    <label for="city" class="block text-sm font-medium mb-2">City</label>
+                                    <input type="text" class="form-control w-full" id="city" name="city">
+                                    <div id="cityError" class="text-red-500 mt-1 text-sm"></div>
+                                </div>
+                                <div>
+                                    <label for="state" class="block text-sm font-medium mb-2">State</label>
+                                    <input type="text" class="form-control w-full" id="state" name="state">
+                                    <div id="stateError" class="text-red-500 mt-1 text-sm"></div>
+                                </div>
+
+                                <!-- Phone Numbers -->
+                                <div>
+                                    <label for="phone" class="block text-sm font-medium mb-2">Phone</label>
+                                    <input type="text" class="form-control w-full" id="phone" name="phone">
+                                    <div id="phoneError" class="text-red-500 mt-1 text-sm"></div>
+                                </div>
+                                <div>
+                                    <label for="altPhone" class="block text-sm font-medium mb-2">Alternate Phone</label>
+                                    <input type="text" class="form-control w-full" id="altPhone" name="altPhone">
+                                    <div id="altPhoneError" class="text-red-500 mt-1 text-sm"></div>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label for="landMark" class="block text-sm font-medium text-gray-700">Landmark</label>
-                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="landMark" name="landMark">
-                                    <div id="landMarkError" class="text-red-500 mt-1"></div> <!-- Specific error message for landmark -->
-                                </div>
-                                <div>
-                                    <label for="pincode" class="block text-sm font-medium text-gray-700">Pincode</label>
-                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="pincode" name="pincode" >
-                                    <div id="pincodeError" class="text-red-500 mt-1"></div> <!-- Specific error message for pincode -->
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label for="city" class="block text-sm font-medium text-gray-700">City</label>
-                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="city" name="city" >
-                                    <div id="cityError" class="text-red-500 mt-1"></div> <!-- Specific error message for city -->
-                                </div>
-                                <div>
-                                    <label for="state" class="block text-sm font-medium text-gray-700">State</label>
-                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="state" name="state" >
-                                    <div id="stateError" class="text-red-500 mt-1"></div> <!-- Specific error message for state -->
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label for="phone" class="block text-sm font-medium text-gray-700">Phone</label>
-                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="phone" name="phone" >
-                                    <div id="phoneError" class="text-red-500 mt-1"></div> <!-- Specific error message for phone -->
-                                </div>
-                                <div>
-                                    <label for="altPhone" class="block text-sm font-medium text-gray-700">Alternate Phone</label>
-                                    <input type="text" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="altPhone" name="altPhone">
-                                    <div id="altPhoneError" class="text-red-500 mt-1"></div> <!-- Specific error message for alternate phone -->
-                                </div>
-                            </div>
-                            <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-blue-500 transition duration-300 ease-in-out mt-4 animate-scale">
+
+                            <button type="submit" class="btn-primary w-full">
                                 Save Address
                             </button>
                         </form>
-                        
                     </div>
                 </div>
                 
-                <!-- Right Column -->
+                <!-- Right Column - Order Summary -->
                 <div class="w-full lg:w-1/2 px-4">
-                    <div class="card rounded-lg shadow-lg p-6 animate__animated animate__fadeInRight">
-                        <h4 class="text-2xl font-semibold mb-6 text-gray-700">Your Order</h4>
+                    <div class="card p-8">
+                        <h4 class="text-2xl font-bold mb-6">Order Summary</h4>
+                        
+                        <!-- Order Items -->
                         <div class="overflow-x-auto">
-                            <table class="table-auto w-full">
+                            <table class="w-full">
                                 <thead>
-                                    <tr class="bg-gray-100">
-                                        <th class="px-4 py-2 text-left text-gray-600">Product</th>
-                                        <th class="px-4 py-2 text-right text-gray-600">Subtotal</th>
+                                    <tr>
+                                        <th class="text-left">Product</th>
+                                        <th class="text-right">Subtotal</th>
                                     </tr>
                                 </thead>
                                 <tbody id="cartItems">
                                     <% cart.forEach(item => { %>
-                                        <tr class="border-b">
-                                            <td class="px-4 py-2 text-gray-700">
-                                                <%= item.productId.productName %> (x<%= item.quantity %>)
+                                        <tr class="border-b border-gray-100">
+                                            <td class="py-4">
+                                                <div class="font-medium"><%= item.productId.productName %></div>
+                                                <div class="text-gray-600 text-sm">Quantity: <%= item.quantity %></div>
                                             </td>
-                                            <td class="px-4 py-2 text-right text-gray-700">
+                                            <td class="text-right font-medium">
                                                 ₹<%= (item.productId.salePrice * item.quantity).toFixed(2) %>
                                             </td>
                                         </tr>
                                     <% }) %>
-                                    <tr class="border-b">
-                                        <td class="px-4 py-2 text-gray-700">Subtotal</td>
-                                        <td class="px-4 py-2 text-right text-gray-700">₹<%= total.toFixed(2) %></td>
-                                    </tr>
                                 </tbody>
                                 <tfoot>
-                                   
-                                    <tr class="border-b">
-                                        <td class="px-4 py-2 text-gray-700">Delivery Charge</td>
-                                        <td class="px-4 py-2 text-right text-gray-700">
+                                    <tr class="border-b border-gray-100">
+                                        <td class="py-4">Subtotal</td>
+                                        <td class="text-right font-medium">₹<%= total.toFixed(2) %></td>
+                                    </tr>
+                                    <tr class="border-b border-gray-100">
+                                        <td class="py-4">Delivery Charge</td>
+                                        <td class="text-right">
                                             <% if (total < 1000) { %>
-                                                ₹250.00
-                                                <div class="text-xs text-gray-500 mt-1">
-                                                    Add ₹<%= (1000 - total).toFixed(2) %> more to get free delivery
+                                                <div class="font-medium">₹250.00</div>
+                                                <div class="add-more-text">
+                                                    Add ₹<%= (1000 - total).toFixed(2) %> for free delivery
                                                 </div>
                                             <% } else { %>
-                                                <span class="text-green-600">Free</span>
+                                                <span class="delivery-badge">Free Delivery</span>
                                             <% } %>
                                         </td>
                                     </tr>
-                                    <tr class="font-bold">
-                                        <td class="px-4 py-2 text-gray-700">Total</td>
-                                        <td class="px-4 py-2 text-right text-gray-700">
+                                    <tr>
+                                        <td class="py-4 font-bold text-lg">Total</td>
+                                        <td class="text-right font-bold text-lg">
                                             ₹<%= (total < 1000 ? total + 250 : total).toFixed(2) %>
                                         </td>
                                     </tr>
                                 </tfoot>
                             </table>
-                            
-                            <div class="mt-6">
-                                <label for="couponCode" class="block text-sm font-medium text-gray-700 mb-2">Coupon Code</label>
+
+                            <!-- Coupon Section -->
+                            <div class="mt-8">
+                                <label for="couponCode" class="block text-sm font-medium mb-2">Have a Coupon?</label>
                                 <div class="flex">
-                                    <input type="text" class="form-control flex-grow mr-2 rounded-l-md" id="couponCode" name="couponCode" placeholder="Enter coupon code">
-                                    <button onclick="applyCoupon()" class="bg-blue-500 text-white px-4 py-2 rounded-r-md hover:bg-blue-600 transition duration-300 ease-in-out">Apply</button>
+                                    <input type="text" class="form-control flex-grow" id="couponCode" name="couponCode" placeholder="Enter coupon code">
+                                    <button onclick="applyCoupon()" id="applyCouponBtn" class="btn-primary ml-2">Apply</button>
+                                    <button onclick="removeCoupon()" id="removeCouponBtn" class="hidden px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition duration-300 ml-2">
+                                        <i class="fas fa-times mr-1"></i> Remove
+                                    </button>
                                 </div>
                             </div>
                             
+                            <!-- Discount Applied Section -->
                             <div id="discountApplied" class="mt-4 hidden">
-                                <p class="text-green-600 font-medium">
-                                    Discount Applied: <span id="discountAmount">₹0.00</span>
-                                </p>
+                                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                    <p class="text-green-700 font-medium flex items-center">
+                                        <i class="fas fa-check-circle mr-2"></i>
+                                        Discount Applied: <span id="discountAmount" class="ml-2">₹0.00</span>
+                                    </p>
+                                </div>
                             </div>
                 
                             <!-- Payment Methods -->
-                            <div class="mt-6">
-                                <h5 class="text-xl font-medium mb-4 text-gray-700">Payment Method</h5>
-                                <div class="space-y-2">
-                                    <label class="flex items-center space-x-3 cursor-pointer">
-                                        <input type="radio" name="paymentMethod" id="cashOnDelivery" value="cashOnDelivery" class="form-radio text-blue-600">
-                                        <span class="text-gray-700">Cash on Delivery</span>
+                            <div class="mt-8">
+                                <h5 class="text-xl font-medium mb-4">Payment Method</h5>
+                                <div class="space-y-3">
+                                    <label class="payment-method-label block cursor-pointer">
+                                        <div class="flex items-center">
+                                            <input type="radio" name="paymentMethod" id="cashOnDelivery" value="cashOnDelivery" 
+                                                   class="form-radio h-4 w-4 text-black border-gray-300">
+                                            <div class="ml-3">
+                                                <span class="font-medium">Cash on Delivery</span>
+                                                <p class="text-gray-500 text-sm mt-1">Pay when you receive your order</p>
+                                            </div>
+                                        </div>
                                     </label>
-                                    <label class="flex items-center space-x-3 cursor-pointer">
-                                        <input type="radio" name="paymentMethod" id="razorpay" value="razorpay" class="form-radio text-blue-600">
-                                        <span class="text-gray-700">Razorpay</span>
+                                    
+                                    <label class="payment-method-label block cursor-pointer">
+                                        <div class="flex items-center">
+                                            <input type="radio" name="paymentMethod" id="razorpay" value="razorpay" 
+                                                   class="form-radio h-4 w-4 text-black border-gray-300">
+                                            <div class="ml-3">
+                                                <span class="font-medium">Razorpay</span>
+                                                <p class="text-gray-500 text-sm mt-1">Safe and secure online payment</p>
+                                            </div>
+                                        </div>
                                     </label>
                                 </div>
                             </div>
                             
-                            <button onclick="confirmOrder()" class="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:bg-blue-700 transition duration-300 ease-in-out mt-6 animate-scale" id="placeOrderBtn">
-                                Place Order
+                            <!-- Order Button -->
+                            <button onclick="confirmOrder()" id="placeOrderBtn" 
+                                    class="w-full bg-black text-white font-semibold py-4 px-6 rounded-lg 
+                                           shadow-md hover:bg-gray-900 transition duration-300 mt-8
+                                           flex items-center justify-center space-x-2">
+                                <span>Place Order</span>
+                                <i class="fas fa-arrow-right"></i>
                             </button>
+
+                            <!-- Additional Info -->
+                            <div class="mt-6 grid grid-cols-3 gap-4">
+                                <div class="text-center">
+                                    <i class="fas fa-shield-alt text-2xl text-gray-600 mb-2"></i>
+                                    <p class="text-sm text-gray-600">Secure Payment</p>
+                                </div>
+                                <div class="text-center">
+                                    <i class="fas fa-truck text-2xl text-gray-600 mb-2"></i>
+                                    <p class="text-sm text-gray-600">Fast Delivery</p>
+                                </div>
+                                <div class="text-center">
+                                    <i class="fas fa-undo text-2xl text-gray-600 mb-2"></i>
+                                    <p class="text-sm text-gray-600">Easy Returns</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
         </div>
     </div>
 
+    <!-- Adding animation on scroll library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    
    
     <script>
-        function applyCoupon() {
-            const couponCode = document.getElementById('couponCode').value;
-            if (couponCode) {
+        // function applyCoupon() {
+        //     const couponCode = document.getElementById('couponCode').value;
+        //     if (couponCode) {
                 
-                $('#discountApplied').removeClass('hidden').addClass('animate__animated animate__fadeIn');
-                $('#discountAmount').text('₹50.00'); // Example discount
-                alert('Coupon applied successfully!');
-            } else {
-                alert('Please enter a valid coupon code.');
-            }
-        }
+        //         $('#discountApplied').removeClass('hidden').addClass('animate__animated animate__fadeIn');
+        //         $('#discountAmount').text('₹50.00'); // Example discount
+        //         alert('Coupon applied successfully!');
+        //     } else {
+        //         alert('Please enter a valid coupon code.');
+        //     }
+        // }
+
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out'
+        });
+
+        // Add smooth scroll behavior
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add loading state to buttons
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', function() {
+                if (!this.classList.contains('loading')) {
+                    this.classList.add('loading');
+                    // Remove loading class after action completes
+                    setTimeout(() => {
+                        this.classList.remove('loading');
+                    }, 1000);
+                }
+            });
+        });
+
+
 
         async function handleSubmit(event) {
     event.preventDefault();
@@ -293,65 +485,56 @@
         document.getElementById(field).textContent = '';
     });
 
-    let hasError = false; // Track if there are any errors
+    let hasError = false; 
 
-    // Validate Full Name
+    
     if (!nameRegex.test(formObject.name)) {
         document.getElementById('nameError').textContent = "Please enter a valid name.";
         hasError = true;
     }
 
-    // Validate Address Type
     if (!streetCityStateRegex.test(formObject.addressType)) {
         document.getElementById('typeError').textContent = "Please enter a valid address type .";
         hasError = true;
     }
 
-    // Validate Street
     if (!streetCityStateRegex.test(formObject.street)) {
         document.getElementById('streetError').textContent = "Please enter a valid street .";
         hasError = true;
     }
 
-    // Validate Landmark (optional)
     if (formObject.landMark && !streetCityStateRegex.test(formObject.landMark)) {
         document.getElementById('landMarkError').textContent = "Please enter a valid landmark .";
         hasError = true;
     }
 
-    // Validate Pincode
     if (!pincodeRegex.test(formObject.pincode)) {
         document.getElementById('pincodeError').textContent = "Please enter a valid pincode (6 digits).";
         hasError = true;
     }
 
-    // Validate City
     if (!streetCityStateRegex.test(formObject.city)) {
         document.getElementById('cityError').textContent = "Please enter a valid city.";
         hasError = true;
     }
 
-    // Validate State
     if (!streetCityStateRegex.test(formObject.state)) {
         document.getElementById('stateError').textContent = "Please enter a valid state .";
         hasError = true;
     }
 
-    // Validate Phone
     if (!phoneRegex.test(formObject.phone)) {
         document.getElementById('phoneError').textContent = "Please enter a valid phone number (10 Digit).";
         hasError = true;
     }
 
-    // Validate Alternate Phone (optional)
     if (formObject.altPhone && !phoneRegex.test(formObject.altPhone)) {
         document.getElementById('altPhoneError').textContent = "Please enter a valid alternate phone number (10 digit).";
         hasError = true;
     }
 
-    // If there are any errors, stop form submission
     if (hasError) {
-        return; // Stop form submission
+        return; 
     }
 
     try {
@@ -363,10 +546,9 @@
             body: JSON.stringify(formObject),
         });
 
-        const textResponse = await response.text(); // Get response as text first
-        console.log("Response Text:", textResponse); // Log the raw response text
-
-        const result = JSON.parse(textResponse); // Then parse it to JSON
+        const textResponse = await response.text(); 
+        console.log("Response Text:", textResponse); 
+        const result = JSON.parse(textResponse); 
 
         if (!response.ok) {
             throw new Error(result.error || 'An error occurred');
@@ -400,130 +582,264 @@
 }
 
 
-       
-//         function confirmOrder() {
-//     const addressId = document.querySelector('input[name="address"]:checked');
-//     const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
-//     const couponCode = document.querySelector('input[name="couponCode"]').value; // Get coupon code
-
-//     if (!addressId) {
-//         alert("Please select an address before placing the order.");
-//         return;
-//     }
-
-//     if (!paymentMethod) {
-//         alert("Please select a payment method before placing the order.");
-//         return;
-//     }
-
-//     // Prepare the request body with the coupon code
-//     const requestBody = {
-//         addressId: addressId.value,
-//         paymentMethod: paymentMethod.value
-//     };
-
-//     // Add coupon code if provided
-//     if (couponCode) {
-//         requestBody.couponCode = couponCode; 
-//     }
-
-//     fetch("/place-order", {
-//         method: "POST",
-//         headers: {
-//             "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify(requestBody),
-//     })
-//     .then(response => response.json())
-//     .then(data => {
-//         if (data.success) {
-//             alert(data.message);
-//             window.location.href = `/success?orderId=${data.orderId}`;
-//         } else {
-//             alert(data.message || "An error occurred while placing the order.");
-//         }
-//     })
-//     .catch(error => {
-//         console.error("Error placing order:", error);
-//         alert("An error occurred while placing the order.");
-//     });
-// }
+ 
 
 
-function confirmOrder() {
-    const addressId = document.querySelector('input[name="address"]:checked');
-    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
-    const couponCode = document.querySelector('input[name="couponCode"]').value;
 
-    if (!addressId) {
-        alert("Please select an address before placing the order.");
-        return;
-    }
 
-    if (!paymentMethod) {
-        alert("Please select a payment method before placing the order.");
-        return;
-    }
 
-    const requestBody = {
-        addressId: addressId.value,
-        paymentMethod: paymentMethod.value
-    };
+//payment 
 
-    if (couponCode) {
-        requestBody.couponCode = couponCode;
-    }
-
-    fetch("/place-order", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-            window.location.href = `/success?orderId=${data.orderId}`;
-        } else {
-            // Handle quantity errors specifically
-            if (data.quantityErrors) {
-                const errorMessage = data.quantityErrors.join('\n');
-                alert(`Unable to place order:\n${errorMessage}`);
-            } else {
-                alert(data.message || "An error occurred while placing the order.");
-            }
+async function confirmOrder() {
+    try {
+        // Get form elements with null checks
+        const addressInput = document.querySelector('input[name="address"]:checked');
+        const paymentMethodInput = document.querySelector('input[name="paymentMethod"]:checked');
+        const couponCodeInput = document.querySelector('input[name="couponCode"]');
+        
+        // Get total amount from the table's last row
+        const totalRow = document.querySelector('table tfoot tr:last-child td:last-child');
+        const amount = totalRow ? parseFloat(totalRow.textContent.replace('₹', '').trim()) : 0;
+        
+        // Validate required fields
+        if (!addressInput) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Address Required',
+                text: 'Please select an address before placing the order.',
+                confirmButtonColor: '#3085d6'
+            });
+            return;
         }
-    })
-    .catch(error => {
-        console.error("Error placing order:", error);
-        alert("An error occurred while placing the order.");
-    });
+
+        if (!paymentMethodInput) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Payment Method Required',
+                text: 'Please select a payment method before placing the order.',
+                confirmButtonColor: '#3085d6'
+            });
+            return;
+        }
+
+        // Build request body
+        const requestBody = {
+            addressId: addressInput.value,
+            paymentMethod: paymentMethodInput.value,
+            amount: amount
+        };
+
+        // Add coupon code if it exists and has a value
+        if (couponCodeInput && couponCodeInput.value.trim()) {
+            requestBody.couponCode = couponCodeInput.value.trim();
+        }
+
+        // Validate amount
+        if (requestBody.amount <= 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Amount',
+                text: 'Order amount must be greater than 0.',
+                confirmButtonColor: '#3085d6'
+            });
+            return;
+        }
+
+        // Process based on payment method
+        if (paymentMethodInput.value === 'cashOnDelivery') {
+            await processCashOnDelivery(requestBody);
+        } else if (paymentMethodInput.value === 'razorpay') {
+            await processRazorpayPayment(requestBody);
+        }
+
+    } catch (error) {
+        console.error('Error in confirmOrder:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Order Processing Error',
+            text: 'An error occurred while processing your order. Please try again.',
+            confirmButtonColor: '#3085d6'
+        });
+    }
+}
+
+async function processRazorpayPayment(requestBody) {
+    try {
+        // Get user details with null checks
+        const nameInput = document.querySelector('input[name="name"]');
+        const phoneInput = document.querySelector('input[name="phone"]');
+
+        // First create the Razorpay order
+        const response = await fetch("/create-razorpay-order", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(requestBody),
+        });
+
+        const orderData = await response.json();
+        
+        if (!orderData.success) {
+            throw new Error(orderData.message || 'Failed to create order');
+        }
+
+        const options = {
+            key: orderData.key_id,
+            amount: orderData.amount,
+            currency: "INR",
+            name: "Gerad_fashions",
+            description: "Purchase Payment",
+            order_id: orderData.orderId,
+            handler: async function (response) {
+                try {
+                    // After successful payment, verify and create the order
+                    const verifyResponse = await fetch("/verify-payment", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            ...requestBody,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_signature: response.razorpay_signature,
+                        }),
+                    });
+
+                    const verificationData = await verifyResponse.json();
+                    
+                    if (verificationData.success) {
+                        // Create the actual order in your database
+                        const createOrderResponse = await fetch("/place-order", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                ...requestBody,
+                                paymentDetails: {
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_signature: response.razorpay_signature,
+                                }
+                            }),
+                        });
+
+                        const orderResult = await createOrderResponse.json();
+                        handleOrderResponse(orderResult);
+                    } else {
+                        throw new Error(verificationData.message || 'Payment verification failed');
+                    }
+                } catch (error) {
+                    console.error("Payment verification failed:", error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Payment Verification Failed',
+                        text: 'There was an error verifying your payment.',
+                        confirmButtonColor: '#3085d6'
+                    });
+                }
+            },
+            prefill: {
+                name: nameInput ? nameInput.value : '',
+                contact: phoneInput ? phoneInput.value : '',
+            },
+            theme: {
+                color: "#3b82f6"
+            }
+        };
+
+        const rzp = new Razorpay(options);
+
+        rzp.on('payment.failed', function (response) {
+            console.error("Payment failed:", response.error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Payment Failed',
+                text: 'Your payment was unsuccessful. Please try again.',
+                confirmButtonColor: '#3085d6'
+            });
+        });
+
+        rzp.open();
+
+    } catch (error) {
+        console.error("Error initiating payment:", error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Payment Initiation Failed',
+            text: 'There was an error starting the payment process.',
+            confirmButtonColor: '#3085d6'
+        });
+    }
 }
 
 
-
-        // Add animation to form inputs
-        const formInputs = document.querySelectorAll('.form-control, .form-check-input');
-        formInputs.forEach(input => {
-            input.addEventListener('focus', function() {
-                this.closest('.mb-4, .form-check').classList.add('animate__animated', 'animate__pulse');
-            });
-            input.addEventListener('blur', function() {
-                this.closest('.mb-4, .form-check').classList.remove('animate__animated', 'animate__pulse');
-            });
+async function processCashOnDelivery(requestBody) {
+    try {
+        // Make API call to place the order
+        const response = await fetch("/place-order", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                ...requestBody,
+                paymentMethod: 'cashOnDelivery',
+                paymentDetails: {
+                    paymentStatus: 'Pending'  // COD payments are pending until delivery
+                }
+            }),
         });
 
-        // Add animation to the "Place Order" button
-        const placeOrderBtn = document.getElementById('placeOrderBtn');
-        placeOrderBtn.addEventListener('click', function() {
-            this.classList.add('animate__animated', 'animate__pulse');
-            setTimeout(() => {
-                this.classList.remove('animate__animated', 'animate__pulse');
-            }, 1000);
-        });
+        const orderResult = await response.json();
+        handleOrderResponse(orderResult);
 
+    } catch (error) {
+        console.error("Error processing Cash on Delivery order:", error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Order Processing Failed',
+            text: 'There was an error processing your Cash on Delivery order.',
+            confirmButtonColor: '#3085d6'
+        });
+    }
+}
+function handleOrderResponse(data) {
+    if (data.success) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Order Placed Successfully!',
+            text: data.message || 'Your order has been placed successfully.',
+            showConfirmButton: true,
+            confirmButtonColor: '#3085d6',
+            allowOutsideClick: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Use the orderId from the order creation response
+                window.location.href = `/success?orderId=${data.orderDetails?.orderId || data.orderId}`;
+            }
+        });
+    } else {
+        if (data.quantityErrors && data.quantityErrors.length > 0) {
+            const errorMessage = data.quantityErrors.join('\n');
+            Swal.fire({
+                icon: 'error',
+                title: 'Unable to Place Order',
+                text: errorMessage,
+                confirmButtonColor: '#3085d6'
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Order Failed',
+                text: data.message || 'An error occurred while placing the order.',
+                confirmButtonColor: '#3085d6'
+            });
+        }
+    }
+}
 
 
        // applycoupon 
@@ -541,7 +857,7 @@ function confirmOrder() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ couponCode: couponCode }) // Match the backend expected parameter name
+            body: JSON.stringify({ couponCode: couponCode }) 
         });
 
         const data = await response.json();
@@ -558,7 +874,7 @@ function confirmOrder() {
     }
 }
 
-// Helper functions to improve code organization
+
 function updateCartDisplay(data) {
     // Get elements
     const cartItemsTable = document.getElementById('cartItems');
@@ -581,7 +897,7 @@ function updateCartDisplay(data) {
     discountAppliedDiv.classList.remove('hidden');
     discountAmountSpan.textContent = `₹${discountAmount.toFixed(2)}`;
 
-    // Disable coupon inputs
+    // Disable coupon 
     disableCouponInputs();
 
     alert('Coupon applied successfully!');
@@ -615,6 +931,69 @@ function handleError(message) {
 }
 
 
+async function removeCoupon() {
+    try {
+        const response = await fetch('/removeCoupon', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+        console.log('Received response:', data);
+
+        if (data.success) {
+            resetCouponDisplay(data);
+        } else {
+            handleError(data.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        handleError('Error removing coupon');
+    }
+}
+
+function resetCouponDisplay(data) {
+    // Get elements
+    const cartItemsTable = document.getElementById('cartItems');
+    const totalElement = document.querySelector('tfoot tr:last-child td:last-child');
+    const discountAppliedDiv = document.getElementById('discountApplied');
+    const couponInput = document.getElementById('couponCode');
+    const applyCouponBtn = document.getElementById('applyCouponBtn');
+    const removeCouponBtn = document.getElementById('removeCouponBtn');
+
+    // Remove discount row
+    removeExistingDiscountRow();
+
+    // Update total
+    totalElement.textContent = `₹${parseFloat(data.newTotal).toFixed(2)}`;
+
+    // Hide discount applied message
+    discountAppliedDiv.classList.add('hidden');
+
+    // Reset and enable coupon input
+    couponInput.value = '';
+    couponInput.disabled = false;
+    applyCouponBtn.disabled = false;
+
+    // Hide remove button and show apply button
+    removeCouponBtn.classList.add('hidden');
+    applyCouponBtn.classList.remove('hidden');
+
+    alert('Coupon removed successfully!');
+}
+
+// Modify the existing disableCouponInputs function to show the remove button
+function disableCouponInputs() {
+    const couponInput = document.getElementById('couponCode');
+    const applyCouponBtn = document.getElementById('applyCouponBtn');
+    const removeCouponBtn = document.getElementById('removeCouponBtn');
+
+    couponInput.disabled = true;
+    applyCouponBtn.classList.add('hidden');
+    removeCouponBtn.classList.remove('hidden');
+}
 
 
     </script>

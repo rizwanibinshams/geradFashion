@@ -197,25 +197,32 @@
                     </div>
 
                     <!-- Quantity -->
-                    <div class="mb-8">
-                        <label for="quantity-input" class="block text-gray-700 font-medium mb-2">Quantity</label>
-                        <div class="flex items-center w-full max-w-xs">
-                            <button onclick="updateQuantity(-1)" 
-                                    class="bg-gray-100 text-gray-600 px-4 py-2 rounded-l-lg hover:bg-gray-200 transition-colors">
-                                −
-                            </button>
-                            <input type="number" 
-                                   id="quantity-input" 
-                                   class="border-y border-gray-200 text-center w-20 py-2 focus:outline-none" 
-                                   value="1" 
-                                   min="1" 
-                                   max="10">
-                            <button onclick="updateQuantity(1)" 
-                                    class="bg-gray-100 text-gray-600 px-4 py-2 rounded-r-lg hover:bg-gray-200 transition-colors">
-                                +
-                            </button>
-                        </div>
-                    </div>
+                   <div class="mb-8">
+    <label for="quantity-input" class="block text-gray-700 font-medium mb-2">Quantity</label>
+    <div class="flex items-center w-full max-w-xs">
+        <button onclick="updateQuantity(-1)" 
+                class="bg-gray-100 text-gray-600 px-4 py-2 rounded-l-lg hover:bg-gray-200 transition-colors">
+            −
+        </button>
+        <input type="number" 
+               id="quantity-input" 
+               class="border-y border-gray-200 text-center w-20 py-2 focus:outline-none" 
+               value="1" 
+               min="1"
+               data-stock="<%= product.quantity %>"
+               data-status="<%= product.status %>"
+               readonly>
+        <button onclick="updateQuantity(1)" 
+                class="bg-gray-100 text-gray-600 px-4 py-2 rounded-r-lg hover:bg-gray-200 transition-colors">
+            +
+        </button>
+    </div>
+    <% if (product.quantity <= 5 && product.quantity > 0) { %>
+        <p class="text-orange-500 text-sm mt-2">Only <%= product.quantity %> items left in stock!</p>
+    <% } else if (product.quantity === 0 || product.status !== "Available") { %>
+        <p class="text-red-500 text-sm mt-2">Out of stock</p>
+    <% } %>
+</div>
 
                     <!-- Action Buttons -->
                     <div class="flex space-x-4">
@@ -363,19 +370,23 @@
 
         // Quantity update with animation
         function updateQuantity(change) {
-            const quantityInput = document.getElementById('quantity-input');
-            let currentQuantity = parseInt(quantityInput.value);
-            let newQuantity = currentQuantity + change;
-            
-            if (newQuantity >= 1 && newQuantity <= 10) {
-                quantityInput.classList.add('scale-110');
-                quantityInput.value = newQuantity;
-                
-                setTimeout(() => {
-                    quantityInput.classList.remove('scale-110');
-                }, 200);
-            }
-        }
+    const quantityInput = document.getElementById('quantity-input');
+    const maxStock = parseInt(quantityInput.getAttribute('data-stock'), 10);
+    let currentQuantity = parseInt(quantityInput.value, 10);
+    let newQuantity = currentQuantity + change;
+
+    // Ensure quantity does not exceed available stock or fall below 1
+    if (newQuantity >= 1 && newQuantity <= maxStock) {
+        quantityInput.value = newQuantity;
+
+        // Apply animation for visual feedback
+        quantityInput.classList.add('scale-110');
+        setTimeout(() => {
+            quantityInput.classList.remove('scale-110');
+        }, 200);
+    }
+}
+
 
         // Enhanced Add to Cart functionality
         function addToCart(productId) {
@@ -442,6 +453,8 @@
                 }
             });
         }
+
+     
 
         // Wishlist functionality with enhanced UI feedback
         document.addEventListener('DOMContentLoaded', function() {

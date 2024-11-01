@@ -20,10 +20,10 @@
             
                
                 <!-- Add more hero items here if needed -->
-                <div class="relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-50 before:z-10">
-                    <img src="/img/banner2.avif" alt="Banner Image" class="absolute inset-0 w-full h-full object-cover" />
+                <div class="relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-50 before:z-10 z-0">
+                    <img src="/img/banner2.avif" alt="Banner Image" class="absolute inset-0 w-full h-full object-cover z-0" />
               
-                    <div class="min-h-[350px] relative z-50 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
+                    <div class="min-h-[350px] relative z-50 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6 ">
                       <h2 class="sm:text-4xl text-2xl font-bold mb-6">Fall - Winter Collections 2030</h2>
                       <p class="sm:text-lg text-base text-center text-gray-200">A specialist label creating luxury essentials. Ethically created</p>
               
@@ -169,54 +169,7 @@
         
 
 
-<!-- 
-        <section class="mb-12">
-            <h2 class="text-3xl font-bold text-center mb-8">Best Sellers</h2>
-            <div id="best-seller-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                <% if (bestSellers && bestSellers.length > 0) { %>
-                    <% bestSellers.forEach(product => { %>
-                        <div class="product-card bg-white rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:scale-105">
-                            <div class="relative">
-                                <a href="/productDetails?id=<%= product._id %>" class="product-link" style="text-decoration: none; color: inherit;">
-                                <img src="/uploads/product-images/<%= product.productImage[0] %>" alt="<%= product.productName %>" class="w-full h-64 object-cover">
-                                </a>
-                                <% const discount = Math.abs(((product.regularPrice - product.salePrice) / product.regularPrice) * 100); %>
-                                <% if (discount > 0) { %>
-                                    <div class="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                                        <%= discount.toFixed(0) %>% OFF
-                                    </div>
-                                <% } %>
-                                <button class="wishlist-btn absolute top-2 right-2 bg-white p-2 rounded-full text-red-500 hover:text-red-600 transition duration-300">
-                                    <i class="fas fa-heart"></i>
-                                </button>
-                            </div>
-                            <div class="p-4">
-                                <h3 class="text-lg font-semibold mb-2"><%= product.productName %></h3>
-                                <p class="text-sm text-gray-600 mb-2">Brand: <%= product.brand %></p>
-                                <div class="flex items-center justify-between mb-2">
-                                    <div>
-                                        <span class="text-gray-400 line-through text-sm">₹<%= product.regularPrice %></span>
-                                        <span class="text-red-500 font-bold ml-2">₹<%= product.salePrice %></span>
-                                    </div>
-                                    <div class="text-yellow-400">
-                                        <% for (let i = 1; i <= 5; i++) { %>
-                                            <i class="<%= i <= product.rating ? 'fas' : 'far' %> fa-star"></i>
-                                        <% } %>
-                                    </div>
-                                </div>
-                                <button onclick="addToWishlist('<%= product._id %>', this)" data-product-id="<%= product._id %>" class="wishlist-btn w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition duration-300">
-                                    <span>Add to Wishlist</span>
-                                </button>
-                                
-                            </div>
-                        </div>
-                    <% }) %>
-                <% } else { %>
-                    <p class="col-span-full text-center text-gray-500">No best sellers available.</p>
-                <% } %>
-            </div>
-        </section> -->
-        
+
     </main>
 
    

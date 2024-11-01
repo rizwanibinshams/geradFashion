@@ -63,4 +63,5 @@ walletSchema.methods.deductMoney = async function (amount, description = 'Money 
   await this.save();
 };
 
-module.exports = mongoose.model('Wallet', walletSchema);
+const Wallet = mongoose.model('Wallet', walletSchema);
+module.exports = Wallet;

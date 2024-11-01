@@ -10,11 +10,21 @@ const  orderController = require('../controllers/user/orderController')
 const wishlistController = require('../controllers/user/wishlistController')
 const couponController = require('../controllers/admin/couponController')
 const walletController = require("../controllers/user/walletController")
+const paymentsController = require("../controllers/admin/payments.controller")
+const returnsController = require("../controllers/user/returnsController")
 const passport = require('passport')
 const auth = require('../middlewares/auth')
 
 //error Management
 router.get('/pageNotFound',userController.pageNotFound)
+//search 
+
+router.get('/products/search',productController.searchProducts)
+router.get('/products/suggestions', productController.getSearchSuggestions);
+
+ // Example route to get product details
+router.get('/products/:id', productController.getProductDetailsPage);
+
 
 
 //Sign Up Management
@@ -97,6 +107,9 @@ router.put('/addresses/:id',auth.AdressMiddleware, addressController.editAddress
 // Remove an address
 router.delete('/addresses/:id',auth.AdressMiddleware, addressController.removeAddress);
 
+// default adress 
+router.post("/setDefaultAddress/:addressId", addressController.setDefaultAddress);
+
 //user edited
 
 router.post('/update-profile',auth.AdressMiddleware,userController.updateProfile)
@@ -111,8 +124,12 @@ router.get('/checkout',checkoutController.getCheckoutPage)
 
 //place order
 router.post('/place-order', orderController.placeOrder);
-router.post('/orders/:orderId/cancel', orderController.cancelOrder);
 
+
+router.post('/orders/:orderId/items/:itemId/cancel', orderController.cancelOrderItem);
+
+//return 
+router.post('/api/orders/return', returnsController.initiateReturn);
 
 // wishlist 
 router.post('/wishlist/add', wishlistController.addToWishlist);
@@ -135,8 +152,14 @@ router.post('/wallet/deduct', walletController.deductMoneyFromWallet);
 
 // User route for applying a coupon
  router.post('/applyCoupon',couponController.applyCoupon)
+ router.post('/removeCoupon', couponController.removeCoupon);
 
  router.get('/track-order/:orderId', orderController.trackOrder);
 
+
+
+
+router.post('/create-razorpay-order',paymentsController.createOrder)
+router.post('/verify-payment', paymentsController.verifyPayment);
 
 module.exports = router

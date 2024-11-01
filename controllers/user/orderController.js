@@ -2,6 +2,7 @@ const { Order, Address } = require('../../models/orderSchema');
 const Product = require('../../models/productSchema');
 const Cart = require("../../models/cartSchema");
 const Coupon = require("../../models/couponSchema")
+const Wallet = require("../../models/walletSchema")
 const mongoose = require('mongoose');
 const { format } = require('date-fns');
 const User = require("../../models/userSchema")
@@ -143,7 +144,7 @@ const User = require("../../models/userSchema")
 
 const placeOrder = async (req, res) => {
     try {
-        const { addressId, paymentMethod, couponCode } = req.body;
+        const { addressId, paymentMethod, couponCode, paymentDetails } = req.body;
         const userId = req.session.user?.id;
         const DELIVERY_CHARGE = 250;
         const FREE_DELIVERY_THRESHOLD = 1000;
@@ -241,12 +242,13 @@ const placeOrder = async (req, res) => {
         // Prepare order data according to schema
         const orderData = {
             user: userId,
-            paymentMethod,
-            orderedItems: cart.items.map(item => ({
-                product: item.productId._id,
-                quantity: item.quantity,
-                price: item.totalPrice
-            })),
+    paymentMethod,
+    orderedItems: cart.items.map(item => ({
+        product: item.productId._id,
+        quantity: item.quantity,
+        price: item.totalPrice,
+        status: 'Pending'  // Add this line to set the initial status
+    })),
             totalPrice: subtotal,
             discount: discountAmount,
             deliveryCharge,
@@ -267,7 +269,17 @@ const placeOrder = async (req, res) => {
                 code: appliedCouponCode,
                 discountAmount: discountAmount
             },
-            invoiceDate: new Date()
+            invoiceDate: new Date(),
+            paymentDetails: paymentMethod === 'razorpay' ? {
+                razorpayPaymentId: paymentDetails?.razorpay_payment_id,
+                razorpayOrderId: paymentDetails?.razorpay_order_id,
+                razorpaySignature: paymentDetails?.razorpay_signature,
+                paymentStatus: 'Completed'  // For Razorpay
+            } : {
+                paymentStatus: 'Pending'    // For Cash on Delivery
+            }
+
+
         };
 
         // Create and save order
@@ -289,6 +301,7 @@ const placeOrder = async (req, res) => {
             message: "Order placed successfully!",
             orderId: order.orderId,
             orderDetails: {
+                orderId: order.orderId,  // Ensure this is included
                 subtotal,
                 deliveryCharge,
                 discountAmount,
@@ -307,41 +320,163 @@ const placeOrder = async (req, res) => {
 };
 
 
-const cancelOrder = async (req, res) => {
-    try {
-        const orderId = req.params.orderId;
-        const order = await Order.findById(orderId);
 
+
+// const cancelOrderItem = async (req, res) => {
+//     try {
+//         const { orderId, itemId } = req.params;
+//         const order = await Order.findById(orderId);
+
+//         if (!order) {
+//             return res.status(404).json({ message: 'Order not found' });
+//         }
+
+//         // Find the specific item in the order
+//         const orderItem = order.orderedItems.id(itemId);
+//         if (!orderItem) {
+//             return res.status(404).json({ message: 'Order item not found' });
+//         }
+
+//         if (orderItem.status === 'Cancelled') {
+//             return res.status(400).json({ message: 'Item is already cancelled' });
+//         }
+
+//         if (order.status !== 'Pending') {
+//             return res.status(400).json({ message: 'Can only cancel items from pending orders' });
+//         }
+
+//         // Update product stock
+//         await Product.findByIdAndUpdate(orderItem.product, {
+//             $inc: { quantity: orderItem.quantity }
+//         });
+
+//         // Update item status
+//         orderItem.status = 'Cancelled';
+        
+//         // Calculate refund amount for this item
+//         const refundAmount = orderItem.price * orderItem.quantity;
+        
+//         // Check if all items in the order are cancelled
+//         const allItemsCancelled = order.orderedItems.every(item => item.status === 'Cancelled');
+//         if (allItemsCancelled) {
+//             order.status = 'Cancelled';
+//         }
+
+//         // Update final amount
+//         order.finalAmount -= refundAmount;
+        
+//         await order.save();
+
+//         res.status(200).json({
+//             message: 'Item cancelled successfully',
+//             order,
+//             refundAmount
+//         });
+//     } catch (error) {
+//         console.error('Error cancelling order item:', error);
+//         res.status(500).json({ message: 'An error occurred while cancelling the item' });
+//     }
+// };
+
+const cancelOrderItem = async (req, res) => {
+    try {
+        const { orderId, itemId } = req.params;
+        const userId = req.session.user?.id;
+
+        const order = await Order.findById(orderId);
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
         }
 
-        if (order.status !== 'Pending') {
-            return res.status(400).json({ message: 'Only pending orders can be cancelled' });
+        // Find the specific item in the order
+        const orderItem = order.orderedItems.id(itemId);
+        if (!orderItem) {
+            return res.status(404).json({ message: 'Order item not found' });
         }
 
-        for (const item of order.orderedItems) {
-            const product = item.product;
+        if (orderItem.status === 'Cancelled') {
+            return res.status(400).json({ message: 'Item is already cancelled' });
+        }
 
-            // Update the product stock
-            await Product.findByIdAndUpdate(product._id, {
-                $inc: { quantity: item.quantity } // Add back the quantity to the product stock
+        if (order.status !== 'Pending') {
+            return res.status(400).json({ message: 'Can only cancel items from pending orders' });
+        }
+
+        // Update product stock first
+        await Product.findByIdAndUpdate(
+            orderItem.product,
+            { $inc: { quantity: orderItem.quantity } }
+        );
+
+        // Update order item status
+        orderItem.status = 'Cancelled';
+
+        // Check if all items in the order are cancelled
+        const allItemsCancelled = order.orderedItems.every(item => 
+            item.status === 'Cancelled'
+        );
+
+        if (allItemsCancelled) {
+            order.status = 'Cancelled';
+        }
+
+        // Process refund only if payment method is Razorpay
+        let refundAmount = 0;
+        if (order.paymentMethod === 'razorpay') {
+            const totalPrice = orderItem.price; // Total price of the cancelled item
+            const discountAmount = order.discount?.discount || 0; // Get discount amount, default to 0 if not present
+
+            // Calculate the refund amount
+            refundAmount = totalPrice - discountAmount; // Full price refunded, consider discount in business logic if needed
+            
+            // Find or create wallet
+            let wallet = await Wallet.findOne({ userId });
+            if (!wallet) {
+                wallet = new Wallet({
+                    userId,
+                    balance: 0,
+                    transactionHistory: []
+                });
+            }
+
+            // Add refund to wallet using the schema method
+            await wallet.addMoney(refundAmount, `Refund for cancelled order item #${order.orderId}`);
+
+            // Update final amount (if needed)
+            order.finalAmount -= refundAmount;
+
+            // Save the order
+            await order.save();
+
+            return res.status(200).json({
+                success: true,
+                message: 'Item cancelled successfully',
+                order,
+                refundAmount,
+                walletMessage: `₹${refundAmount} has been added to your wallet`
             });
         }
 
-
-        order.status = 'Cancelled';
+        // Save the order without refund if not Razorpay
         await order.save();
 
-        // Here you might want to add logic to refund the payment, 
-        // update inventory, etc.
+        res.status(200).json({
+            success: true,
+            message: 'Item cancelled successfully',
+            order,
+            walletMessage: null // No refund message since it's not Razorpay
+        });
 
-        res.status(200).json({ message: 'Order cancelled successfully', order });
     } catch (error) {
-        console.error('Error cancelling order:', error);
-        res.status(500).json({ message: 'An error occurred while cancelling the order' });
+        console.error('Error cancelling order item:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'An error occurred while cancelling the item'
+        });
     }
 };
+
+
 
 
 const trackOrder = async (req, res) => {
@@ -453,6 +588,7 @@ const trackOrder = async (req, res) => {
 
 module.exports = {
     placeOrder,
-    cancelOrder,
+    // cancelOrder,
+    cancelOrderItem,
     trackOrder 
 }

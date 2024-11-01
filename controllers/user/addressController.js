@@ -240,10 +240,41 @@ const getAddresses = async (req, res) => {
 };
 
 
+const setDefaultAddress = async (req, res) => {
+    const userId = req.user?._id || req.session.user?.id;;  // Assuming user is authenticated and user ID is accessible
+    const addressId = req.params.addressId;
+
+    try {
+        // Find the user's address document
+        const userAddress = await Address.findOne({ userId });
+        if (!userAddress) return res.status(404).json({ success: false, message: "User address not found" });
+
+        // Set all addresses to non-default
+        userAddress.address.forEach((addr) => {
+            addr.isDefault = false;
+        });
+
+        // Set the chosen address as default
+        const defaultAddress = userAddress.address.id(addressId);
+        if (!defaultAddress) return res.status(404).json({ success: false, message: "Address not found" });
+        
+        defaultAddress.isDefault = true;
+
+        // Save changes
+        await userAddress.save();
+
+        res.json({ success: true, message: "Default address set successfully" });
+    } catch (error) {
+        console.error("Error setting default address:", error);
+        res.status(500).json({ success: false, message: "Failed to set default address" });
+    }
+};
+
 module.exports ={
     addAddress,
     editAddress,
     removeAddress,
     getAddresses,
-    getAddressById
+    getAddressById,
+    setDefaultAddress
 }

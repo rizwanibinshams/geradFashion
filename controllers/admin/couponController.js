@@ -343,6 +343,66 @@ const applyCoupon = async (req, res) => {
   }
 };
 
+const removeCoupon = async (req, res) => {
+  try {
+      const userId = req.session.user?.id;
+
+      if (!userId) {
+          return res.json({
+              success: false,
+              message: 'User not authenticated'
+          });
+      }
+
+      // Check if there's a coupon applied in the session
+      if (!req.session.appliedCoupon) {
+          return res.json({
+              success: false,
+              message: 'No coupon is currently applied'
+          });
+      }
+
+      // Retrieve the user's cart
+      const cart = await Cart.findOne({ userId })
+          .populate({ path: 'items.productId', select: 'salePrice name' });
+
+      if (!cart || !cart.items || cart.items.length === 0) {
+          return res.json({
+              success: false,
+              message: 'Cart is empty'
+          });
+      }
+
+      // Calculate cart total without discount
+      const cartTotal = cart.items.reduce((total, item) => {
+          return total + item.totalPrice;
+      }, 0);
+
+      // Remove the applied coupon from session
+      delete req.session.appliedCoupon;
+
+      console.log('Coupon removed successfully:', {
+          cartTotal,
+          userId
+      });
+
+      return res.json({
+          success: true,
+          message: 'Coupon removed successfully',
+          newTotal: cartTotal.toFixed(2),
+          originalTotal: cartTotal.toFixed(2)
+      });
+
+  } catch (error) {
+      console.error('Error in removeCoupon:', error);
+      return res.json({
+          success: false,
+          message: 'Error removing coupon',
+          error: error.message
+      });
+  }
+};
+
 
 
 const deleteCoupon = async (req, res) => {
@@ -398,5 +458,6 @@ module.exports = {
   getCouponById,
   updateCoupon,
   deleteCoupon,
-  applyCoupon
+  applyCoupon,
+  removeCoupon
 };

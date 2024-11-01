@@ -23,51 +23,110 @@ const getProductAddPage = async (req, res) => {
     }
 };
 
+// const addProducts = async (req, res) => {
+//     try {
+//         const products = req.body;
+//         const productExists = await Product.findOne({ productName: products.productName });
+
+//         if (!productExists) {
+//             const images = [];
+//             if (req.files && req.files.length > 0) {
+//                 for (let i = 0; i < req.files.length; i++) {
+//                     const originalImagePath = req.files[i].path;
+//                     const resizedImagePath = path.join('public', 'uploads', 'product-images', req.files[i].filename);
+//                     await sharp(originalImagePath).resize({ width: 440, height: 440 }).toFile(resizedImagePath);
+//                     images.push(req.files[i].filename);
+//                 }
+//             }
+
+//             const categoryId = await Category.findOne({ name: products.category });
+//             if (!categoryId) {
+//                 return res.status(400).json("Invalid category name");
+//             }
+
+//             const newProduct = new Product({
+//                 productName: products.productName,
+//                 description: products.description,
+//                 brand: products.brand,
+              
+//                 category: categoryId._id,
+//                 regularPrice: products.regularPrice,
+//                 salePrice: products.salePrice,
+//                 createdAt: new Date(),
+//                 quantity: products.quantity,
+//                 size: products.size ? products.size.split(',') : [], // Handle size array
+//                 color: products.color ? products.color.split(',') : [], // Handle color array
+//                 productImage: images,
+//                 status: "Available",
+//             });
+
+//             await newProduct.save();
+//             return res.redirect("/admin/addProducts");
+//         } else {
+//             res.status(400).json("Product already exists, please try with another name");
+//         }
+//     } catch (error) {
+//         console.error("Error while saving products:", error);
+//         res.redirect("/admin/pageerror");
+//     }
+// };
+
 const addProducts = async (req, res) => {
     try {
         const products = req.body;
+        
+        // Check if product exists
         const productExists = await Product.findOne({ productName: products.productName });
-
-        if (!productExists) {
-            const images = [];
-            if (req.files && req.files.length > 0) {
-                for (let i = 0; i < req.files.length; i++) {
-                    const originalImagePath = req.files[i].path;
-                    const resizedImagePath = path.join('public', 'uploads', 'product-images', req.files[i].filename);
-                    await sharp(originalImagePath).resize({ width: 440, height: 440 }).toFile(resizedImagePath);
-                    images.push(req.files[i].filename);
-                }
-            }
-
-            const categoryId = await Category.findOne({ name: products.category });
-            if (!categoryId) {
-                return res.status(400).json("Invalid category name");
-            }
-
-            const newProduct = new Product({
-                productName: products.productName,
-                description: products.description,
-                brand: products.brand,
-              
-                category: categoryId._id,
-                regularPrice: products.regularPrice,
-                salePrice: products.salePrice,
-                createdAt: new Date(),
-                quantity: products.quantity,
-                size: products.size ? products.size.split(',') : [], // Handle size array
-                color: products.color ? products.color.split(',') : [], // Handle color array
-                productImage: images,
-                status: "Available",
-            });
-
-            await newProduct.save();
-            return res.redirect("/admin/addProducts");
-        } else {
-            res.status(400).json("Product already exists, please try with another name");
+        if (productExists) {
+            return res.status(400).json("Product already exists, please try with another name");
         }
+
+        // Handle images
+        const images = [];
+        if (req.files && req.files.length > 0) {
+            for (const file of req.files) {
+                const originalImagePath = file.path;
+                const filename = file.filename;
+                // Ensure the directory exists
+                const resizedImagePath = path.join('public', 'uploads', 'product-images', filename);
+                
+                // Resize image
+                await sharp(originalImagePath)
+                    .resize({ width: 440, height: 440 })
+                    .toFile(resizedImagePath);
+                
+                images.push(filename);
+            }
+        }
+
+        // Get category ID
+        const categoryId = await Category.findOne({ name: products.category });
+        if (!categoryId) {
+            return res.status(400).json("Invalid category name");
+        }
+
+        // Create new product
+        const newProduct = new Product({
+            productName: products.productName,
+            description: products.description,
+            brand: products.brand,
+            category: categoryId._id,
+            regularPrice: products.regularPrice,
+            salePrice: products.salePrice,
+            quantity: products.quantity,
+            size: products.size ? [products.size] : [], // Since it's a select, no need to split
+            color: products.color ? products.color.split(',') : [], // Split colors if multiple
+            productImage: images,
+            status: "Available",
+            createdAt: new Date()
+        });
+
+        await newProduct.save();
+        return res.redirect("/admin/addProducts");
+
     } catch (error) {
         console.error("Error while saving products:", error);
-        res.redirect("/admin/pageerror");
+        return res.redirect("/admin/pageerror");
     }
 };
 

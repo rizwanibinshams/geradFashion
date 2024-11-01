@@ -99,6 +99,7 @@
                     <h5 class="text-xl font-light mb-6 tracking-wide">Categories</h5>
                     <ul class="space-y-4">
                         <li><a href="/products" class="category-link <%= currentCategory === 'All' ? 'font-medium text-black' : 'text-gray-600' %>">All Collections</a></li>
+
                         <% categories.forEach(category => { %>
                             <li>
                                 <a href="/products?category=<%= category.name %>" 
@@ -113,7 +114,7 @@
 
             <!-- Main Content -->
             <div class="flex-1">
-                <!-- Sophisticated Sorting -->
+              <!-- sorting -->
                 <div class="flex justify-between items-center mb-8">
                     <h2 class="text-2xl font-light tracking-wide">Our Collection</h2>
                     <select id="priceFilter" class="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent">
@@ -125,20 +126,20 @@
                     </select>
                 </div>
 
-                <!-- Refined Product Grid -->
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     <% if (products.length > 0) { %>
                         <% products.forEach(product => { %>
                             <div class="product-card bg-white rounded-xl overflow-hidden relative">
-                                <!-- Elegant Discount Badge -->
+                               
                                 <% const discount = Math.abs(((product.regularPrice - product.salePrice) / product.regularPrice) * 100); %>
                                 <% if (discount > 0) { %>
-                                    <!-- Modern Sale Badge -->
+                                   
                                     <div class="sale-badge">
                                         <%= discount.toFixed(0) %>% OFF
                                     </div>
 
-                                    <!-- Premium Offer Tag -->
+                                    
                                     <div class="offer-tag">
                                         LIMITED TIME
                                     </div>
@@ -151,7 +152,7 @@
                                     <% } %>
                                 <% } %>
 
-                                <!-- Product Image with Hover Effect -->
+                                <!-- Product Image  -->
                                 <a href="/productDetails?id=<%= product._id %>" class="block overflow-hidden relative">
                                     <img class="h-80 w-full object-cover transform hover:scale-105 transition-transform duration-500" 
                                          src="/uploads/product-images/<%= product.productImage[0] %>" 
@@ -205,7 +206,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
 
     <script>
-        // Preserve existing JavaScript functionality
+       
         document.getElementById('priceFilter').addEventListener('change', function() {
             const value = this.value;
             const currentUrl = new URL(window.location.href);
@@ -261,7 +262,7 @@
         button.innerHTML = originalContent;
         button.classList.remove('opacity-50', 'cursor-not-allowed');
 
-        // Display SweetAlert error message
+        
         Swal.fire({
             title: 'Error!',
             text: 'Something went wrong. Please try again.',

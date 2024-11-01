@@ -1,211 +1,323 @@
 <%- include("../partials/admin/header") %>
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fashion Admin - Products</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.css">
+    <style>
+        .dashboard-container {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .content-header {
+            margin-bottom: 2rem;
+        }
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+        .search-input {
+            border-radius: 50px;
+            padding: 0.75rem 1.5rem;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        }
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+        }
+        .table {
+            margin-bottom: 0;
+        }
+        .table th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            color: #495057;
+            font-weight: 600;
+        }
+        .table td {
+            vertical-align: middle;
+        }
+        .btn-action {
+            border-radius: 50px;
+            padding: 0.375rem 1rem;
+            font-size: 0.875rem;
+            transition: all 0.3s;
+        }
+        .btn-action:hover {
+            transform: translateY(-1px);
+        }
+        .pagination {
+            margin-top: 2rem;
+        }
+        .page-link {
+            border-radius: 50%;
+            margin: 0 0.25rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #495057;
+            border: none;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        }
+        .page-item.active .page-link {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .stock-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+        }
+        .stock-in {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+        .stock-out {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+    </style>
 </head>
-<div class="content-header">
-    <div>
-        <h2 class="content-title card-title">Products</h2>
-    </div>
-</div>
-<header class="card-header text-center mb-20">
-    <form action="" method="get" class="d-inline">
-        <div class="input-group input-group-sm border border-1 border-grey rounded-pill" style="width: 500px; margin-left: 230px;">
-            <input type="text" class="form-control border-0 rounded-pill" placeholder="Search products or brands" name="search">
-            <button class="btn  border-0" type="submit">Search</button>
+<body>
+    <div class="dashboard-container">
+        <div class="content-header">
+            <h2 class="content-title">Products Management</h2>
         </div>
-    </form>
-</header>
-<div class="right mt-5">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th scope="col"><b>Product name</b></th>
-                <th scope="col"><b>Brand</b></th>
-                <th scope="col"><b>Category</b></th>
-                <th scope="col"><b>Sale Price</b></th>
-                <th scope="col"><b>Offer Price</b></th>
-                <th scope="col"><b>Offer</b></th>
-                <th scope="col"><b>Quantity</b></th>
-                <th scope="col"><b>Action</b></th>
-                <th scope="col"><b>Edit</b></th>
-            </tr>
-        </thead>
-        <tbody>
-            <% for(let i = 0; i < data.length; i++) { %>
-                <tr>
-                    <td><%= data[i].productName %></td>
-                    <td><%= data[i].brand %></td>
-                    <td><%= data[i].category.name %></td>
-                    <td><%= data[i].salePrice %></td>
-                    <td>
-                        <% if(data[i].productOffer) { %>
-                            <%= data[i].productOffer + "%" %>
-                        <% } else { %>
-                            0%
-                        <% } %>
-                    </td>
-                    <td>
-                        <% if(data[i].productOffer === 0) { %>
-                            <button class="btn btn-info" onclick="addOffer('<%= data[i]._id %>')" style="width: 100px;">
-                                <a href="#" class="text-white">Add Offer</a>
-                            </button>
-                        <% } else { %>
-                            <button class="btn btn-info" onclick="removeOffer('<%= data[i]._id %>')" style="width: 100px;">
-                                <a href="#" class="text-white">Remove</a>
-                            </button>
-                        <% } %>
-                    </td>
-                    <td>
-                        <% if (data[i].quantity > 0) { %>
-                            <%= data[i].quantity %>
-                        <% } else { %>
-                            Out of Stock
-                        <% } %>
-                    </td>
-                    
-                    <td>
-                        <% if(data[i].isBlocked === false) { %>
-                            <button class="btn btn-danger" style="width: 80px;" onclick="confirmBlock('<%= data[i]._id %>')">
-                                <a href="/admin/blockProduct?id=<%=  data[i]._id %>" class="text-white" style="text-decoration: none;">Block</a>
-                            </button>
-                        <% } else { %>
-                            <button class="btn btn-success" style="width: 80px;" onclick="confirmUnblock('<%= data[i]._id %>')">
-                                <a href="/admin/unblockProduct?id=<%=  data[i]._id %>" class="text-white" style="text-decoration: none;">Unblock</a>
-                            </button>
-                        <% } %>
-                    </td>
-                    <td>
-                        <button class="btn btn-info" style="width: 80px;">
-                            <a href="/admin/editProduct?id=<%= data[i]._id %>" class="text-white" style="text-decoration: none;">Edit</a>
-                        </button>
-                    </td>
-                </tr>
-            <% } %>
-        </tbody>
-        
-         
 
-    </table>
-</div>
-</div>
-</div>
+        <div class="search-container">
+            <form action="" method="get">
+                <div class="input-group">
+                    <input type="text" class="form-control search-input" placeholder="Search products or brands" name="search">
+                    <button class="btn btn-primary btn-action" type="submit">Search</button>
+                </div>
+            </form>
+        </div>
 
-<div class="container mt-3">
-    <div class="container mt-3">
+        <div class="table-container">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Brand</th>
+                        <th>Category</th>
+                        <th>Sale Price</th>
+                        <th>Offer</th>
+                        <th>Offer Actions</th>
+                        <th>Quantity</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for(let i = 0; i < data.length; i++) { %>
+                    <tr>
+                        <td><%= data[i].productName %></td>
+                        <td><%= data[i].brand %></td>
+                        <td><%= data[i].category.name %></td>
+                        <td>₹<%= data[i].salePrice %></td>
+                        <td>
+                            <% if(data[i].productOffer) { %>
+                                <span class="badge bg-success"><%= data[i].productOffer %>% OFF</span>
+                            <% } else { %>
+                                <span class="badge bg-secondary">No Offer</span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <% if(data[i].productOffer === 0) { %>
+                                <button class="btn btn-outline-primary btn-action" onclick="addOffer('<%= data[i]._id %>')">
+                                    Add Offer
+                                </button>
+                            <% } else { %>
+                                <button class="btn btn-outline-danger btn-action" onclick="removeOffer('<%= data[i]._id %>')">
+                                    Remove Offer
+                                </button>
+                            <% } %>
+                        </td>
+                        <td>
+                            <% if (data[i].quantity > 0) { %>
+                                <span class="stock-badge stock-in"><%= data[i].quantity %> in stock</span>
+                            <% } else { %>
+                                <span class="stock-badge stock-out">Out of Stock</span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <% if(data[i].isBlocked === false) { %>
+                                <button class="btn btn-danger btn-action" onclick="confirmBlock('<%= data[i]._id %>')">Block</button>
+                            <% } else { %>
+                                <button class="btn btn-success btn-action" onclick="confirmUnblock('<%= data[i]._id %>')">Unblock</button>
+                            <% } %>
+                        </td>
+                        <td>
+                            <a href="/admin/editProduct?id=<%= data[i]._id %>" class="btn btn-info btn-action">Edit</a>
+                        </td>
+                    </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+
         <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center mb-20" style="margin-right: 200px;">
-     
+            <ul class="pagination justify-content-center">
                 <% for (let i = 1; i <= totalPages; i++) { %>
                 <li class="page-item <%=(i === currentPage) ? 'active' : '' %>">
                     <a class="page-link" href="?page=<%= i %>"><%= i %></a>
                 </li>
                 <% } %>
-     
             </ul>
         </nav>
-     </div>
-     
-      
-</div>
+    </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script>
-   
-async function addOffer(productId) {
-    const { value: amount } = await Swal.fire({
-        title: 'Offer in percentage',
-        input: 'number',
-        inputLabel: 'Percentage',
-        inputPlaceholder: '%',
-        inputAttributes: {
-            min: 1, 
-            max: 100 
-        },
-        showCancelButton: true
-    });
-
-    if (amount) {
-        $.ajax({
-            url: "/admin/addProductOffer", 
-            method: 'post',
-            data: {
-                percentage: amount,
-                productId: productId
-            },
-            success: (response) => {
-                if (response.status === true) {
-                    Swal.fire("Offer added", "The offer has been successfully added", "success")
-                    .then(() => {
-                        location.reload(); 
-                    });
-                } else {
-                    Swal.fire("Failed", response.message || "Failed to add offer", "error");
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script>
+        async function addOffer(productId) {
+            const { value: amount } = await Swal.fire({
+                title: 'Add Product Offer',
+                input: 'number',
+                inputLabel: 'Offer Percentage',
+                inputPlaceholder: 'Enter percentage (1-100)',
+                inputAttributes: {
+                    min: 1,
+                    max: 100
+                },
+                showCancelButton: true,
+                confirmButtonText: 'Add Offer',
+                confirmButtonColor: '#0d6efd',
+                cancelButtonColor: '#6c757d',
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'Please enter an offer percentage';
+                    }
+                    if (value < 1 || value > 100) {
+                        return 'Percentage must be between 1 and 100';
+                    }
                 }
-            },
-            error: () => {
-                Swal.fire("Error", "An error occurred while adding the offer", "error");
-            }
-        });
-    }
-}
+            });
 
-
-function removeOffer(productId) {
-    try {
-        Swal.fire({
-            title: "Remove Offer",
-            text: "Are you sure you want to remove this offer?",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: '#d33',
-            confirmButtonText: "Yes, remove it!",
-            timer: 5000,
-            timerProgressBar: true,
-        }).then(async (result) => {
-            if (result.isConfirmed) {
+            if (amount) {
                 $.ajax({
-                    url: '/admin/removeProductOffer', 
+                    url: "/admin/addProductOffer",
                     method: 'post',
-                    data: {
-                        productId: productId
-                    },
+                    data: { percentage: amount, productId: productId },
                     success: (response) => {
                         if (response.status === true) {
-                            Swal.fire('Removed', 'The offer has been removed', 'success')
-                            .then(() => {
-                                location.reload(); 
-                            });
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Offer Added',
+                                text: 'The offer has been successfully added',
+                                confirmButtonColor: '#0d6efd'
+                            }).then(() => location.reload());
                         } else {
-                            Swal.fire("Failed", response.message || "Failed to remove offer", "error");
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Failed',
+                                text: response.message || 'Failed to add offer',
+                                confirmButtonColor: '#dc3545'
+                            });
                         }
                     },
                     error: () => {
-                        Swal.fire("Error", "An error occurred while removing the offer", "error");
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An error occurred while adding the offer',
+                            confirmButtonColor: '#dc3545'
+                        });
                     }
                 });
             }
-        });
-    } catch (error) {
-        console.error(error);
-    }
-}
+        }
 
-function confirmBlock(productId) {
-    if (confirm("Are you sure you want to block this product?")) {
-        window.location.href = "/admin/blockProduct?id=" + productId;
-    }
-}
+        function removeOffer(productId) {
+            Swal.fire({
+                title: 'Remove Offer',
+                text: 'Are you sure you want to remove this offer?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, remove it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/admin/removeProductOffer',
+                        method: 'post',
+                        data: { productId: productId },
+                        success: (response) => {
+                            if (response.status === true) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Offer Removed',
+                                    text: 'The offer has been successfully removed',
+                                    confirmButtonColor: '#0d6efd'
+                                }).then(() => location.reload());
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Failed',
+                                    text: response.message || 'Failed to remove offer',
+                                    confirmButtonColor: '#dc3545'
+                                });
+                            }
+                        },
+                        error: () => {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'An error occurred while removing the offer',
+                                confirmButtonColor: '#dc3545'
+                            });
+                        }
+                    });
+                }
+            });
+        }
 
-function confirmUnblock(productId) {
-    if (confirm("Are you sure you want to unblock this product?")) {
-        window.location.href = "/admin/unblockProduct?id=" + productId;
-    }
-}
+        function confirmBlock(productId) {
+            Swal.fire({
+                title: 'Block Product',
+                text: 'Are you sure you want to block this product?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, block it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "/admin/blockProduct?id=" + productId;
+                }
+            });
+        }
 
-</script>
-
-
-
+        function confirmUnblock(productId) {
+            Swal.fire({
+                title: 'Unblock Product',
+                text: 'Are you sure you want to unblock this product?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#198754',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, unblock it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "/admin/unblockProduct?id=" + productId;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
 <%- include("../partials/admin/footer") %>

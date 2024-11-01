@@ -8,6 +8,8 @@ const brandController = require("../controllers/admin/brandController")
 const productController = require("../controllers/admin/productController")
 const orderController = require("../controllers/admin/orderController")
 const couponController = require("../controllers/admin/couponController")
+const dashboardController = require("../controllers/admin/dashboardController")
+const returnsController = require("../controllers/user/returnsController")
 const multer = require("multer")
 const storage = require("../helpers/multer")
 const uploads = multer({storage:storage})
@@ -18,8 +20,15 @@ router.get('/pageerror',adminController.pageerror)
 //login management
 router.get('/login',adminController.loadLogin)
 router.post('/login',adminController.login)
-router.get('/',auth.adminAuth,adminController.loadDashboard)
+//router.get('/',auth.adminAuth,adminController.loadDashboard)
 router.get('/logout',adminController.logout)
+
+
+router.get('/', auth.adminAuth,dashboardController.getDashboard);
+router.get('/dashboard/data',dashboardController.getDashboardData);
+router.get('/download', dashboardController.downloadReport);
+// router.get('/sales-report', auth.adminAuth, dashboardController.getSalesReport);
+// router.get('/download-report', auth.adminAuth, dashboardController.downloadReport);
 
 //customer management
 
@@ -66,6 +75,11 @@ router.post("/deleteImage",auth.adminAuth,productController.deleteSingleImage)
 
 router.get("/order",auth.adminAuth, orderController.getAllOrders)
 router.post('/update-order-status',auth.adminAuth, orderController.updateOrderStatus);
+
+// Return routes
+
+router.put('/orders/return', returnsController.updateReturnStatus);
+router.get('/returns', returnsController.renderReturnManagementPage);
 
 //coupon management 
 

@@ -1,85 +1,242 @@
-<%- include("../partials/admin/header") %>
-<div class="content-header row">
-    <div class="d-flex justify-content-between align-items-center">
-        <h2 class="content-title card-title">Customers</h2>
-    </div>
-</div>         
-</div>
-
-<header class="card-header text-center mb-20">
-    <form action="/admin/users/" method="get" class="d-inline">
-        <div class="input-group input-group-sm border border-1 border-grey rounded-pill" style="width: 500px; margin-left: 230px;">
-            <input type="text" class="form-control border-0 rounded-pill" placeholder="Search customers..." name="search">
-            <button class="btn border-0" type="submit">Search</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fashion Admin - Customers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.css">
+    <style>
+        .dashboard-container {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .content-header {
+            margin-bottom: 2rem;
+        }
+        .content-title {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+        .search-input {
+            border-radius: 50px;
+            padding: 0.75rem 1.5rem;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        }
+        .search-input:focus {
+            box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
+            border-color: #86b7fe;
+        }
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .table {
+            margin-bottom: 0;
+        }
+        .table th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            color: #495057;
+            font-weight: 600;
+            padding: 1rem;
+        }
+        .table td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+        .btn-action {
+            border-radius: 50px;
+            padding: 0.5rem 1.25rem;
+            font-size: 0.875rem;
+            margin: 0 0.25rem;
+            transition: all 0.3s;
+        }
+        .btn-action:hover {
+            transform: translateY(-1px);
+        }
+        .pagination {
+            margin-top: 2rem;
+        }
+        .page-link {
+            border-radius: 50%;
+            margin: 0 0.25rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #495057;
+            border: none;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        }
+        .page-link:hover {
+            background-color: #e9ecef;
+            color: #0d6efd;
+        }
+        .page-item.active .page-link {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .no-customers {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+        .customer-name {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        .customer-email {
+            color: #6c757d;
+        }
+        .customer-phone {
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <%- include("../partials/admin/header") %>
+    
+    <div class="dashboard-container">
+        <div class="content-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="content-title">Customer Management</h2>
+            </div>
         </div>
-    </form>
-</header>
 
-<div class="right mt-5">
-    <% if (data.length > 0) { %>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% data.forEach(customer => { %>
-                    <tr>
-                        <td><%= customer.name %></td>
-                        <td><%= customer.email %></td>
-                        <td><%= customer.phone %></td>
-                        <td>
-                            <% if (!customer.isBlocked) { %>
-                                <button class="btn btn-danger" onclick="return confirmBlock('<%= customer.name %>');">
-                                    <a href="/admin/blockCustomer?id=<%= customer._id %>" class="text-white" style="text-decoration: none;">Block</a>
-                                </button>
-                            <% } else { %>
-                                <button class="btn btn-success" onclick="return confirmUnblock('<%= customer.name %>');">
-                                    <a href="/admin/unblockCustomer?id=<%= customer._id %>" class="text-white" style="text-decoration: none;">Unblock</a>
-                                </button>
-                            <% } %>
-                            <button class="btn btn-danger" onclick="return confirmDelete('<%= customer.name %>');">
-                                <a href="/admin/deleteCustomer?id=<%= customer._id %>" class="text-white" style="text-decoration: none;">Delete</a>
-                            </button>
-                        </td>
-                    </tr>
-                <% }) %>
-            </tbody>
-        </table>
-    <% } else { %>
-        <p>No customers found.</p>
-    <% } %>
+        <div class="search-container">
+            <form action="/admin/users/" method="get">
+                <div class="input-group">
+                    <input type="text" class="form-control search-input" placeholder="Search customers by name, email or phone..." name="search" value="<%= searchTerm %>">
+                    <button class="btn btn-primary btn-action" type="submit">Search</button>
+                </div>
+            </form>
+        </div>
 
-    <!-- Pagination -->
-    <div class="container mt-3">
-        <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center">
-                <% for(let i = 1; i <= totalPages; i++) { %>
-                    <li class="page-item <%= (i === currentPage) ? 'active' : '' %>">
-                        <a class="page-link" href="?page=<%= i %>&search=<%= searchTerm %>"><%= i %></a>
-                    </li>
-                <% } %>
-            </ul>
-        </nav>
+        <div class="table-container">
+            <% if (data.length > 0) { %>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Customer Details</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% data.forEach(customer => { %>
+                            <tr>
+                                <td class="customer-name"><%= customer.name %></td>
+                                <td class="customer-email"><%= customer.email %></td>
+                                <td class="customer-phone"><%= customer.phone %></td>
+                                <td>
+                                    <% if (!customer.isBlocked) { %>
+                                        <button class="btn btn-outline-danger btn-action" onclick="handleBlock('<%= customer._id %>', '<%= customer.name %>')">
+                                            Block
+                                        </button>
+                                    <% } else { %>
+                                        <button class="btn btn-outline-success btn-action" onclick="handleUnblock('<%= customer._id %>', '<%= customer.name %>')">
+                                            Unblock
+                                        </button>
+                                    <% } %>
+                                    <button class="btn btn-outline-danger btn-action" onclick="handleDelete('<%= customer._id %>', '<%= customer.name %>')">
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            <% } else { %>
+                <div class="no-customers">
+                    <img src="/api/placeholder/64/64" alt="No customers" class="mb-3">
+                    <p>No customers found matching your search criteria.</p>
+                </div>
+            <% } %>
+        </div>
+
+        <!-- Pagination -->
+        <% if (totalPages > 1) { %>
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    <% for(let i = 1; i <= totalPages; i++) { %>
+                        <li class="page-item <%= (i === currentPage) ? 'active' : '' %>">
+                            <a class="page-link" href="?page=<%= i %>&search=<%= searchTerm %>"><%= i %></a>
+                        </li>
+                    <% } %>
+                </ul>
+            </nav>
+        <% } %>
     </div>
-</div>
 
-<script>
-    function confirmBlock(customerName) {
-        return confirm("Are you sure you want to block the user '" + customerName + "'?");
-    }
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.js"></script>
+    <script>
+        function handleBlock(customerId, customerName) {
+            Swal.fire({
+                title: 'Block Customer',
+                text: `Are you sure you want to block ${customerName}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, block customer',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = `/admin/blockCustomer?id=${customerId}`;
+                }
+            });
+        }
 
-    function confirmUnblock(customerName) {
-        return confirm("Are you sure you want to unblock the user '" + customerName + "'?");
-    }
+        function handleUnblock(customerId, customerName) {
+            Swal.fire({
+                title: 'Unblock Customer',
+                text: `Are you sure you want to unblock ${customerName}?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#198754',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, unblock customer',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = `/admin/unblockCustomer?id=${customerId}`;
+                }
+            });
+        }
 
-    function confirmDelete(customerName) {
-        return confirm("Are you sure you want to delete the user '" + customerName + "'? This action cannot be undone.");
-    }
-</script>
+        function handleDelete(customerId, customerName) {
+            Swal.fire({
+                title: 'Delete Customer',
+                text: `Are you sure you want to delete ${customerName}? This action cannot be undone.`,
+                icon: 'error',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete customer',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = `/admin/deleteCustomer?id=${customerId}`;
+                }
+            });
+        }
+    </script>
 
-<%- include("../partials/admin/footer") %>
+    <%- include("../partials/admin/footer") %>
+</body>
+</html>

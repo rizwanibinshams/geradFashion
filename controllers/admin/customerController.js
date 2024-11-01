@@ -53,6 +53,7 @@ const customerInfo = async (req, res) => {
 
 const customerBlocked = async (req,res)=>{
     try {
+
         let id = req.query.id
         await User.updateOne({_id:id},{$set:{isBlocked:true}})
         res.redirect('/admin/users')
@@ -70,6 +71,7 @@ const customerunBlocked =  async(req,res)=>{
         res.redirect('/admin/pageerror')
     }
 }
+
 
 
 const deleteCustomer = async(req,res)=>{

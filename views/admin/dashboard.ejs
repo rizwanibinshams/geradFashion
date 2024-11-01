@@ -1,10 +1,397 @@
-<%-include("../partials/admin/header")%>
-<section class="content-main">
-    <div class="content-header">
-        <div>
-            <h2 class="content-title card-title">Dashboard </h2>
+<%- include("../partials/admin/header") %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="p-6">
+        <!-- Date Range Selection -->
+        <div class="bg-white p-4 rounded-lg shadow mb-6">
+            <div class="flex flex-wrap items-center gap-4">
+                <select id="reportType" class="border rounded p-2">
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+                <div id="dateRangeContainer" class="flex gap-2 items-center" style="display: none;">
+                    <input type="text" id="startDate" class="border rounded p-2" placeholder="Start Date">
+                    <span>to</span>
+                    <input type="text" id="endDate" class="border rounded p-2" placeholder="End Date">
+                </div>
+                <button onclick="applyDateFilter()" class="bg-blue-500 text-white px-4 py-2 rounded">
+                    Apply Filter
+                </button>
+                <button onclick="downloadReport('excel')" class="bg-green-500 text-white px-4 py-2 rounded">
+                    Export as Excel
+                </button>
+                <button onclick="downloadReport('pdf')" class="bg-red-500 text-white px-4 py-2 rounded">
+                    Export as PDF
+                </button>
+            </div>
         </div>
-       
+
+        <!-- Quick Stats Section -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-gray-500 text-sm mb-2">Total Revenue</h3>
+                <p class="text-2xl font-bold" id="totalRevenue">₹<%= totalRevenue.toFixed(2) %></p>
+                <p class="text-sm" id="revenueComparison">
+                    <span class="text-<%= periodComparison.revenueGrowth >= 0 ? 'green' : 'red' %>-500">
+                        <%= periodComparison.revenueGrowth.toFixed(1) %>% from previous period
+                    </span>
+                </p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-gray-500 text-sm mb-2">Total Orders</h3>
+                <p class="text-2xl font-bold" id="totalOrders"><%= totalOrders %></p>
+                <p class="text-sm" id="ordersComparison">
+                    <span class="text-<%= periodComparison.orderGrowth >= 0 ? 'green' : 'red' %>-500">
+                        <%= periodComparison.orderGrowth.toFixed(1) %>% from previous period
+                    </span>
+                </p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-gray-500 text-sm mb-2">Average Order Value</h3>
+                <p class="text-2xl font-bold" id="avgOrderValue">₹<%= avgOrderValue.toFixed(2) %></p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-gray-500 text-sm mb-2">Total Discount Given</h3>
+                <p class="text-2xl font-bold" id="totalDiscount">₹<%= totalDiscount.toFixed(2) %></p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-gray-500 text-sm mb-2">Total Cancelled Orders</h3>
+                <p class="text-2xl font-bold" id="totalCancelledOrders"><%= totalCancelledOrders %></p>
+                <p class="text-sm" id="cancelledOrdersComparison">
+                    Cancelled Amount: ₹<%= totalCancelledAmount.toFixed(2) %>
+                </p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-gray-500 text-sm mb-2">Payment Method Breakdown</h3>
+                <div id="paymentMethodStats">
+                    <% let totalPaymentAmount = 0 %>
+                    <% paymentMethodStats.forEach(method => { %>
+                        <div class="flex justify-between mb-2">
+                            <span><%= method._id %></span>
+                            <span>
+                                ₹<%= method.totalAmount.toFixed(2) %> 
+                                (<%= ((method.totalAmount / totalRevenue) * 100).toFixed(1) %>%)
+                            </span>
+                        </div>
+                        <% totalPaymentAmount += method.totalAmount %>
+                    <% }); %>
+                    <div class="border-t mt-2 pt-2 font-bold flex justify-between">
+                        <span>Total</span>
+                        <span>₹<%= totalPaymentAmount.toFixed(2) %></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-bold mb-4">Revenue & Orders Trend</h2>
+                <canvas id="trendChart" height="300"></canvas>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-bold mb-4">Revenue Distribution</h2>
+                <canvas id="distributionChart" height="300"></canvas>
+            </div>
+        </div>
+
+        <!-- Top Products Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div class="bg-white p-6 rounded-lg shadow">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold">Top Products</h2>
+                    
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b">
+                                <th class="text-left py-2">Product</th>
+                                <th class="text-right py-2">Quantity</th>
+                                <th class="text-right py-2">Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topProductsBody">
+                            <% topProducts.forEach(product => { %>
+                            <tr class="border-b">
+                                <td class="py-2"><%= product.productInfo.productName %></td>
+                                <td class="text-right"><%= product.totalQuantity %></td>
+                                <td class="text-right">₹<%= product.totalRevenue.toFixed(2) %></td>
+                            </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-bold mb-4">Recent Orders</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b">
+                                <th class="text-left py-2">Order ID</th>
+                                <th class="text-left py-2">Customer</th>
+                                <th class="text-right py-2">Amount</th>
+                                <th class="text-right py-2">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentOrdersBody">
+                            <% recentOrders.forEach(order => { %>
+                            <tr class="border-b">
+                                <td class="py-2">#<%= order._id.toString().slice(-6) %></td>
+                                <td><%= order.user.name %></td>
+                                <td class="text-right">₹<%= order.finalAmount.toFixed(2) %></td>
+                                <td class="text-right">
+                                    <span class="px-2 py-1 rounded text-sm
+                                        <%= order.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                                            order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                                            'bg-red-100 text-red-800' %>">
+                                        <%= order.status %>
+                                    </span>
+                                </td>
+                            </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
-</section>
+
+    <script>
+        // Initialize Flatpickr date pickers
+        const startDatePicker = flatpickr("#startDate", {
+            dateFormat: "Y-m-d",
+            defaultDate: "<%= startDate %>"
+        });
+
+        const endDatePicker = flatpickr("#endDate", {
+            dateFormat: "Y-m-d",
+            defaultDate: "<%= endDate %>"
+        });
+
+        // Initialize Charts
+        const salesData = <%- JSON.stringify(salesAnalytics) %>;
+        
+        // Trend Chart
+        const trendCtx = document.getElementById('trendChart').getContext('2d');
+        const trendChart = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: salesData.map(item => moment(item._id).format('MMM DD')),
+                datasets: [{
+                    label: 'Revenue',
+                    data: salesData.map(item => item.totalRevenue),
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1,
+                    yAxisID: 'y'
+                }, {
+                    label: 'Orders',
+                    data: salesData.map(item => item.totalOrders),
+                    borderColor: 'rgb(255, 99, 132)',
+                    tension: 0.1,
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Revenue (₹)'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Orders'
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // Distribution Chart
+        const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+        const distributionChart = new Chart(distributionCtx, {
+            type: 'bar',
+            data: {
+                labels: salesData.map(item => moment(item._id).format('MMM DD')),
+                datasets: [{
+                    label: 'Revenue',
+                    data: salesData.map(item => item.totalRevenue),
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    borderColor: 'rgb(75, 192, 192)',
+                    borderWidth: 1
+                }, {
+                    label: 'Discount',
+                    data: salesData.map(item => item.totalDiscount),
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                    borderColor: 'rgb(255, 99, 132)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Amount (₹)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Handle report type change
+        document.getElementById('reportType').addEventListener('change', function() {
+            const dateRangeContainer = document.getElementById('dateRangeContainer');
+            dateRangeContainer.style.display = this.value === 'custom' ? 'flex' : 'none';
+            
+            if (this.value !== 'custom') {
+                applyDateFilter();
+            }
+        });
+
+        // Apply date filter function
+        async function applyDateFilter() {
+            const reportType = document.getElementById('reportType').value;
+            let params = new URLSearchParams({ reportType });
+            
+            if (reportType === 'custom') {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                params.append('startDate', startDate);
+                params.append('endDate', endDate);
+            }
+            
+            try {
+                const response = await fetch(`/admin/dashboard/data?${params.toString()}`);
+                const data = await response.json();
+                
+                updateDashboardData(data);
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+            }
+        }
+
+        // Update dashboard data
+        function updateDashboardData(data) {
+            // Update stats
+            document.getElementById('totalRevenue').textContent = `₹${data.quickStats.totalRevenue.toFixed(2)}`;
+            document.getElementById('totalOrders').textContent = data.quickStats.totalOrders;
+            document.getElementById('avgOrderValue').textContent = `₹${data.quickStats.avgOrderValue.toFixed(2)}`;
+            document.getElementById('totalDiscount').textContent = `₹${data.quickStats.totalDiscount.toFixed(2)}`;
+            
+
+            document.getElementById('totalCancelledOrders').textContent = data.quickStats.totalCancelledOrders;
+    document.getElementById('cancelledOrdersComparison').textContent = 
+        `Cancelled Amount: ₹${data.quickStats.totalCancelledAmount.toFixed(2)}`;
+
+
+        const paymentMethodStatsContainer = document.getElementById('paymentMethodStats');
+    paymentMethodStatsContainer.innerHTML = ''; // Clear existing content
+
+    let totalPaymentAmount = 0;
+    data.paymentMethodStats.forEach(method => {
+        totalPaymentAmount += method.totalAmount;
+    });
+
+    data.paymentMethodStats.forEach(method => {
+        const methodDiv = document.createElement('div');
+        methodDiv.classList.add('flex', 'justify-between', 'mb-2');
+        methodDiv.innerHTML = `
+            <span>${method._id}</span>
+            <span>₹${method.totalAmount.toFixed(2)} (${((method.totalAmount / totalPaymentAmount) * 100).toFixed(1)}%)</span>
+        `;
+        paymentMethodStatsContainer.appendChild(methodDiv);
+    });
+
+    // Add total row
+    const totalDiv = document.createElement('div');
+    totalDiv.classList.add('border-t', 'mt-2', 'pt-2', 'font-bold', 'flex', 'justify-between');
+    totalDiv.innerHTML = `
+        <span>Total</span>
+        <span>₹${totalPaymentAmount.toFixed(2)}</span>
+    `;
+    paymentMethodStatsContainer.appendChild(totalDiv);
+            // Update charts
+            updateCharts(data.salesAnalytics);
+            
+            // Update tables
+            updateTables(data.topProducts, data.recentOrders);
+        }
+
+        // Update charts function
+        function updateCharts(salesData) {
+            const labels = salesData.map(item => moment(item._id).format('MMM DD'));
+            
+            // Update trend chart
+            trendChart.data.labels = labels;
+            trendChart.data.datasets[0].data = salesData.map(item => item.totalRevenue);
+            trendChart.data.datasets[1].data = salesData.map(item => item.totalOrders);
+            trendChart.update();
+            
+            // Update distribution chart
+            distributionChart.data.labels = labels;
+            distributionChart.data.datasets[0].data = salesData.map(item => item.totalRevenue);
+            distributionChart.data.datasets[1].data = salesData.map(item => item.totalDiscount);
+            distributionChart.update();
+        }
+
+        // Download report function
+        function downloadReport(format) {
+            const reportType = document.getElementById('reportType').value;
+            const params = new URLSearchParams({
+                reportType,
+                format
+            });
+            
+            if (reportType === 'custom') {
+                params.append('startDate', document.getElementById('startDate').value);
+                params.append('endDate', document.getElementById('endDate').value);
+            }
+            
+            window.location.href = `/admin/download?${params.toString()}`;
+        }
+
+        // Initialize with default selection
+        document.getElementById('reportType').value = '<%= reportType %>';
+        if ('<%= reportType %>' === 'custom') {
+            document.getElementById('dateRangeContainer').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
 <%- include("../partials/admin/footer") %>

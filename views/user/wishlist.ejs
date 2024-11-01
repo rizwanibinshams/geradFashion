@@ -47,7 +47,9 @@
                 <% wishlistItems.forEach(function(item) { %>
                     <div class="wishlist-item bg-white rounded-xl shadow-sm overflow-hidden transition-all duration-300 hover:shadow-xl" data-item-id="<%= item._id %>">
                         <div class="relative overflow-hidden">
+                            <a href="/productDetails?id=<%= item._id %>">
                             <img src="<%= item.product.productImage %>" alt="<%= item.product.productName %>" class="product-image w-full h-80 object-cover">
+                        </a>
                             <% if (item.product.discount > 0) { %>
                                 <div class="absolute top-4 right-4 bg-black text-white px-3 py-1 rounded-full text-sm font-medium">
                                     <%= item.product.discount %>% OFF
@@ -76,14 +78,17 @@
                                     <span class="text-sm text-gray-500 ml-2"><%= item.product.reviewCount || 0 %> reviews</span>
                                 </div>
                             </div>
+                            
                             <p class="text-gray-600 text-sm mb-6"><%= item.product.description %></p>
                             <div class="flex justify-between items-center">
-                                <button  class="add-to-cart bg-black hover:bg-gray-900 text-white font-medium py-2.5 px-6 rounded-full transition-colors duration-200 flex items-center">
+                                <a href="/productDetails?id=<%= item._id %>">
+                                <button   class="add-to-cart bg-black hover:bg-gray-900 text-white font-medium py-2.5 px-6 rounded-full transition-colors duration-200 flex items-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                                         <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z"/>
                                     </svg>
-                                    Add to Bag
+                                    View Product
                                 </button>
+                            </a>
                                 <button class="remove-item text-gray-400 hover:text-red-500 transition-colors duration-200">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -106,10 +111,8 @@
     </div>
 
     <script>
-        function addToCart(itemId) {
-            console.log(`Added item ${itemId} to cart`);
-            // Implement add to cart functionality here
-        }
+       
+
 
         function removeItem(itemId) {
     // Show confirmation dialog before removing the item

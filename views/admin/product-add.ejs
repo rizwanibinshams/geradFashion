@@ -1,4 +1,3 @@
-
 <%- include("../partials/admin/header") %>
 <!DOCTYPE html>
 <html lang="en">
@@ -7,9 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add New Product</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.3/gsap.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.3/ScrollTrigger.min.js"></script> -->
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto px-4 py-8">
@@ -85,20 +85,50 @@
 
                 <div class="space-y-4">
                     <h4 class="text-lg font-semibold text-gray-700">Choose images</h4>
-                    <div id="addedImagesContainer" class="flex overflow-x-auto space-x-4 p-4 bg-gray-50 rounded-md"></div>
-                    <div class="space-y-4">
-                        <% for(let i = 1; i <= 4; i++) { %>
-                            <div class="space-y-2">
-                                <label class="block text-sm font-medium text-gray-700">Image <%= i %></label>
-                                <input class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" type="file" name="images" id="input<%= i %>" accept="image/png, image/jpeg, image/jpg" onchange="viewImage<%= i %>(event), viewImage(event, <%= i %>)">
-                                <img src="" alt="" id="imgView<%= i %>" class="mt-2 max-w-xs">
-                                <div class="image-cropper hidden mt-4">
-                                    <img src="" id="croppedImg<%= i %>" alt="" class="max-w-xs mb-2">
-                                    <button type="button" id="saveButton<%= i %>" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Save</button>
-                                </div>
+                    
+                    <!-- Drag & Drop Zone -->
+                    <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-indigo-500 transition-colors duration-200 cursor-pointer">
+                        <input type="file" id="fileInput" name="images" multiple accept="image/png, image/jpeg, image/jpg" class="hidden">
+                        <div class="space-y-2">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <div class="text-gray-600">
+                                <span class="font-medium text-indigo-600">Click to upload</span> or drag and drop
                             </div>
-                        <% } %>
+                            <p class="text-xs text-gray-500">PNG, JPG, JPEG up to 10MB each</p>
+                        </div>
                     </div>
+                
+                    <!-- Thumbnails Container -->
+                    <div id="addedImagesContainer" class="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-md min-h-[100px]"></div>
+                
+                    <!-- Cropper Modal -->
+                    <div id="cropperModal" class="fixed inset-0 z-50 hidden">
+                        <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+                        <div class="absolute inset-x-0 top-[10%] mx-auto max-w-2xl bg-white rounded-lg p-6 space-y-4">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold">Crop Image</h3>
+                                <button id="closeCropperModal" class="text-gray-500 hover:text-gray-700">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="relative h-[400px]">
+                                <img id="cropperImage" src="" alt="" class="max-h-full mx-auto">
+                            </div>
+                            <div class="flex justify-end space-x-2">
+                                <button id="cancelCrop" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
+                                    Cancel
+                                </button>
+                                <button type="button" id="saveCrop" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                
                     <div id="images-error" class="text-red-500 text-xs"></div>
                 </div>
 
@@ -112,237 +142,402 @@
     </div>
 
     <script>
-    // Existing JavaScript functions
-    function validateAndSubmit() {
-        if (validateForm()) {
-            document.forms[0].submit();
-        }
-    }
-
-    function viewImage1(event) {
-        document.getElementById("imgView1").src = URL.createObjectURL(event.target.files[0])
-    }
-    function viewImage2(event) {
-        document.getElementById("imgView2").src = URL.createObjectURL(event.target.files[0])
-    }
-    function viewImage3(event) {
-        document.getElementById("imgView3").src = URL.createObjectURL(event.target.files[0])
-    }
-    function viewImage4(event) {
-        document.getElementById("imgView4").src = URL.createObjectURL(event.target.files[0])
-    }
-
-    function viewImage(event, index) {
-        let input = event.target;
-        let reader = new FileReader();
-
-        reader.onload = function () {
-            let dataURL = reader.result;
-            let image = document.getElementById("imgView" + index);
-            image.src = dataURL;
-
-            // Initialize cropper
-            let cropper = new Cropper(image, {
-                aspectRatio: 1,
-                viewMode: 1,
-                guides: true,
-                background: false,
-                autoCropArea: 1,
-                zoomable: true
+        // Constants and global variables
+        const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+        const MAX_FILES = 4;
+        let currentCropper = null;
+        let files = new Map(); // Store all files with their IDs
+        
+        // Initialize everything when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+            const cropperModal = document.getElementById('cropperModal');
+            const addedImagesContainer = document.getElementById('addedImagesContainer');
+            
+            // Setup drag and drop events
+            setupDragAndDrop(dropZone);
+            
+            // Setup file input change event
+            fileInput.addEventListener('change', handleFileSelect);
+            
+            // Setup cropper modal events
+            setupCropperModalEvents();
+        });
+        
+        // Drag and Drop Functions
+        function setupDragAndDrop(dropZone) {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
             });
-
-            // Show the cropper container
-            let cropperContainer = document.querySelector("#croppedImg" + index).parentNode;
-            cropperContainer.classList.remove('hidden');
-
-            let saveButton = document.querySelector("#saveButton" + index);
-
-            // Remove any existing event listeners to avoid duplication
-            saveButton.replaceWith(saveButton.cloneNode(true));
-            saveButton = document.querySelector("#saveButton" + index);
-
-            saveButton.addEventListener("click", function () {
-                let croppedCanvas = cropper.getCroppedCanvas();
-                let croppedImage = document.getElementById("croppedImg" + index);
-                croppedImage.src = croppedCanvas.toDataURL("image/jpeg", 1.0);
-
-                let timestamp = new Date().getTime();
-                let fileName = `cropped-img-${timestamp}-${index}.png`;
-
-                croppedCanvas.toBlob(async (blob) => {
-                    let inputFile = document.getElementById("input" + index);
-                    
-                    let imgFile = new File([blob], fileName, { type: 'image/jpeg' });
-                    const fileList = new DataTransfer();
-                    fileList.items.add(imgFile);
-                    inputFile.files = fileList.files;
-
-                    cropperContainer.classList.add('hidden');
-
-                    cropper.destroy();
-                }, "image/jpeg", 1.0);
+        
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, highlight, false);
             });
-        };
-
-        reader.readAsDataURL(input.files[0]);
-    }
-
-    const selectedImages = [];
-    document.getElementById("input1").addEventListener("change", handleFileSelect);
-
-    function handleFileSelect(event) {
-        const addedImagesContainer = document.getElementById("addedImagesContainer")
-        addedImagesContainer.innerHTML = "";
-        const files = event.target.files;
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            selectedImages.push(file);
-            const thumbnail = document.createElement("div");
-            thumbnail.classList.add("thumbnail", "relative");
-
-            const img = document.createElement("img")
-            img.src = URL.createObjectURL(file);
-            img.alt = "thumbnail";
-            img.classList.add("w-20", "h-20", "object-cover", "rounded-md");
-            const removeIcon = document.createElement("button");
-            removeIcon.classList.add("absolute", "-top-2", "-right-2", "bg-red-500", "text-white", "rounded-full", "w-6", "h-6", "flex", "items-center", "justify-center", "text-xs", "font-bold");
-            removeIcon.innerHTML = "×";
-            removeIcon.addEventListener("click", function () {
-                const index = selectedImages.indexOf(file);
-                if (index !== -1) {
-                    selectedImages.splice(index, 1)
-                }
-                thumbnail.remove();
+        
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, unhighlight, false);
             });
-            thumbnail.appendChild(img);
-            thumbnail.appendChild(removeIcon);
-            addedImagesContainer.appendChild(thumbnail);
-        }
-    }
-
-    function validateForm() {
-        clearErrorMessages();
-        const name = document.getElementsByName('productName')[0].value;
-        const description = document.getElementById('descriptionid').value;
-        const brand = document.getElementsByName('brand')[0].value;
-        const price = document.getElementsByName('regularPrice')[0].value;
-        const saleprice = document.getElementsByName('salePrice')[0].value;
-        const color = document.getElementsByName('color')[0].value;
-        const category = document.getElementsByName('category')[0].value;
-        const images = document.getElementById('input1')
-        const quantity = document.getElementsByName('quantity')[0].value;
-        let isValid = true;
-        if (name.trim() === "") {
-            displayErrorMessage('productName-error', 'Please enter a product name.');
-            isValid = false;
-        } else if (!/^[A-Za-z\s.,'&@-]+$/.test(name.trim())) {
-            displayErrorMessage('productName-error', 'Product name should contain only alphabetic characters.');
-            isValid = false;
+        
+            dropZone.addEventListener('drop', handleDrop, false);
+            dropZone.addEventListener('click', () => document.getElementById('fileInput').click());
         }
         
-        if (description.trim() === "") {
-            displayErrorMessage('description-error', 'Please enter a product description.');
-            isValid = false;
-        } else if (!/^[A-Za-z\s.,'&@-]+$/.test(description.trim())) {
-            displayErrorMessage('description-error', 'Product description should contain only alphabetic characters.');
-            isValid = false;
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
         }
+        
+        function highlight(e) {
+            document.getElementById('dropZone').classList.add('border-indigo-500', 'bg-indigo-50');
+        }
+        
+        function unhighlight(e) {
+            document.getElementById('dropZone').classList.remove('border-indigo-500', 'bg-indigo-50');
+        }
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+        
+        // File Handling Functions
+        function handleFileSelect(e) {
+            handleFiles(e.target.files);
+        }
+        
+        function handleFiles(fileList) {
+            if (files.size + fileList.length > MAX_FILES) {
+                showError(`You can only upload up to ${MAX_FILES} images.`);
+                return;
+            }
+        
+            Array.from(fileList).forEach(file => {
+                if (!file.type.match('image.*')) {
+                    showError('Please upload only image files.');
+                    return;
+                }
+        
+                if (file.size > MAX_FILE_SIZE) {
+                    showError('File size should not exceed 10MB.');
+                    return;
+                }
+        
+                const fileId = generateUniqueId();
+                files.set(fileId, file);
+                createThumbnail(file, fileId);
+            });
+        
+            updateFileInput();
+        }
+        
+        function generateUniqueId() {
+            return `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        }
+        
+        // Thumbnail Functions
+        function createThumbnail(file, fileId) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const thumbnail = document.createElement('div');
+                thumbnail.classList.add('relative', 'group');
+                thumbnail.innerHTML = `
+                    <img src="${e.target.result}" alt="thumbnail" class="w-24 h-24 object-cover rounded-lg">
+                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all rounded-lg">
+                        <div class="absolute inset-0 flex items-center justify-center space-x-2 opacity-0 group-hover:opacity-100">
+                            <button type="button" onclick="openCropper('${fileId}')" class="p-1 bg-white rounded-full text-gray-700 hover:text-gray-900">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
+                            </button>
+                            <button type="button" onclick="removeFile('${fileId}')" class="p-1 bg-white rounded-full text-red-500 hover:text-red-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('addedImagesContainer').appendChild(thumbnail);
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // Cropper Functions
+        function openCropper(fileId) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const file = files.get(fileId);
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const cropperImage = document.getElementById('cropperImage');
+                cropperImage.src = e.target.result;
+                
+                document.getElementById('cropperModal').classList.remove('hidden');
+                
+                if (currentCropper) {
+                    currentCropper.destroy();
+                }
+                
+                currentCropper = new Cropper(cropperImage, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    guides: true,
+                    background: false,
+                    autoCropArea: 1,
+                    zoomable: true
+                });
+                
+                document.getElementById('saveCrop').onclick = () => saveCroppedImage(fileId);
+            };
+            
+            reader.readAsDataURL(file);
+        }
+        
+        function saveCroppedImage(fileId) {
+    // Prevent any form submission
+    event.preventDefault();
     
-        if (parseInt(quantity) < 0) {
-            displayErrorMessage('quantity-error', 'Please enter a valid non-negative quantity.');
-            isValid = false;
-        }
-
-        if (!/^\d+(\.\d{1,2})?$/.test(price) || parseFloat(price) < 0) {
-            displayErrorMessage('regularPrice-error', 'Please enter a valid non-negative price.');
-            isValid = false;
-        }
-
-        if (!/^\d+(\.\d{1,2})?$/.test(saleprice) || parseFloat(saleprice) < 0) {
-            displayErrorMessage('salePrice-error', 'Please enter a valid non-negative price.');
-            isValid = false;
-        }
-        if (parseFloat(price) <= parseFloat(saleprice)) {
-            displayErrorMessage('regularPrice-error', 'Regular price must be greater than sale price.');
-            isValid = false;
-        }
-
-        if (color.trim() === "") {
-            displayErrorMessage('color-error', 'Please enter a color.');
-            isValid = false;
-        }
-
-        if (images.files.length === 0) {
-            displayErrorMessage("images-error", 'Please select an image.');
-            isValid = false;
-        }
-        return isValid;
-    }
-
-    function displayErrorMessage(elementId, message) {
-        var errorElement = document.getElementById(elementId);
-        errorElement.innerText = message;
-        errorElement.style.display = "block";
-    }
-
-    function clearErrorMessages() {
-        const errorElements = document.getElementsByClassName('error-message');
-        Array.from(errorElements).forEach(element => {
-            element.innerText = '';
+    if (!currentCropper) return;
+    
+    // Get the cropped canvas
+    const canvas = currentCropper.getCroppedCanvas();
+    
+    // Convert canvas to blob
+    canvas.toBlob((blob) => {
+        // Create a new file from the blob
+        const croppedFile = new File([blob], files.get(fileId).name, {
+            type: 'image/jpeg',
+            lastModified: new Date().getTime()
         });
-    }
+        
+        // Update the files Map with the cropped file
+        files.set(fileId, croppedFile);
+        
+        // Update the file input and refresh thumbnails
+        updateFileInput();
+        refreshThumbnails();
+        
+        // Close the modal
+        closeCropperModal();
+    }, 'image/jpeg');
+}
 
-    // New JavaScript for animations and enhanced UI
-    document.addEventListener('DOMContentLoaded', function() {
-        // Animate the page title
-        gsap.to("#pageTitle", {duration: 1, opacity: 1, y: 20, ease: "power3.out"});
-
-        // Animate form fields on scroll
-        const formFields = document.querySelectorAll('form > div');
-        formFields.forEach((field, index) => {
-            gsap.from(field, {
-                scrollTrigger: {
-                    trigger: field,
-                    start: "top bottom-=100",
-                    toggleActions: "play none none reverse"
-                },
-                opacity: 0,
-                y: 50,
-                duration: 0.5,
-                delay: index * 0.1
-            });
-        });
-
-        // Add hover effect to input fields
-        const inputFields = document.querySelectorAll('input, select, textarea');
-        inputFields.forEach(field => {
-            field.addEventListener('focus', () => {
-                gsap.to(field, {scale: 1.02, duration: 0.2, ease: "power1.out"});
-            });
-            field.addEventListener('blur', () => {
-                gsap.to(field, {scale: 1, duration: 0.2, ease: "power1.in"});
-            });
-        });
-
-        // Animate the publish button on hover
-        const publishButton = document.querySelector('button[onclick="validateAndSubmit()"]');
-        publishButton.addEventListener('mouseenter', () => {
-            gsap.to(publishButton, {scale: 1.05, duration: 0.2, ease: "power1.out"});
-        });
-        publishButton.addEventListener('mouseleave', () => {
-            gsap.to(publishButton, {scale: 1, duration: 0.2, ease: "power1.in"});
-        });
-
-        // Add a subtle background animation
-        gsap.to('body', {
-            backgroundPosition: '100% 100%',
-            duration: 20,
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut"
-        });
+// Also update the setupCropperModalEvents function to prevent form submission
+function setupCropperModalEvents() {
+    const closeBtn = document.getElementById('closeCropperModal');
+    const cancelBtn = document.getElementById('cancelCrop');
+    const saveBtn = document.getElementById('saveCrop');
+    
+    closeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeCropperModal();
     });
-    </script>
+    
+    cancelBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeCropperModal();
+    });
+
+    saveBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        // The actual save functionality will be called from openCropper
+    });
+}
+        
+        function closeCropperModal() {
+            if (currentCropper) {
+                currentCropper.destroy();
+                currentCropper = null;
+            }
+            document.getElementById('cropperModal').classList.add('hidden');
+        }
+        
+        // Utility Functions
+        function showError(message) {
+            const errorDiv = document.getElementById('images-error');
+            errorDiv.textContent = message;
+            setTimeout(() => {
+                errorDiv.textContent = '';
+            }, 3000);
+        }
+        
+        function updateFileInput() {
+            const fileInput = document.getElementById('fileInput');
+            const dataTransfer = new DataTransfer();
+            files.forEach(file => dataTransfer.items.add(file));
+            fileInput.files = dataTransfer.files;
+        }
+        
+        function refreshThumbnails() {
+            const container = document.getElementById('addedImagesContainer');
+            container.innerHTML = '';
+            files.forEach((file, fileId) => createThumbnail(file, fileId));
+        }
+        
+        function removeFile(fileId) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            files.delete(fileId);
+            updateFileInput();
+            refreshThumbnails();
+        }
+        
+        // Form Validation and Submission
+        function validateAndSubmit() {
+            if (!validateForm()) {
+                return false;
+            }
+        
+            // Create FormData object
+            const formData = new FormData(document.querySelector('form'));
+            
+            // Add all files (including cropped ones) to the FormData
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput.files.length > 0) {
+                // Remove any existing files from FormData
+                formData.delete('images');
+                
+                // Add each file from our files Map
+                files.forEach((file, fileId) => {
+                    formData.append('images', file);
+                });
+            }
+        
+            // Submit the form
+            const form = document.querySelector('form');
+            form.submit();
+        }
+        
+        function validateForm() {
+            clearErrorMessages();
+            const formInputs = {
+                productName: document.getElementsByName('productName')[0].value,
+                description: document.getElementById('descriptionid').value,
+                brand: document.getElementsByName('brand')[0].value,
+                regularPrice: document.getElementsByName('regularPrice')[0].value,
+                salePrice: document.getElementsByName('salePrice')[0].value,
+                color: document.getElementsByName('color')[0].value,
+                category: document.getElementsByName('category')[0].value,
+                quantity: document.getElementsByName('quantity')[0].value
+            };
+        
+            let isValid = true;
+        
+            // Validate product name
+            if (formInputs.productName.trim() === "") {
+                displayErrorMessage('productName-error', 'Please enter a product name.');
+                isValid = false;
+            } else if (!/^[A-Za-z\s.,'&@-]+$/.test(formInputs.productName.trim())) {
+                displayErrorMessage('productName-error', 'Product name should contain only alphabetic characters.');
+                isValid = false;
+            }
+        
+            // Validate description
+            if (formInputs.description.trim() === "") {
+                displayErrorMessage('description-error', 'Please enter a product description.');
+                isValid = false;
+            } else if (!/^[A-Za-z\s.,'&@-]+$/.test(formInputs.description.trim())) {
+                displayErrorMessage('description-error', 'Product description should contain only alphabetic characters.');
+                isValid = false;
+            }
+        
+            // Validate quantity
+            if (parseInt(formInputs.quantity) < 0) {
+                displayErrorMessage('quantity-error', 'Please enter a valid non-negative quantity.');
+                isValid = false;
+            }
+        
+            // Validate prices
+            if (!/^\d+(\.\d{1,2})?$/.test(formInputs.regularPrice) || parseFloat(formInputs.regularPrice) < 0) {
+                displayErrorMessage('regularPrice-error', 'Please enter a valid non-negative price.');
+                isValid = false;
+            }
+        
+            if (!/^\d+(\.\d{1,2})?$/.test(formInputs.salePrice) || parseFloat(formInputs.salePrice) < 0) {
+                displayErrorMessage('salePrice-error', 'Please enter a valid non-negative price.');
+                isValid = false;
+            }
+        
+            if (parseFloat(formInputs.regularPrice) <= parseFloat(formInputs.salePrice)) {
+                displayErrorMessage('regularPrice-error', 'Regular price must be greater than sale price.');
+                isValid = false;
+            }
+        
+            // Validate color
+            if (formInputs.color.trim() === "") {
+                displayErrorMessage('color-error', 'Please enter a color.');
+                isValid = false;
+            }
+        
+            // Validate images
+            if (files.size === 0) {
+                displayErrorMessage("images-error", 'Please select at least one image.');
+                isValid = false;
+            }
+        
+            return isValid;
+        }
+        
+        function displayErrorMessage(elementId, message) {
+            var errorElement = document.getElementById(elementId);
+            errorElement.innerText = message;
+            errorElement.style.display = "block";
+        }
+        
+        function clearErrorMessages() {
+            const errorElements = document.getElementsByClassName('error-message');
+            Array.from(errorElements).forEach(element => {
+                element.innerText = '';
+            });
+        }
+        
+        // Keep the existing GSAP animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate the page title
+            gsap.to("#pageTitle", {duration: 1, opacity: 1, y: 20, ease: "power3.out"});
+        
+            // Animate form fields on scroll
+            const formFields = document.querySelectorAll('form > div');
+            formFields.forEach((field, index) => {
+                gsap.from(field, {
+                    scrollTrigger: {
+                        trigger: field,
+                        start: "top bottom-=100",
+                        toggleActions: "play none none reverse"
+                    },
+                    opacity: 0,
+                    y: 50,
+                    duration: 0.5,
+                    delay: index * 0.1
+                });
+            });
+        
+            // Add hover effect to input fields
+            const inputFields = document.querySelectorAll('input, select, textarea');
+            inputFields.forEach(field => {
+                field.addEventListener('focus', () => {
+                    gsap.to(field, {scale: 1.02, duration: 0.2, ease: "power1.out"});
+                });
+                field.addEventListener('blur', () => {
+                    gsap.to(field, {scale: 1, duration: 0.2, ease: "power1.in"});
+                });
+            });
+        
+            // Animate the publish button on hover
+            const publishButton = document.querySelector('button[onclick="validateAndSubmit()"]');
+            publishButton.addEventListener('mouseenter', () => {
+                gsap.to(publishButton, {scale: 1.05, duration: 0.2, ease: "power3.out"});
+            });
+            publishButton.addEventListener('mouseleave', () => {
+                gsap.to(publishButton, {scale: 1, duration: 0.2, ease: "power3.in"});
+            });
+        });
+        </script>
 </body>
 </html>
 

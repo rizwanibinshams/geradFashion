@@ -6,6 +6,7 @@ const Product = require("../../models/productSchema")
 const Address = require("../../models/addressSchema")
 const {Order} = require("../../models/orderSchema"); 
 const Wallet = require("../../models/walletSchema")
+const Coupon = require("../../models/couponSchema")
 const env = require('dotenv').config()
 const nodemailer = require('nodemailer')
 const otpgenerator = require('otp-generator')
@@ -442,33 +443,46 @@ const loadProfile = async (req, res) => {
 
         const addresses = await Address.find({ userId: userData.id });
         
-        // Fetch orders with detailed population
-        const orders = await Order.find({ user: userData._id })
-            .populate({
-                path: 'orderedItems.product',
-                select: 'productName price productImage images' 
-            })
-            .sort({ createdOn: -1 });
+        // Fetch ALL orders for the user without coupon filter
+        const orders = await Order.find({ 
+            user: userData._id
+        })
+        .populate({
+            path: 'orderedItems.product',
+            select: 'productName price productImage images' 
+        })
+        .sort({ createdOn: -1 });
 
-        //console.log('Raw Orders:', JSON.stringify(orders, null, 2)); 
-
-        // Process orders to ensure all required data is present
         const processedOrders = orders.map(order => {
             const orderObj = order.toObject();
             orderObj.orderedItems = order.orderedItems.map(item => {
                 const productImage = item.product.productImage && item.product.productImage.length > 0
-                ? path.join('/uploads/product-images', item.product.productImage[0])  // Build the correct image path
-                : '/placeholder-image.jpg';  // Fallback image if no product image
+                    ? path.join('/uploads/product-images', item.product.productImage[0])
+                    : '/placeholder-image.jpg';
+                
                 return {
+                    _id: item._id,
                     product: item.product,
-                    quantity: item.quantity,  // Use direct values from the order
-                    price: item.price,        // Use direct values from the order
-                    discountAmount: item.discountAmount || 0,
-                    productImage: productImage, 
+                    quantity: item.quantity,
+                    price: item.price,
+                    status: item.status || 'Pending',
+                    productImage: productImage,
                 };
             });
             return orderObj;
         });
+
+        // Extract coupon history only from orders that used coupons
+        const couponHistory = orders
+            .filter(order => order.coupon && order.coupon.applied)
+            .map(order => ({
+                orderId: order.orderId,
+                couponCode: order.coupon.code,
+                discountAmount: order.coupon.discountAmount,
+                orderTotal: order.totalPrice,
+                finalAmount: order.finalAmount,
+                usedOn: order.createdOn
+            }));
 
         let wallet = await Wallet.findOne({ userId: userData._id });
         if (!wallet) {
@@ -485,6 +499,7 @@ const loadProfile = async (req, res) => {
             addresses: addresses, 
             orders: processedOrders,
             wallet: wallet,
+            couponHistory: couponHistory,
             helpers: {
                 formatDate: function(date) {
                     return new Date(date).toLocaleDateString('en-US', {
@@ -507,7 +522,6 @@ const loadProfile = async (req, res) => {
         res.status(500).render('page-404', { message: 'Server error occurred' });
     }
 };
-
 
 
 const updateProfile = async (req, res) => {

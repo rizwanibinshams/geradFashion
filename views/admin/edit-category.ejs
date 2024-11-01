@@ -3,9 +3,6 @@
     <div class="row justify-content-center">
         <div class="col-md-6 mt-60">
             <form id="categoryForm" method="post" action="/admin/editCategory/<%= category._id %>">
-                <div class="d-grid text-end mt-30 col-md-5">
-                    <button class="btn btn-primary" type="submit">Update category</button>
-                </div>
                 <div class="mb-4 mt-30">
                     <label for="categoryName" class="form-label">Name</label>
                     <input type="text" id="categoryName" name="categoryName" value="<%= category.name %>" class="form-control border" />
@@ -14,6 +11,10 @@
                 <div class="mb-4">
                     <label class="form-label">Description</label>
                     <textarea id="description" name="description" class="form-control border"><%= category.description %></textarea>
+                </div>
+
+                <div class="d-grid text-end mt-30 col-md-5">
+                    <button class="btn btn-primary" type="submit">Update category</button>
                 </div>
             </form>
         </div>
@@ -50,46 +51,51 @@
                 confirmButtonText: 'OK'
             });
         } else {
-            // If valid, submit the form
             submitForm();
         }
     });
 
     function submitForm() {
         const form = document.getElementById('categoryForm');
-        const formData = new FormData(form);
+        const formData = {
+            categoryName: document.getElementById('categoryName').value.trim(),
+            description: document.getElementById('description').value.trim()
+        };
 
         fetch(form.action, {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: data.error,
-                    confirmButtonText: 'OK'
-                });
-            } else {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: 'Category updated successfully',
-                    confirmButtonText: 'OK'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location.href = "/admin/category";
-                    }
-                });
+                throw new Error(data.error);
             }
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Category updated successfully',
+                confirmButtonText: 'OK'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "/admin/category";
+                }
+            });
         })
         .catch(error => {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'An unexpected error occurred. Please try again.',
+                text: error.message || 'An unexpected error occurred. Please try again.',
                 confirmButtonText: 'OK'
             });
         });

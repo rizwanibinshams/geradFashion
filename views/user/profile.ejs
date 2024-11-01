@@ -221,6 +221,14 @@
                                             <button class="text-blue-500 hover:underline mr-2" onclick="editAddress('<%= address._id %>')">Edit</button>
                                             <button class="text-red-500 hover:underline" onclick="deleteAddress('<%= address._id %>')">Delete</button>
                                         </div>
+                                        <!-- Set as Default Option -->
+                                        <div class="mt-2">
+                                            <% if (address.isDefault) { %>
+                                                <span class="text-green-500 font-semibold">Default Address</span>
+                                            <% } else { %>
+                                                <button class="text-blue-500 hover:underline" onclick="setDefaultAddress('<%= address._id %>')">Set as Default</button>
+                                            <% } %>
+                                        </div>
                                     </div>
                                 <% }); %>
                             <% }); %>
@@ -286,214 +294,176 @@
 
                 <!-- Orders Section -->
                 <div x-show="activeSection === 'orders'" x-cloak class=" shadow-sm rounded-lg overflow-hidden">
-                    <div class="max-w-6xl mx-auto px-4">
-                        <div class="bg-white shadow-xl rounded-xl overflow-hidden">
-                            <div class="p-8">
-                                <h2 class="text-3xl font-light text-gray-800 mb-8 tracking-tight">My Orders</h2>
-                                <div class="space-y-8">
-                                    <% if (orders && orders.length > 0) { %>
-                                        <% orders.forEach(function(order) { %>
-                                            <div class="border border-gray-100 p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300">
-                                                <!-- Order Header -->
-                                                <div class="flex flex-wrap justify-between items-center mb-6">
-                                                    <div class="space-y-2">
-                                                        <h3 class="text-lg text-gray-700">
-                                                            <span class="font-light">Order</span> 
-                                                            <span class="font-medium">#<%= order._id %></span>
-                                                        </h3>
-                                                        <p class="text-sm text-gray-500">
-                                                            Placed on <%= helpers.formatDate(order.createdOn) %>
-                                                        </p>
+                    <div class="min-h-screen bg-gray-50 py-8">
+                        <div class="max-w-6xl mx-auto px-4">
+                            <div class="bg-white shadow-xl rounded-xl overflow-hidden">
+                                <div class="p-8">
+                                    <h2 class="text-3xl font-light text-gray-800 mb-8 tracking-tight">My Orders</h2>
+                                    <div class="space-y-8">
+                                        <% if (orders && orders.length > 0) { %>
+                                            <% orders.forEach(function(order) { %>
+                                                <div class="border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300">
+                                                    <!-- Order Header -->
+                                                    <div class="border-b border-gray-100 p-6">
+                                                        <div class="flex flex-wrap justify-between items-center">
+                                                            <div class="space-y-2">
+                                                                <h3 class="text-lg text-gray-700">
+                                                                    <span class="font-light">Order</span> 
+                                                                    <span class="font-medium">#<%= order._id %></span>
+                                                                </h3>
+                                                                <p class="text-sm text-gray-500">
+                                                                    Placed on <%= helpers.formatDate(order.createdOn) %>
+                                                                </p>
+                                                            </div>
+                                                            <span class="px-4 py-1.5 text-sm font-medium rounded-full 
+                                                                <%= order.status === 'Pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 
+                                                                   order.status === 'Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 
+                                                                   order.status === 'Delivered' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                                                                   'bg-gray-50 text-gray-700 border border-gray-200' %>">
+                                                                <%= order.status %>
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                    <span class="px-4 py-1.5 text-sm font-medium rounded-full 
-                                                        <%= order.status === 'Pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 
-                                                           order.status === 'Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 
-                                                           order.status === 'Delivered' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
-                                                           'bg-gray-50 text-gray-700 border border-gray-200' %>">
-                                                        <%= order.status %>
-                                                    </span>
-                                                </div>
-                
-                                                <div class="grid md:grid-cols-2 gap-8">
-                                                    <!-- Ordered Items Section -->
-                                                    <div>
-                                                        <h4 class="text-sm uppercase tracking-wider text-gray-500 mb-4 font-medium">Ordered Items</h4>
-                                                        <ul class="space-y-4">
-                                                            <% order.orderedItems.forEach(function(item) { %>
-                                                                <li class="flex items-start space-x-4">
-                                                                    <div class="w-24 h-32 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden">
-                                                                        <img src="<%= item.productImage %>" alt="<%= item.product.productName %>" class="w-full h-full object-cover">
-                                                                    </div>
-                                                                    <div class="flex-1">
-                                                                        <h5 class="font-medium text-gray-800">
-                                                                            <%= item.product?.productName || 'Product No Longer Available' %>
-                                                                        </h5>
-                                                                        <div class="mt-2 space-y-1">
-                                                                            <p class="text-sm text-gray-600">Quantity: <%= item.quantity %></p>
-                                                                            <p class="text-sm font-medium"><%= helpers.formatCurrency(item.price) %></p>
+                    
+                                                    <div class="p-6">
+                                                        <div class="grid md:grid-cols-2 gap-8">
+                                                            <!-- Ordered Items -->
+                                                            <div>
+                                                                <h4 class="text-sm uppercase tracking-wider text-gray-500 mb-4 font-medium">Ordered Items</h4>
+                                                                <ul class="space-y-6">
+                                                                    <% order.orderedItems.forEach(function(item) { %>
+                                                                        <li class="flex items-start space-x-4">
+                                                                            <div class="w-24 h-32 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden">
+                                                                                <img src="<%= item.productImage %>" alt="<%= item.product.productName %>" class="w-full h-full object-cover">
+                                                                            </div>
+                                                                            <div class="flex-1 min-w-0">
+                                                                                <div class="flex justify-between items-start">
+                                                                                    <h5 class="font-medium text-gray-800 truncate">
+                                                                                        <%= item.product?.productName || 'Product No Longer Available' %>
+                                                                                    </h5>
+                                                                                    <% if (order.status === 'Pending' && (!item.status || item.status === 'Pending')) { %>
+                                                                                        <button onclick="showCancelModal('<%= order._id %>', '<%= item._id %>', '<%= item.product.productName %>')" 
+                                                                                            class="text-sm text-red-600 hover:text-red-800 ml-4 flex-shrink-0">
+                                                                                            Cancel Item
+                                                                                        </button>
+                                                                                    <% } else if (item.status === 'Cancelled') { %>
+                                                                                        <span class="text-sm text-red-600 ml-4 flex-shrink-0">Cancelled</span>
+                                                                                    <% } %>
+                                                                                </div>
+                                                                                <div class="mt-2 space-y-1">
+                                                                                    <p class="text-sm text-gray-600">Quantity: <%= item.quantity %></p>
+                                                                                    <p class="text-sm font-medium"><%= helpers.formatCurrency(item.price) %></p>
+                                                                                </div>
+                                                                            </div>
+                                                                        </li>
+                                                                    <% }); %>
+                                                                </ul>
+                                                            </div>
+                    
+                                                            <!-- Order Details -->
+                                                            <div class="space-y-6">
+                                                                <!-- Payment Info -->
+                                                                <div>
+                                                                    <h4 class="text-sm uppercase tracking-wider text-gray-500 mb-2 font-medium">Payment Method</h4>
+                                                                    <p class="text-sm text-gray-700"><%= order.paymentMethod %></p>
+                                                                </div>
+                    
+                                                                <!-- Order Summary -->
+                                                                <div class="bg-gray-50 p-6 rounded-lg">
+                                                                    <h4 class="text-sm uppercase tracking-wider text-gray-500 mb-4 font-medium">Order Summary</h4>
+                                                                    <div class="space-y-3">
+                                                                        <div class="flex justify-between text-sm">
+                                                                            <span class="text-gray-600">Subtotal</span>
+                                                                            <span class="font-medium"><%= helpers.formatCurrency(order.totalPrice) %></span>
+                                                                        </div>
+                                                                        
+                                                                        <div class="flex justify-between text-sm">
+                                                                            <span class="text-gray-600">Shipping</span>
+                                                                            <% if (order.deliveryCharge > 0) { %>
+                                                                                <span class="font-medium"><%= helpers.formatCurrency(order.deliveryCharge) %></span>
+                                                                            <% } else { %>
+                                                                                <span class="text-emerald-600 font-medium">Free</span>
+                                                                            <% } %>
+                                                                        </div>
+                    
+                                                                        <% if (order.coupon && order.coupon.applied) { %>
+                                                                            <div class="flex justify-between text-sm">
+                                                                                <span class="text-emerald-600">Discount (<%= order.coupon.code %>)</span>
+                                                                                <span class="text-emerald-600 font-medium">-<%= helpers.formatCurrency(order.discount) %></span>
+                                                                            </div>
+                                                                        <% } %>
+                    
+                                                                        <div class="pt-3 border-t border-gray-200">
+                                                                            <div class="flex justify-between">
+                                                                                <span class="font-semibold">Total</span>
+                                                                                <span class="font-semibold"><%= helpers.formatCurrency(order.finalAmount) %></span>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
-                                                                </li>
-                                                            <% }); %>
-                                                        </ul>
-                                                    </div>
-                
-                                                    <!-- Order Details Section -->
-                                                    <div>
-                                                        <!-- Payment Info -->
-                                                        <div class="mb-6">
-                                                            <h4 class="text-sm uppercase tracking-wider text-gray-500 mb-2 font-medium">Payment Method</h4>
-                                                            <p class="text-sm text-gray-700"><%= order.paymentMethod %></p>
-                                                        </div>
-                
-                                                        <!-- Order Summary -->
-                                                        <div class="bg-gray-50 p-6 rounded-lg mb-6">
-                                                            <h4 class="text-sm uppercase tracking-wider text-gray-500 mb-4 font-medium">Order Summary</h4>
-                                                            <div class="space-y-3">
-                                                                <div class="flex justify-between text-sm">
-                                                                    <span class="text-gray-600">Subtotal</span>
-                                                                    <span class="font-medium"><%= helpers.formatCurrency(order.totalPrice) %></span>
                                                                 </div>
-                                                                
-                                                                <% if (order.deliveryCharge > 0) { %>
-                                                                    <div class="flex justify-between text-sm">
-                                                                        <span class="text-gray-600">Shipping</span>
-                                                                        <span class="font-medium"><%= helpers.formatCurrency(order.deliveryCharge) %></span>
+                    
+                                                                <!-- Shipping Address -->
+                                                                <div>
+                                                                    <h4 class="text-sm uppercase tracking-wider text-gray-500 mb-4 font-medium">Shipping Address</h4>
+                                                                    <div class="bg-gray-50 p-4 rounded-lg">
+                                                                        <address class="text-sm text-gray-600 not-italic">
+                                                                            <strong class="text-gray-800 block mb-1"><%= order.address.name %></strong>
+                                                                            <span class="inline-block bg-gray-100 text-gray-700 px-2 py-0.5 text-xs rounded mb-2">
+                                                                                <%= order.address.addressType %>
+                                                                            </span><br>
+                                                                            <%= order.address.street %><br>
+                                                                            <%= order.address.city %>, <%= order.address.state %> <%= order.address.pincode %><br>
+                                                                            <span class="text-gray-700 mt-2 block">📞 <%= order.address.phone %></span>
+                                                                        </address>
                                                                     </div>
-                                                                <% } else { %>
-                                                                    <div class="flex justify-between text-sm">
-                                                                        <span class="text-gray-600">Shipping</span>
-                                                                        <span class="text-emerald-600 font-medium">Free</span>
-                                                                    </div>
-                                                                <% } %>
-                
-                                                                <% if (order.coupon && order.coupon.applied) { %>
-                                                                    <div class="flex justify-between text-sm">
-                                                                        <span class="text-emerald-600">Discount (<%= order.coupon.code %>)</span>
-                                                                        <span class="text-emerald-600 font-medium">-<%= helpers.formatCurrency(order.discount) %></span>
-                                                                    </div>
-                                                                <% } %>
-                
-                                                                <div class="pt-3 border-t border-gray-200 mt-3">
-                                                                    <div class="flex justify-between">
-                                                                        <span class="font-semibold">Total</span>
-                                                                        <span class="font-semibold"><%= helpers.formatCurrency(order.finalAmount) %></span>
-                                                                    </div>
+                                                                </div>
+                    
+                                                                <!-- Action Buttons -->
+                                                                <div class="flex gap-4">
+                                                                    <% if (order.status === 'Delivered') { %>
+                                                                        <button onclick="showReturnModal('<%= order._id %>')" 
+                                                                            class="flex-1 bg-white border border-orange-200 text-orange-600 hover:bg-orange-50 px-6 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200">
+                                                                            Return Items
+                                                                        </button>
+                                                                    <% } %>
+                                                                    <button onclick="trackOrder('<%= order._id %>')" 
+                                                                        class="flex-1 bg-white border border-blue-200 text-blue-600 hover:bg-blue-50 px-6 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200">
+                                                                        Track Order
+                                                                    </button>
                                                                 </div>
                                                             </div>
                                                         </div>
-                
-                                                        <!-- Shipping Address -->
-                                                        <div class="mb-6">
-                                                            <h4 class="text-sm uppercase tracking-wider text-gray-500 mb-4 font-medium">Shipping Address</h4>
-                                                            <address class="text-sm text-gray-600 not-italic">
-                                                                <strong class="text-gray-800 block mb-1"><%= order.address.name %></strong>
-                                                                <span class="inline-block bg-gray-100 text-gray-700 px-2 py-0.5 text-xs rounded mb-2">
-                                                                    <%= order.address.addressType %>
-                                                                </span><br>
-                                                                <%= order.address.street %><br>
-                                                                <%= order.address.city %>, <%= order.address.state %> <%= order.address.pincode %><br>
-                                                                <span class="text-gray-700 mt-1 block">📞 <%= order.address.phone %></span>
-                                                            </address>
-                                                        </div>
-                
-                                                        <!-- Action Buttons -->
-                                                        <div class="flex flex-wrap gap-4">
-                                                            <% if (order.status === 'Pending') { %>
-                                                                <button onclick="cancelOrder('<%= order._id %>')" 
-                                                                    class="flex-1 min-w-[120px] bg-white border border-red-200 text-red-600 hover:bg-red-50 px-6 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200">
-                                                                    Cancel Order
-                                                                </button>
-                                                            <% } %>
-                                                            <% if (order.status === 'Delivered') { %>
-                                                                <button onclick="showReturnModal('<%= order._id %>')" 
-                                                                    class="flex-1 min-w-[120px] bg-white border border-orange-200 text-orange-600 hover:bg-orange-50 px-6 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200">
-                                                                    Return Items
-                                                                </button>
-                                                            <% } %>
-                                                           
-                                                            <button onclick="trackOrder('<%= order._id %>')" 
-                                                                class="flex-1 min-w-[120px] bg-white border border-blue-200 text-blue-600 hover:bg-blue-50 px-6 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200">
-                                                                Track Order
-                                                            </button>
-                                                          
-                                                        </div>
                                                     </div>
                                                 </div>
+                                            <% }); %>
+                                        <% } else { %>
+                                            <div class="text-center py-16">
+                                                <div class="mb-4">
+                                                    <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                                    </svg>
+                                                </div>
+                                                <h3 class="text-lg font-medium text-gray-900 mb-2">No orders yet</h3>
+                                                <p class="text-gray-500 mb-6">Start exploring our collection to find something you love.</p>
+                                                <a href="/shop" class="inline-block bg-black text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors duration-200">
+                                                    Browse Collection
+                                                </a>
                                             </div>
-                                        <% }); %>
-                                    <% } else { %>
-                                        <div class="text-center py-16">
-                                            <div class="mb-4">
-                                                <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                                                </svg>
-                                            </div>
-                                            <h3 class="text-lg font-medium text-gray-900 mb-2">No orders yet</h3>
-                                            <p class="text-gray-500 mb-6">Start exploring our collection to find something you love.</p>
-                                            <a href="/shop" class="inline-block bg-black text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors duration-200">
-                                                Browse Collection
-                                            </a>
-                                        </div>
-                                    <% } %>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Return Order Modal -->
-                <div id="returnOrderModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
-                    <div class="min-h-screen px-4 text-center">
-                        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                <div class="sm:flex sm:items-start">
-                                    <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
-                                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
-                                            Return Order
-                                        </h3>
-                                        <form id="returnForm" class="space-y-4">
-                                            <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                                    Reason for Return
-                                                </label>
-                                                <select id="returnReason" name="reason" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                                                    <option value="">Select a reason</option>
-                                                    <option value="wrong_size">Wrong Size</option>
-                                                    <option value="defective">Defective Product</option>
-                                                    <option value="not_as_described">Not as Described</option>
-                                                    <option value="changed_mind">Changed Mind</option>
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                                    Additional Comments
-                                                </label>
-                                                <textarea id="returnComments" name="comments" rows="3" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md"></textarea>
-                                            </div>
-                                        </form>
+                                        <% } %>
                                     </div>
                                 </div>
                             </div>
-                            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                                <button type="button" onclick="submitReturn()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-orange-600 text-base font-medium text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 sm:ml-3 sm:w-auto sm:text-sm">
-                                    Submit Return
-                                </button>
-                                <button type="button" onclick="hideReturnModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                                    Cancel
-                                </button>
-                            </div>
                         </div>
                     </div>
-                </div>
+                    </div>
+                <!-- cancel order modal  -->
                 
-                    
-                        
-                   
+                <!-- Return Order Modal -->
+               
                 
 
                 <!-- Wallet Section -->
-                <div x-show="activeSection === 'wallet'" x-cloak class="bg-white shadow-lg rounded-lg overflow-hidden">
+                <div x-show="activeSection === 'wallet' " x-cloak class="bg-white shadow-lg rounded-lg overflow-hidden">
                     
                     <div class="p-6">
                         <h2 class="text-2xl font-semibold text-gray-800 mb-6">Your Wallet</h2>
@@ -579,111 +549,111 @@
             <!-- Header Section -->
             <div class="p-8 border-b">
                 <h2 class="text-3xl font-light text-gray-800 mb-4">My Coupons</h2>
-                <p class="text-gray-600">Discover your savings and special offers</p>
+                <p class="text-gray-600">View your coupon usage history</p>
             </div>
-
-            <!-- Coupon Tabs -->
-            <div class="border-b px-8">
-                <div class="flex space-x-8">
-                    <button class="py-4 text-sm font-medium text-gray-900 border-b-2 border-black">
-                        Available (3)
-                    </button>
-                    <button class="py-4 text-sm font-medium text-gray-500 hover:text-gray-700">
-                        Used (2)
-                    </button>
-                    <button class="py-4 text-sm font-medium text-gray-500 hover:text-gray-700">
-                        Expired (1)
-                    </button>
-                </div>
-            </div>
-
-            <!-- Available Coupons Grid -->
-            <div class="p-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Coupon Card 1 -->
-                    <div class="relative border rounded-lg overflow-hidden group hover:shadow-lg transition-all duration-300">
-                        <div class="absolute top-4 right-4">
-                            <button class="text-gray-400 hover:text-gray-600">
-                                <i class="fas fa-info-circle"></i>
-                            </button>
-                        </div>
-                        <div class="p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <span class="text-sm text-gray-500">Valid until 30 Nov 2024</span>
-                                <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">Active</span>
-                            </div>
-                            <h3 class="text-2xl font-bold text-gray-900 mb-2">20% OFF</h3>
-                            <p class="text-gray-600 mb-4">On all full-price items</p>
-                            <div class="flex items-center justify-between">
-                                <code class="px-4 py-2 bg-gray-100 rounded text-sm font-mono">FASHION20</code>
-                                <button class="text-sm font-medium text-black hover:underline">Copy Code</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Coupon Card 2 -->
-                    <div class="relative border rounded-lg overflow-hidden group hover:shadow-lg transition-all duration-300">
-                        <div class="absolute top-4 right-4">
-                            <button class="text-gray-400 hover:text-gray-600">
-                                <i class="fas fa-info-circle"></i>
-                            </button>
-                        </div>
-                        <div class="p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <span class="text-sm text-gray-500">Valid until 15 Dec 2024</span>
-                                <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">Active</span>
-                            </div>
-                            <h3 class="text-2xl font-bold text-gray-900 mb-2">₹500 OFF</h3>
-                            <p class="text-gray-600 mb-4">On orders above ₹2500</p>
-                            <div class="flex items-center justify-between">
-                                <code class="px-4 py-2 bg-gray-100 rounded text-sm font-mono">SAVE500</code>
-                                <button class="text-sm font-medium text-black hover:underline">Copy Code</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+    
             <!-- Usage History Section -->
-            <div class="border-t">
-                <div class="p-8">
-                    <h3 class="text-lg font-medium text-gray-900 mb-6">Coupon Usage History</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full">
-                            <thead>
-                                <tr class="bg-gray-50">
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Used On</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+            <div class="p-8">
+                <h3 class="text-lg font-medium text-gray-900 mb-6">Coupon Usage History</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Coupon Code</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Original Amount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Final Amount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Used On</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <% if (couponHistory && couponHistory.length > 0) { %>
+                                <% couponHistory.forEach(usage => { %>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <%= usage.orderId %>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <%= usage.couponCode %>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                            <%= helpers.formatCurrency(usage.orderTotal) %>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                            <%= helpers.formatCurrency(usage.discountAmount) %>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                            <%= helpers.formatCurrency(usage.finalAmount) %>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                            <%= helpers.formatDate(usage.usedOn) %>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            <% } else { %>
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">SUMMER30</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">30% OFF</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">Oct 15, 2024</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">#ORD-2024-1534</td>
+                                    <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                                        No coupon usage history found
+                                    </td>
                                 </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                            <% } %>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
-</div>
+
 
 
 
 
 <!-- closing -->
-</div>
-</div>
+            </div>
+                </div>
             </div>
         </div>
-    </div>
+        
 
+
+        <!-- cancell order modal  -->
+        <div id="cancelItemModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
+            <div class="min-h-screen px-4 text-center">
+                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                    Cancel Item
+                                </h3>
+                                <div class="mt-2">
+                                    <p class="text-sm text-gray-500">
+                                        Are you sure you want to cancel <span id="cancelItemName" class="font-medium"></span>? This action cannot be undone.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button id="confirmCancelItem" type="button" onclick="cancelOrderItem()" 
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Cancel Item
+                        </button>
+                        <button type="button" onclick="hideCancelModal()" 
+                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Keep Item
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
     <!-- Edit Address Modal -->
     
     <div id="editAddressModal" class="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm overflow-auto" style="display:none;">
@@ -788,8 +758,54 @@
         </div>
     </div>
         
-        
+        <!-- return ordr modal -->
                
+
+        <div id="returnOrderModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
+            <div class="min-h-screen px-4 text-center">
+                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
+                                    Return Order
+                                </h3>
+                                <form id="returnForm" class="space-y-4">
+                                    <input type="hidden" id="returnOrderId">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                                            Reason for Return
+                                        </label>
+                                        <select id="returnReason" name="reason" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                            <option value="">Select a reason</option>
+                                            <option value="wrong_size">Wrong Size</option>
+                                            <option value="defective">Defective Product</option>
+                                            <option value="not_as_described">Not as Described</option>
+                                            <option value="changed_mind">Changed Mind</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                                            Additional Comments
+                                        </label>
+                                        <textarea id="returnComments" name="comments" rows="3" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="button" onclick="submitReturn()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-orange-600 text-base font-medium text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Submit Return
+                        </button>
+                        <button type="button" onclick="hideReturnModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>     
+           
 
                <script>
 
@@ -1067,26 +1083,71 @@ addInputListeners('editAddressForm', 'edit');
         
         
         
-        //cancel order 
-        
-        function cancelOrder(orderId) {
-            if (confirm('Are you sure you want to cancel this order?')) {
-                fetch(`/orders/${orderId}/cancel`, { method: 'POST' })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.message === 'Order cancelled successfully') {
-                            alert('Order cancelled successfully');
-                            location.reload(); // Refresh the page to reflect the changes
-                        } else {
-                            alert('Failed to cancel order: ' + data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred while cancelling the order');
-                    });
+       
+
+
+
+function showCancelModal(orderId, itemId, productName) {
+    const modal = document.getElementById('cancelItemModal');
+    modal.classList.remove('hidden');
+    
+    // Set data attributes for the confirm button
+    const confirmButton = document.getElementById('confirmCancelItem');
+    confirmButton.setAttribute('data-order-id', orderId);
+    confirmButton.setAttribute('data-item-id', itemId);
+    
+    // Update modal text
+    document.getElementById('cancelItemName').textContent = productName;
+}
+
+function hideCancelModal() {
+    document.getElementById('cancelItemModal').classList.add('hidden');
+}
+
+async function cancelOrderItem() {
+    const confirmButton = document.getElementById('confirmCancelItem');
+    const orderId = confirmButton.getAttribute('data-order-id');
+    const itemId = confirmButton.getAttribute('data-item-id');
+    
+    try {
+        const response = await fetch(`/orders/${orderId}/items/${itemId}/cancel`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
             }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Item Cancelled Successfully',
+                text: data.walletMessage || 'Your item has been cancelled.',
+                confirmButtonColor: '#3085d6'
+            }).then(() => {
+                location.reload();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Cancellation Failed',
+                text: data.message || 'Failed to cancel item',
+                confirmButtonColor: '#3085d6'
+            });
         }
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred while cancelling the item',
+            confirmButtonColor: '#3085d6'
+        });
+    } finally {
+        hideCancelModal();
+    }
+}
 
 
         //edit profile
@@ -1200,64 +1261,48 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-function returnOrder(orderId) {
-    document.getElementById('returnOrderId').value = orderId;
-    document.getElementById('returnOrderModal').classList.remove('hidden');
-    document.body.classList.add('modal-open');
-}
+
 
 // Function to close return modal
-function closeReturnModal() {
-    document.getElementById('returnOrderModal').classList.add('hidden');
-    document.body.classList.remove('modal-open');
-    document.getElementById('returnOrderForm').reset();
-}
-
-// Show/hide other reason textarea based on selection
-document.getElementById('returnReason').addEventListener('change', function() {
-    const otherReasonContainer = document.getElementById('otherReasonContainer');
-    if (this.value === 'other') {
-        otherReasonContainer.classList.remove('hidden');
-    } else {
-        otherReasonContainer.classList.add('hidden');
+function showReturnModal(orderId) {
+        document.getElementById('returnOrderModal').classList.remove('hidden');
+        document.body.classList.add('modal-open');
+        document.getElementById('returnOrderId').value = orderId;
     }
-});
 
-// Handle form submission
-document.getElementById('returnOrderForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = {
-        orderId: document.getElementById('returnOrderId').value,
-        reason: document.getElementById('returnReason').value,
-        otherReason: document.getElementById('otherReason').value,
-        comments: document.getElementById('returnComments').value
-    };
+    function hideReturnModal() {
+        document.getElementById('returnOrderModal').classList.add('hidden');
+        document.body.classList.remove('modal-open');
+        document.getElementById('returnForm').reset();
+    }
 
-    // Send return request to server
-    fetch('/api/orders/return', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-    })
-    .then(response => response.json())
+    function submitReturn() {
+        const orderId = document.getElementById('returnOrderId').value;
+        const reason = document.getElementById('returnReason').value;
+        const comments = document.getElementById('returnComments').value;
+
+        fetch('/api/orders/return', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ orderId, reason, otherReason: '', comments })
+        })
+        .then(response => response.json())
     .then(data => {
         if (data.success) {
             alert('Return request submitted successfully');
-            closeReturnModal();
-            window.location.reload(); // Refresh the page to update order status
+            hideReturnModal();
+            window.location.reload();
         } else {
-            alert('Failed to submit return request: ' + data.message);
+            alert(`Failed to submit return request: ${data.message}`);
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred while processing your return request');
+        alert('An unexpected error occurred while processing your return request. Please try again later.');
     });
-});
-
+}
 
 
 function trackOrder(orderId) {
@@ -1298,6 +1343,26 @@ function trackOrder(orderId) {
         button.disabled = false;
     });
 }
+
+function setDefaultAddress(addressId) {
+    fetch(`/setDefaultAddress/${addressId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload(); // Refresh to update the default address visually
+        } else {
+            alert('Failed to set default address');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+
 
 // Add event listener to prevent default form submission if the button is within a form
 document.addEventListener('DOMContentLoaded', function() {

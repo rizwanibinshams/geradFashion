@@ -12,6 +12,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/ScrollTrigger.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
     <style>
@@ -80,11 +81,14 @@
         }
 
         .logo-text {
-            background: linear-gradient(135deg, #f97316, #ea580c);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            transition: all 0.3s ease;
-        }
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    background-clip: text; /* Add this line for non-webkit browsers */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: all 0.3s ease;
+    font-size: 2em; /* Ensure the text is large enough */
+    display: inline-block; /* Ensure the element can take up the width of the text */
+}
 
         .logo-text:hover {
             transform: scale(1.05);
@@ -125,7 +129,6 @@
                         </svg>
                     </button>
                 </div>
-
                 <!-- User Options and Icons -->
                 <div class="header__nav__option flex items-center space-x-6 ">
                     <% if (typeof user !== 'undefined' && user !== null) { %> 
@@ -137,9 +140,9 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                 </svg>
                             </button>
-                            <ul id="user-dropdown" class="dropdown-content absolute right-0 mt-2  bg-white shadow-xl rounded-lg py-2 w-48">
-                                <li><a href="/profile" class="block px-4 py-2 text-gray-800 hover:bg-orange-500 hover:text-white transition-all duration-300">Profile</a></li>
-                                <li><a href="/logout" class="block px-4 py-2 text-gray-800 hover:bg-orange-500 hover:text-white transition-all duration-300">Logout</a></li>
+                            <ul id="user-dropdown" class="dropdown-content absolute right-0 mt-2  bg-white shadow-xl rounded-lg py-2 w-48 z-50" >
+                                <li><a href="/profile" class="block px-4 py-2 text-gray-800 hover:bg-orange-500 hover:text-white transition-all duration-300 z-50">Profile</a></li>
+                                <li><a href="/logout" class="block px-4 py-2 text-gray-800 hover:bg-orange-500 hover:text-white transition-all duration-300 z-50">Logout</a></li>
                             </ul>
                         </div>
                     <% } else { %>
@@ -234,7 +237,7 @@
         // Header scroll effect with smooth transition
         let lastScroll = 0;
         const header = document.getElementById('header');
-        const spacer = document.querySelector('div.h-[72px]');
+       
 
         window.addEventListener('scroll', () => {
             const currentScroll = window.pageYOffset;
@@ -295,37 +298,193 @@
             });
         });
 
-        // Enhanced search functionality with debounce
-        const searchInput = document.getElementById('search-input');
-        const searchButton = document.getElementById('search-button');
+        //search main 
+    //     function handleSearch() {
+    //     const searchValue = document.getElementById('search-input').value.trim();
+       
+    //     if (searchValue) {
+    //         // Redirect with search query as URL parameter
+    //         window.location.href = `/products?search=${encodeURIComponent(searchValue)}`;
+    //     }
+    // }
 
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
+    // // Event listener for button click
+    // document.getElementById('search-button').addEventListener('click', handleSearch);
 
-        const performSearch = () => {
-            const searchQuery = searchInput.value.trim();
-            if (searchQuery) {
-                window.location.href = `/products?search=${encodeURIComponent(searchQuery)}`;
-            }
-        };
+    // // Event listener for pressing "Enter" in the search input
+    // document.getElementById('search-input').addEventListener('keypress', function(event) {
+    //     if (event.key === 'Enter') {
+    //         event.preventDefault();  // Prevent form submission if within a form element
+    //         handleSearch();
+    //     }
+    // });
+        
 
-        const debouncedSearch = debounce(performSearch, 300);
 
-        searchButton.addEventListener('click', performSearch);
-        searchInput.addEventListener('keypress', (e) => {
+
+
+
+    class ProductSearch {
+    constructor() {
+        this.searchInput = document.getElementById('search-input');
+        this.searchButton = document.getElementById('search-button');
+        this.searchResults = document.createElement('div');
+        this.searchResults.className = 'absolute w-full bg-white mt-1 rounded-lg shadow-lg z-50 hidden';
+        this.searchInput.parentNode.appendChild(this.searchResults);
+        
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        // Debounced search as user types
+        this.searchInput.addEventListener('input', this.debounce(() => {
+            this.handleSearch();
+        }, 300));
+
+        // Handle enter key
+        this.searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                performSearch();
+                this.performSearch();
             }
         });
+
+        // Handle search button click
+        this.searchButton.addEventListener('click', () => {
+            this.performSearch();
+        });
+
+        // Close search results when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!this.searchInput.contains(e.target) && !this.searchResults.contains(e.target)) {
+                this.searchResults.classList.add('hidden');
+            }
+        });
+    }
+
+    async handleSearch() {
+        const query = this.searchInput.value.trim();
+        
+        if (query.length < 2) {
+            this.searchResults.classList.add('hidden');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/products/suggestions?query=${encodeURIComponent(query)}`);
+            if (!response.ok) throw new Error('Failed to get suggestions');
+            
+            const suggestions = await response.json();
+            this.displaySuggestions(suggestions);
+        } catch (error) {
+            console.error('Search error:', error);
+        }
+    }
+
+    displaySuggestions(suggestions) {
+        const query = this.searchInput.value.trim();
+        
+        if (!query) {
+            this.searchResults.classList.add('hidden');
+            return;
+        }
+
+        this.searchResults.classList.remove('hidden');
+
+        if (suggestions.length === 0) {
+            this.searchResults.innerHTML = `
+                <div class="p-4 text-center">
+                    <div class="mb-2">
+                        <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z">
+                            </path>
+                        </svg>
+                    </div>
+                    <div class="text-gray-600 font-medium mb-1">No products found</div>
+                    <div class="text-gray-500 text-sm">
+                        No results found for "${query}".<br>
+                        Try checking your spelling or using different keywords.
+                    </div>
+                </div>`;
+            return;
+        }
+
+        this.searchResults.innerHTML = suggestions.map(item => `
+            <div class="p-2 hover:bg-gray-100 cursor-pointer flex items-center gap-3" 
+                 onclick="window.location.href='/products/${item._id}'">
+                <img src="${item.productImage}" 
+                     alt="${item.productName}" 
+                     class="w-12 h-12 object-cover rounded">
+                <div>
+                    <div class="font-medium">
+                        ${this.highlightMatch(item.productName, this.searchInput.value)}
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        ${item.brand} | ${item.category.name}
+                    </div>
+                    <div class="text-sm font-semibold text-orange-500">
+                        ₹${item.salePrice}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async performSearch() {
+        const query = this.searchInput.value.trim();
+        
+        if (!query) return;
+
+        // Show loading state
+        this.searchButton.innerHTML = `
+            <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>`;
+
+        try {
+            const response = await fetch(`/products/search?search=${encodeURIComponent(query)}`);
+            if (!response.ok) throw new Error('Search failed');
+
+            window.location.href = `/products?search=${encodeURIComponent(query)}`;
+        } catch (error) {
+            console.error('Search error:', error);
+            // Show error notification
+            Swal.fire({
+                icon: 'error',
+                title: 'Search Failed',
+                text: 'Please try again later',
+                timer: 2000
+            });
+        } finally {
+            // Restore search button
+            this.searchButton.innerHTML = `
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>`;
+        }
+    }
+
+    highlightMatch(text, query) {
+        const regex = new RegExp(`(${query})`, 'gi');
+        return text.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
+    }
+
+    debounce(func, wait) {
+        let timeout;
+        return (...args) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+}
+
+// Initialize search when document is ready
+document.addEventListener('DOMContentLoaded', () => {
+    new ProductSearch();
+});
+
+
     </script>
 </body>
 </html>

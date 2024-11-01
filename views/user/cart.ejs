@@ -95,11 +95,14 @@
                                             name="quantity" 
                                             value="<%= item.quantity %>" 
                                             min="1" 
-                                            max="10"
+                                            max="<%= item.productId.quantity %>"
+                                            data-product-id="<%= item.productId._id %>"
                                             class="w-20 px-3 py-1 border border-gray-200 rounded-md focus:ring-2 focus:ring-black focus:border-transparent transition-all"
-                                            onchange="updateQuantity('<%= item.productId._id %>', this.value)"
+                                            onchange="updateQuantity('<%= item.productId._id %>', parseInt(this.value, 10))"
                                         >
+                                        <span class="text-xs text-gray-400">(Available: <%= item.productId.quantity %>)</span>
                                     </div>
+                                    
 
                                     <!-- Subtotal -->
                                     <div class="flex justify-between items-center font-medium">
@@ -176,37 +179,39 @@
         }
 
         function updateQuantity(productId, quantity) {
-            if (quantity >= 10) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Maximum Quantity Limit',
-                    text: 'You have reached the maximum quantity limit of 10 for this product.',
-                    showConfirmButton: true
-                });
-                return;
-            }
-
-            fetch('/update', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ productId, quantity }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message === 'Cart updated successfully') {
-                    window.location.reload();
-                } else if (data.redirect) {
-                    handleAuthError(data);
-                } else {
-                    throw new Error(data.message || 'Failed to update cart');
-                }
-            })
-            .catch(error => {
-                handleAuthError(error);
+    fetch('/update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ productId, quantity }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message === 'Cart updated successfully') {
+            window.location.reload();
+        } else if (data.message === 'Requested quantity exceeds available stock') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Stock Limit Reached',
+                text: `Only ${data.availableQuantity} items available in stock.`,
+                showConfirmButton: true
             });
+            // Reset the input to available quantity
+            const quantityInput = document.querySelector(`input[data-product-id="${productId}"]`);
+            if (quantityInput) {
+                quantityInput.value = data.availableQuantity;
+            }
+        } else if (data.redirect) {
+            handleAuthError(data);
+        } else {
+            throw new Error(data.message || 'Failed to update cart');
         }
+    })
+    .catch(error => {
+        handleAuthError(error);
+    });
+}
 
         function removeFromCart(productId) {
             Swal.fire({

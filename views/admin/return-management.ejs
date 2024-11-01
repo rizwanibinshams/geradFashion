@@ -1,0 +1,110 @@
+
+<%- include("../partials/admin/header") %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Return Management</title>
+    <!-- Include your CSS framework (e.g., Tailwind CSS) -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mx-auto py-8">
+        <h1 class="text-3xl font-bold mb-6">Return Management</h1>
+        <table class="w-full table-auto">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="px-4 py-2">Order ID</th>
+                    <th class="px-4 py-2">Reason</th>
+                    <th class="px-4 py-2">Comments</th>
+                    <th class="px-4 py-2">Request Date</th>
+                    <th class="px-4 py-2">Status</th>
+                    <th class="px-4 py-2">Processed By</th>
+                    <th class="px-4 py-2">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% returnRequests.forEach(order => { %>
+                <tr>
+                    <td class="border px-4 py-2"><%= order.orderId %></td>
+                    <td class="border px-4 py-2"><%= order.return.reason %></td>
+                    <td class="border px-4 py-2"><%= order.return.comments %></td>
+                    <td class="border px-4 py-2"><%= order.return.requestDate.toLocaleString() %></td>
+                    <td class="border px-4 py-2"><%= order.return.status %></td>
+                    <td class="border px-4 py-2"><%= order.return.processedBy?.name || 'N/A' %></td>
+                    <td class="border px-4 py-2">
+                        <% if (order.return.status === 'pending_approval') { %>
+                        <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2" onclick="approveReturn('<%= order._id %>')">Approve</button>
+                        <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onclick="rejectReturn('<%= order._id %>')">Reject</button>
+                        <% } else { %>
+                        <span class="text-gray-500">N/A</span>
+                        <% } %>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function approveReturn(orderId) {
+            fetch('/admin/orders/return', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    orderId,
+                    status: 'approved',
+                    comment: 'Return request approved',
+                    
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Return request approved');
+                    window.location.reload();
+                } else {
+                    alert('Failed to approve return request: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while approving the return request');
+            });
+        }
+
+        function rejectReturn(orderId) {
+            fetch('/admin/orders/return', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    orderId,
+                    status: 'rejected',
+                    comment: 'Return request rejected',
+                   
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Return request rejected');
+                    window.location.reload();
+                } else {
+                    alert('Failed to reject return request: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while rejecting the return request');
+            });
+        }
+    </script>
+</body>
+</html>
+
+<%- include("../partials/admin/footer") %>
