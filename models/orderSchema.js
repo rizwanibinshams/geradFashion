@@ -205,8 +205,36 @@ orderSchema.methods.initiateReturn = function(returnData) {
 };
 
 
+orderSchema.methods.updateReturnStatus = function(status, comment) {
+    if (!this.return) {
+        throw new Error('No return request exists for this order');
+    }
+
+    // Update return status
+    this.return.status = status;
+    this.return.processedDate = new Date();
+    
+    // Update order status based on return status
+    if (status === 'rejected') {
+        this.status = 'Delivered'; // Revert to delivered status if return is rejected
+    }
+
+    // Add to timeline
+    this.return.timeline.push({
+        status: status,
+        date: new Date(),
+        comment: comment || `Return request ${status}`
+    });
+
+    return this.save();
+};
+
+
 // Add method to track return status
 orderSchema.methods.approveReturn = async function() {
+    if (this.return.status !== 'pending_approval') {
+        throw new Error('Return cannot be approved in its current state.');
+    }
     this.return.status = 'approved';
     this.return.processedDate = new Date();
     this.return.timeline.push({
@@ -220,6 +248,7 @@ orderSchema.methods.approveReturn = async function() {
     await this.save();
     return this;
 };
+
 // Use mongoose.models to prevent overwriting the model
 const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
 const Address = mongoose.models.Address || mongoose.model("Address", addressSchema);

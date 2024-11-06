@@ -301,6 +301,7 @@
     // Check order status
     const isOrderCancelled = order.status.toLowerCase() === 'cancelled';
     const isOrderDelivered = order.status.toLowerCase() === 'delivered';
+    
     const isStatusLocked = isOrderDelivered || isOrderCancelled;
 
     // Generate status options (only if not delivered or cancelled)

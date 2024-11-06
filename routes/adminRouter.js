@@ -11,8 +11,9 @@ const couponController = require("../controllers/admin/couponController")
 const dashboardController = require("../controllers/admin/dashboardController")
 const returnsController = require("../controllers/user/returnsController")
 const multer = require("multer")
-const storage = require("../helpers/multer")
+const {storage,brandStore} = require("../helpers/multer")
 const uploads = multer({storage:storage})
+const brandimg = multer({storage:brandStore})
 
 
 router.get('/pageerror',adminController.pageerror)
@@ -50,7 +51,7 @@ router.get('/deleteCategory',auth.adminAuth,categoryController.deleteCategory)
 // brand management
 
 router.get("/brands",auth.adminAuth,brandController.getBrandPage)
-router.post('/addBrand',auth.adminAuth,uploads.single("image"),brandController.addBrand)
+router.post('/addBrand',auth.adminAuth,brandimg.single("image"),brandController.addBrand)
 router.get('/blockBrand',auth.adminAuth,brandController.blockBrand)
 router.get('/unBlockBrand',auth.adminAuth,brandController.unBlockBrand)
 router.get('/deleteBrand',auth.adminAuth,brandController.deleteBrand)

@@ -27,7 +27,9 @@ const userSchema = new Schema({
         type : String,
         unique:true,
     },
-    
+    lastLogin: {
+        type:Date
+    } ,
     isBlocked: {
         type : Boolean,
         default:false

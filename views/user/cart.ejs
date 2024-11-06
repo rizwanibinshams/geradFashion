@@ -91,17 +91,22 @@
                                     <div class="flex justify-between items-center">
                                         <span class="text-sm text-gray-500">Quantity:</span>
                                         <input 
-                                            type="number" 
-                                            name="quantity" 
-                                            value="<%= item.quantity %>" 
-                                            min="1" 
-                                            max="<%= item.productId.quantity %>"
-                                            data-product-id="<%= item.productId._id %>"
-                                            class="w-20 px-3 py-1 border border-gray-200 rounded-md focus:ring-2 focus:ring-black focus:border-transparent transition-all"
-                                            onchange="updateQuantity('<%= item.productId._id %>', parseInt(this.value, 10))"
+                                          type="number" 
+                                          name="quantity" 
+                                          value="<%= item.quantity %>" 
+                                          min="1" 
+                                          data-product-id="<%= item.productId._id %>"
+                                          data-available-quantity="<%= item.productId.quantity %>"
+                                          data-original-quantity="<%= item.quantity %>"
+                                          class="w-20 px-3 py-1 border border-gray-200 rounded-md focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                                          onchange="validateAndUpdateQuantity(this)"
                                         >
                                         <span class="text-xs text-gray-400">(Available: <%= item.productId.quantity %>)</span>
-                                    </div>
+                                      </div>
+                                      
+                                      
+                                      
+                                    
                                     
 
                                     <!-- Subtotal -->
@@ -178,40 +183,77 @@
             }
         }
 
-        function updateQuantity(productId, quantity) {
-    fetch('/update', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ productId, quantity }),
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.message === 'Cart updated successfully') {
-            window.location.reload();
-        } else if (data.message === 'Requested quantity exceeds available stock') {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Stock Limit Reached',
-                text: `Only ${data.availableQuantity} items available in stock.`,
-                showConfirmButton: true
-            });
-            // Reset the input to available quantity
-            const quantityInput = document.querySelector(`input[data-product-id="${productId}"]`);
-            if (quantityInput) {
-                quantityInput.value = data.availableQuantity;
-            }
-        } else if (data.redirect) {
-            handleAuthError(data);
-        } else {
-            throw new Error(data.message || 'Failed to update cart');
-        }
-    })
-    .catch(error => {
-        handleAuthError(error);
+
+        function validateAndUpdateQuantity(inputElement) {
+  const productId = inputElement.getAttribute('data-product-id');
+  const quantity = parseInt(inputElement.value);
+  const availableQuantity = parseInt(inputElement.getAttribute('data-available-quantity'));
+
+  // Check if the entered quantity exceeds available stock
+  if (quantity > availableQuantity) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Stock Limit Reached',
+      text: `Only ${availableQuantity} items available in stock.`,
+      showConfirmButton: true
     });
+    
+    // Prevent changing the input value if it exceeds available stock
+    inputElement.value = availableQuantity;
+    return; // Exit the function to prevent further processing
+  } 
+
+  // Check if quantity is less than 1
+  if (quantity < 1) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Invalid Quantity',
+      text: `Quantity cannot be less than 1.`,
+      showConfirmButton: true
+    });
+    
+    // Reset the quantity input to minimum of 1
+    inputElement.value = 1;
+    return; // Exit the function to prevent further processing
+  }
+
+  // If quantity is valid and different from the original quantity, update
+  const originalQuantity = parseInt(inputElement.getAttribute('data-original-quantity'));
+  if (quantity !== originalQuantity) {
+    updateQuantity(productId, quantity);
+  }
 }
+
+
+function updateQuantity(productId, quantity) {
+  fetch('/update', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ productId, quantity }),
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.message === 'Cart updated successfully') {
+      // Update original quantity on success
+      const quantityInput = document.querySelector(`input[data-product-id="${productId}"]`);
+      if (quantityInput) {
+        quantityInput.setAttribute('data-original-quantity', quantity);
+      }
+      window.location.reload();
+    } else if (data.redirect) {
+      handleAuthError(data);
+    } else {
+      throw new Error(data.message || 'Failed to update cart');
+    }
+  })
+  .catch(error => {
+    handleAuthError(error);
+  });
+}
+
+
 
         function removeFromCart(productId) {
             Swal.fire({

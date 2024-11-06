@@ -309,17 +309,17 @@ const resendOtp = async (req,res)=>{
     }
 }
 
-const loadLogin = async (req,res)=>{
+const loadLogin = async (req, res) => {
     try {
-        if(!req.session.user){
-            return res.render('login')
-        }else{
-            res.redirect('/')
+        if (!req.session.user || !req.session.user.id) {
+            return res.render('login');
+        } else {
+            res.redirect('/');
         }
     } catch (error) {
-        res.redirect('/pageNotFound')
+        res.redirect('/pageNotFound');
     }
-}
+};
 
 const login = async (req, res) => {
     try {
@@ -571,7 +571,18 @@ const success = async (req, res) => {
     }
 };
 
-
+const loadContact = async (req,res)=>{
+    try {
+        const userId = req.session.user?.id;
+        const userData = await user.findById(userId);
+        res.render("contact",{
+            user: userData,
+            userEmail: req.session.user?.email
+        })
+    } catch (error) {
+        console.error(error)
+    }
+}
 
 
 
@@ -588,7 +599,7 @@ module.exports={
     loadProfile,
     updateProfile,
     success,
-    
+    loadContact
     
     
 }

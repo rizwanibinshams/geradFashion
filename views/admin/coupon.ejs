@@ -70,6 +70,10 @@
             </form>
         </div>
 
+        <div id="errorMessage" class="bg-red-100 text-red-700 p-4 rounded-lg mb-6 fade-in" style="display: none;"></div>
+            <p id="errorText"></p>
+        </div>
+
         <div id="couponList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <% if (coupons && coupons.length > 0) { %>
                 <% coupons.forEach(coupon => { %>
@@ -98,57 +102,80 @@
     </div>
 
     <script>
-       document.addEventListener('DOMContentLoaded', function() {
-            const couponForm = document.getElementById('couponForm');
-            const submitButton = document.getElementById('submitButton');
-            const cancelButton = document.getElementById('cancelButton');
-            const errorMessage = document.getElementById('errorMessage');
-            const errorText = document.getElementById('errorText');
+     document.addEventListener('DOMContentLoaded', function() {
+    const couponForm = document.getElementById('couponForm');
+    const submitButton = document.getElementById('submitButton');
+    const cancelButton = document.getElementById('cancelButton');
+    const errorMessage = document.getElementById('errorMessage');
+    const errorText = document.getElementById('errorText');
 
-            // Form validation configuration
-            const validationRules = {
-                code: {
-                    required: true,
-                    minLength: 3,
-                    message: 'Code must be at least 3 characters long'
-                },
-                discountType: {
-                    required: true,
-                    message: 'Please select a discount type'
-                },
-                discountValue: {
-                    required: true,
-                    min: 0,
-                    validate: (value, type) => {
-                        const numValue = parseFloat(value);
-                        return type === 'percentage' ? numValue <= 100 : true;
-                    },
-                    message: 'Invalid discount value'
-                },
-                minPurchase: {
-                    required: true,
-                    min: 0,
-                    message: 'Minimum purchase must be a positive number'
-                },
-                validFrom: {
-                    required: true,
-                    validate: (value) => new Date(value) >= new Date(),
-                    message: 'Valid from date must be in the future'
-                },
-                validUntil: {
-                    required: true,
-                    validate: (value, _, form) => {
-                        const validFrom = new Date(form.validFrom.value);
-                        return new Date(value) > validFrom;
-                    },
-                    message: 'Valid until must be after valid from date'
-                },
-                maxUses: {
-                    required: true,
-                    min: 1,
-                    message: 'Maximum uses must be at least 1'
+    // Form validation configuration
+    const validationRules = {
+        code: {
+            required: true,
+            minLength: 3,
+            message: 'Code must be at least 3 characters long'
+        },
+        discountType: {
+            required: true,
+            message: 'Please select a discount type'
+        },
+        discountValue: {
+            required: true,
+            min: 0,
+            validate: (value, type, form) => {
+                const numValue = parseFloat(value);
+                const discountType = form.discountType.value;
+                const minPurchaseValue = parseFloat(form.minPurchase.value);
+                
+                if (isNaN(numValue) || numValue < 0) {
+                    validationRules.discountValue.message = 'Discount value must be a positive number';
+                    return false;
                 }
-            };
+                
+                if (discountType === 'percentage') {
+                    if (numValue > 100) {
+                        validationRules.discountValue.message = 'Percentage discount cannot exceed 100%';
+                        return false;
+                    }
+                } else if (discountType === 'flat') {
+                    // Check if minPurchase has a valid value
+                    if (!isNaN(minPurchaseValue) && minPurchaseValue > 0) {
+                        if (numValue >= minPurchaseValue) {
+                            validationRules.discountValue.message = 'Flat discount must be less than minimum purchase amount';
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            },
+            message: 'Invalid discount value'
+        },
+        minPurchase: {
+            required: true,
+            min: 0,
+            message: 'Minimum purchase must be a positive number'
+        },
+        validFrom: {
+            required: true,
+            validate: (value) => new Date(value) >= new Date(),
+            message: 'Valid from date must be in the future'
+        },
+        validUntil: {
+            required: true,
+            validate: (value, _, form) => {
+                const validFrom = new Date(form.validFrom.value);
+                return new Date(value) > validFrom;
+            },
+            message: 'Valid until must be after valid from date'
+        },
+        maxUses: {
+            required: true,
+            min: 1,
+            message: 'Maximum uses must be at least 1'
+        }
+    };
+
     // Form submission handler
     couponForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -199,8 +226,78 @@
         }
     });
 
-    // Edit coupon handler
-    window.editCoupon = async function(couponId) {
+    // Validation functions
+    function validateForm() {
+        let isValid = true;
+        clearErrorMessages();
+
+        Object.entries(validationRules).forEach(([fieldName, rules]) => {
+            const input = document.getElementById(fieldName);
+            if (!input) return;
+
+            const value = input.value.trim();
+            
+            // Required check
+            if (rules.required && !value) {
+                displayError(input, `${fieldName} is required`);
+                isValid = false;
+                return;
+            }
+
+            // Minimum length check
+            if (rules.minLength && value.length < rules.minLength) {
+                displayError(input, rules.message);
+                isValid = false;
+                return;
+            }
+
+            // Minimum value check
+            if (rules.min !== undefined && parseFloat(value) < rules.min) {
+                displayError(input, rules.message);
+                isValid = false;
+                return;
+            }
+
+            // Custom validation
+            if (rules.validate && !rules.validate(value, input.type, couponForm)) {
+                displayError(input, rules.message);
+                isValid = false;
+            }
+        });
+
+        return isValid;
+    }
+
+    function displayError(input, message) {
+        const errorElement = document.createElement('p');
+        errorElement.className = 'text-red-500 text-xs italic mt-1';
+        errorElement.textContent = message;
+        input.parentNode.appendChild(errorElement);
+        input.classList.add('border-red-500');
+    }
+
+    function clearErrorMessages() {
+        document.querySelectorAll('.text-red-500').forEach(el => el.remove());
+        document.querySelectorAll('.border-red-500').forEach(el => el.classList.remove('border-red-500'));
+    }
+
+    function showMessage(message, type) {
+        const messageElement = document.createElement('div');
+        messageElement.className = `bg-${type === 'success' ? 'green' : 'red'}-100 text-${type === 'success' ? 'green' : 'red'}-700 p-4 rounded-lg mb-6 fade-in`;
+        messageElement.textContent = message;
+        document.querySelector('.container').insertBefore(messageElement, document.querySelector('#couponList'));
+
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            messageElement.style.display = 'none';
+        }, 5000);
+    }
+});
+
+
+
+ // Edit coupon handler
+ window.editCoupon = async function(couponId) {
         try {
             const response = await fetch(`/admin/coupons/${couponId}`);
             if (!response.ok) throw new Error('Failed to fetch coupon');
@@ -261,73 +358,6 @@
         cancelButton.style.display = 'none';
         clearErrorMessages();
     });
-
-    // Validation functions
-    function validateForm() {
-        let isValid = true;
-        clearErrorMessages();
-
-        Object.entries(validationRules).forEach(([fieldName, rules]) => {
-            const input = document.getElementById(fieldName);
-            if (!input) return;
-
-            const value = input.value.trim();
-            
-            // Required check
-            if (rules.required && !value) {
-                displayError(input, `${fieldName} is required`);
-                isValid = false;
-                return;
-            }
-
-            // Minimum length check
-            if (rules.minLength && value.length < rules.minLength) {
-                displayError(input, rules.message);
-                isValid = false;
-                return;
-            }
-
-            // Minimum value check
-            if (rules.min !== undefined && parseFloat(value) < rules.min) {
-                displayError(input, rules.message);
-                isValid = false;
-                return;
-            }
-
-            // Custom validation
-            if (rules.validate && !rules.validate(value, input.type, couponForm)) {
-                displayError(input, rules.message);
-                isValid = false;
-            }
-        });
-
-        return isValid;
-    }
-
-    function displayError(input, message) {
-        const errorElement = document.createElement('p');
-        errorElement.className = 'text-red-500 text-xs italic mt-1';
-        errorElement.textContent = message;
-        input.parentNode.appendChild(errorElement);
-        input.classList.add('border-red-500');
-    }
-
-    function clearErrorMessages() {
-        document.querySelectorAll('.text-red-500').forEach(el => el.remove());
-        document.querySelectorAll('.border-red-500').forEach(el => el.classList.remove('border-red-500'));
-    }
-
-    function showMessage(message, type = 'error') {
-        errorText.textContent = message;
-        errorMessage.style.display = 'block';
-        errorMessage.className = type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
-        
-        // Auto-hide after 5 seconds
-        setTimeout(() => {
-            errorMessage.style.display = 'none';
-        }, 5000);
-    }
-});
     </script>
 </body>
 </html>

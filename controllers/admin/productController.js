@@ -86,16 +86,22 @@ const addProducts = async (req, res) => {
         if (req.files && req.files.length > 0) {
             for (const file of req.files) {
                 const originalImagePath = file.path;
-                const filename = file.filename;
-                // Ensure the directory exists
-                const resizedImagePath = path.join('public', 'uploads', 'product-images', filename);
+                // Create a new filename for the resized image
+                const resizedFilename = `resized-${file.filename}`;
+                const resizedImagePath = path.join('public', 'uploads', 'product-images', resizedFilename);
                 
                 // Resize image
                 await sharp(originalImagePath)
                     .resize({ width: 440, height: 440 })
                     .toFile(resizedImagePath);
                 
-                images.push(filename);
+                // Push the resized filename to images array
+                images.push(resizedFilename);
+                
+                // Optionally, delete the original file if you don't need it
+                fs.unlink(originalImagePath, (err) => {
+                    if (err) console.error('Error deleting original file:', err);
+                });
             }
         }
 
@@ -114,8 +120,8 @@ const addProducts = async (req, res) => {
             regularPrice: products.regularPrice,
             salePrice: products.salePrice,
             quantity: products.quantity,
-            size: products.size ? [products.size] : [], // Since it's a select, no need to split
-            color: products.color ? products.color.split(',') : [], // Split colors if multiple
+            size: products.size || [],
+            color: products.color ? products.color.split(',') : [],
             productImage: images,
             status: "Available",
             createdAt: new Date()
@@ -130,21 +136,21 @@ const addProducts = async (req, res) => {
     }
 };
 
+
 const getAllProducts = async (req, res) => {
     try {
         const search = req.query.search || "";
-        const page = req.query.page || 1;
+        const page = parseInt(req.query.page) || 1;
         const limit = 4;
 
-       
         const productData = await Product.find({
             $or: [
                 { productName: { $regex: new RegExp(".*" + search + ".*", "i") } },
                 { brand: { $regex: new RegExp(".*" + search + ".*", "i") } },
             ]
         })
-        .sort({ createdAt: -1 })  
-        .limit(limit * 1)
+        .sort({ createdAt: -1 })
+        .limit(limit)
         .skip((page - 1) * limit)
         .populate("category")
         .exec();
@@ -156,15 +162,31 @@ const getAllProducts = async (req, res) => {
             ]
         }).countDocuments();
 
+        const totalPages = Math.ceil(count / limit);
         const category = await Category.find({ isListed: true });
         const brand = await Brand.find({ isBlocked: false });
         const user = req.session.user || null;
+
+        // Calculate pagination range (e.g., showing 5 pages at a time)
+        const paginationRange = 6;
+        let startPage = Math.max(1, page - Math.floor(paginationRange / 2));
+        let endPage = Math.min(totalPages, page + Math.floor(paginationRange / 2));
+        
+        if (endPage - startPage + 1 < paginationRange) {
+            if (page < Math.ceil(totalPages / 2)) {
+                endPage = Math.min(totalPages, startPage + paginationRange - 1);
+            } else {
+                startPage = Math.max(1, endPage - paginationRange + 1);
+            }
+        }
 
         if (category && brand) {
             res.render("products", {
                 data: productData,
                 currentPage: page,
-                totalPages: Math.ceil(count / limit),
+                totalPages: totalPages,
+                startPage: startPage,
+                endPage: endPage,
                 cat: category,
                 brand: brand,
                 user: user,
@@ -179,28 +201,65 @@ const getAllProducts = async (req, res) => {
 
 
 
+
+
+
+
 const addProductOffer = async (req, res) => {
     try {
         const { productId, percentage } = req.body;
         const findProduct = await Product.findOne({ _id: productId });
         const findCategory = await Category.findOne({ _id: findProduct.category });
 
-        if (findCategory.categoryOffer > percentage) {
-            return res.json({ status: false, message: "This product category already has a category offer" });
+        // Validate inputs
+        if (!findProduct || !findCategory) {
+            return res.status(404).json({ 
+                status: false, 
+                message: "Product or category not found" 
+            });
         }
 
-        
-        findProduct.salePrice = findProduct.salePrice - Math.floor(findProduct.regularPrice * (percentage / 100));
+        if (percentage < 0 || percentage > 100) {
+            return res.status(400).json({ 
+                status: false, 
+                message: "Invalid percentage value" 
+            });
+        }
+
+        // Check if category offer is higher
+        if (findCategory.categoryOffer > percentage) {
+            return res.json({ 
+                status: false, 
+                message: "This product category already has a higher category offer" 
+            });
+        }
+
+        // Save current sale price to previousSalePrice before applying the offer
+        findProduct.previousSalePrice = findProduct.salePrice;
+        const discountAmount = Math.floor(findProduct.regularPrice * (percentage / 100));
+        findProduct.salePrice = findProduct.regularPrice - discountAmount;
         findProduct.productOffer = parseInt(percentage);
-        await findProduct.save();
 
+        // Reset category offer as needed
         findCategory.categoryOffer = 0;
-        await findCategory.save();
 
-        return res.json({ status: true });
+        // Save both documents
+        await Promise.all([
+            findProduct.save(),
+            findCategory.save()
+        ]);
+
+        return res.json({ 
+            status: true,
+            message: "Product offer added successfully",
+            newPrice: findProduct.salePrice
+        });
     } catch (error) {
-     
-        return res.status(500).redirect("/admin/pageerror");
+        console.error("Error adding product offer:", error);
+        return res.status(500).json({ 
+            status: false, 
+            message: "Internal server error" 
+        });
     }
 };
 
@@ -209,29 +268,45 @@ const removeProductOffer = async (req, res) => {
         const { productId } = req.body;
         const findProduct = await Product.findOne({ _id: productId });
 
-        
+        // Validate product exists
         if (!findProduct) {
-            return res.status(404).json({ status: false, message: "Product not found" });
+            return res.status(404).json({ 
+                status: false, 
+                message: "Product not found" 
+            });
         }
 
-        const percentage = findProduct.productOffer;
-
-        
-        if (percentage === 0) {
-            return res.status(400).json({ status: false, message: "No product offer to remove" });
+        // Check if there's an offer to remove
+        if (findProduct.productOffer === 0) {
+            return res.status(400).json({ 
+                status: false, 
+                message: "No product offer to remove" 
+            });
         }
 
-        
-        findProduct.salePrice = findProduct.salePrice + Math.floor(findProduct.regularPrice * (percentage / 100));
-        findProduct.productOffer = 0;  
+        // Revert sale price to previous sale price
+        if (findProduct.previousSalePrice !== undefined) {
+            findProduct.salePrice = findProduct.previousSalePrice;
+            findProduct.previousSalePrice = undefined; // Clear the previous sale price after reverting
+        }
+        findProduct.productOffer = 0;
+
         await findProduct.save();
 
-        return res.json({ status: true, message: "Product offer removed successfully" });
+        return res.json({ 
+            status: true, 
+            message: "Product offer removed successfully",
+            newPrice: findProduct.salePrice
+        });
     } catch (error) {
         console.error("Error removing product offer:", error);
-        return res.status(500).json({ status: false, message: "Internal server error" });
+        return res.status(500).json({ 
+            status: false, 
+            message: "Internal server error" 
+        });
     }
 };
+
 
 const blockProduct = async (req,res)=>{
     try {
@@ -261,7 +336,7 @@ const getEditProduct = async (req, res) => {
         const product = await Product.findOne({ _id: id });
         
         const size = product ? product.size || [] : [];
-        console.log("Size array:", size);
+       
         const categories = await Category.find({});
         const brands = await Brand.find({});
         const user = req.session.user || null;
@@ -283,7 +358,6 @@ const getEditProduct = async (req, res) => {
 const editProduct = async (req, res) => {
     try {
         const id = req.params.id;
-        const product = await Product.findOne({ _id: id });
         const data = req.body;
 
         const existingProduct = await Product.findOne({
@@ -309,8 +383,8 @@ const editProduct = async (req, res) => {
             regularPrice: data.regularPrice,
             salePrice: data.salePrice,
             quantity: data.quantity,
-            size: data.size ? data.size.split(',') : product.size, 
-            color: data.color ? data.color.split(',') : product.color, 
+            size: Array.isArray(data.size) ? data.size : [data.size], // Use data.size directly if it's an array
+            color: data.color ? data.color.split(',') : Product.color, 
         };
 
         const category = await Category.findOne({ name: data.category });
@@ -330,11 +404,12 @@ const editProduct = async (req, res) => {
     }
 };
 
+
 const deleteSingleImage = async (req,res)=>{
     try {
         const { imageNameToServer,productIdToServer} = req.body;
         const product = await Product.findByIdAndUpdate(productIdToServer,{$pull:{productImage:imageNameToServer}})
-        const imagePath = path.join(__dirname,"../../public/uploads/re-image",imageNameToServer)
+        const imagePath = path.join(__dirname,"../../public/uploads/product-images",imageNameToServer)
         if(fs.existsSync(imagePath)){
             await fs.unlinkSync(imagePath);
             console.log(`Image ${imageNameToServer} delete successfully`);

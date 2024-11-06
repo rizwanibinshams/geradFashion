@@ -2,6 +2,8 @@ const Coupon = require('../../models/couponSchema');
 const Cart = require("../../models/cartSchema")
 
 // Controller for creating a new coupon
+
+
 const createCoupon = async (req, res) => {
   try {
     const { code, discountType, discountValue, validFrom, validUntil, maxUses, isActive, minPurchase } = req.body;
@@ -10,7 +12,8 @@ const createCoupon = async (req, res) => {
     // Validation: Ensure all required fields are provided
     if (!code || !discountType || !discountValue || !validFrom || !validUntil || !maxUses || !minPurchase) {
       console.log('Missing required fields');
-      return res.status(400).redirect('/admin/pageerror');
+      const coupons = await Coupon.find();
+      return res.render('coupon', { error: 'Missing required fields', coupons });
     }
 
     // Clean and standardize the coupon code
@@ -19,12 +22,13 @@ const createCoupon = async (req, res) => {
     // Check for existing coupon excluding "deleted" coupons
     const existingCoupon = await Coupon.findOne({
       code: { $regex: new RegExp(`^${standardizedCode}$`, 'i') },
-      isDeleted: { $ne: true } // Assuming you have a field that marks soft deletes
+      isDeleted: { $ne: true }
     });
 
     if (existingCoupon) {
       console.log('Duplicate coupon code:', standardizedCode);
-      return res.status(400).redirect('/admin/pageerror');
+      const coupons = await Coupon.find();
+      return res.render('coupon', { error: 'Duplicate coupon code', coupons });
     }
 
     // Create the new coupon with standardized code
@@ -45,22 +49,26 @@ const createCoupon = async (req, res) => {
     try {
       await newCoupon.save();
       console.log('Coupon saved successfully:', newCoupon);
-      return res.status(201).redirect('/admin/coupons');
+      const coupons = await Coupon.find();
+      return res.render('coupon', { message: 'Coupon created successfully', coupons });
     } catch (saveError) {
       if (saveError.code === 11000) {
         console.log('Duplicate key error during save');
-        return res.status(400).redirect('/admin/pageerror');
+        const coupons = await Coupon.find();
+        return res.render('coupon', { error: 'Duplicate coupon code', coupons });
       }
       throw saveError;
     }
   } catch (error) {
     console.error('Error saving coupon:', error);
-    return res.status(500).redirect('/admin/pageerror');
+    return res.redirect('/admin/pageerror');
   }
 };
 
 
-// Controller for updating a coupon
+
+
+
 const updateCoupon = async (req, res) => {
   try {
     const updateData = req.body;
@@ -70,42 +78,41 @@ const updateCoupon = async (req, res) => {
 
     // Validate coupon ID
     if (!couponId || !couponId.match(/^[0-9a-fA-F]{24}$/)) {
-      console.log('Invalid coupon ID:', couponId);
-      return res.status(400).redirect('/admin/pageerror');
+      console.log('Invalid or missing coupon ID');
+      const coupons = await Coupon.find();
+      return res.render('coupon', { error: 'Invalid or missing coupon ID', coupons });
     }
 
-    // Find the existing coupon
+    // Find the existing coupon first
     const existingCoupon = await Coupon.findById(couponId);
+    
     if (!existingCoupon) {
-      console.log('Coupon not found:', couponId);
-      return res.status(404).redirect('/admin/pageerror');
+      console.log('Coupon not found');
+      const coupons = await Coupon.find();
+      return res.render('coupon', { error: 'Coupon not found', coupons });
     }
 
-    // Log the existing coupon's code for comparison
-    console.log('Current coupon code:', existingCoupon.code);
+    // Prepare the updated code (if provided)
+    const updatedCode = updateData.code ? updateData.code.trim().toUpperCase() : existingCoupon.code;
 
-    // Prepare the updated code
-    const updatedCode = updateData.code ? updateData.code.trim().toUpperCase() : existingCoupon.code.trim().toUpperCase();
-
-    // Check if the code is actually changing
-    if (updatedCode !== existingCoupon.code.trim().toUpperCase()) {
+    // Check for duplicate code only if the code is being changed
+    if (updatedCode !== existingCoupon.code) {
       const duplicateCheck = await Coupon.findOne({
-        code: { $regex: new RegExp(`^${updatedCode}$`, 'i') },
-        _id: { $ne: couponId } // Exclude the current coupon being updated
+        code: updatedCode,
+        _id: { $ne: couponId }
       });
 
       if (duplicateCheck) {
         console.log('Duplicate coupon code found:', updatedCode);
-        return res.status(400).redirect('/admin/pageerror');
+        const coupons = await Coupon.find();
+        return res.render('coupon', { error: 'Duplicate coupon code found', coupons });
       }
-    } else {
-      console.log('No change in coupon code, skipping duplicate check.');
     }
 
-    // Handle isActive properly
+    // Handle isActive field
     const isActive = updateData.isActive === 'on' || updateData.isActive === true;
 
-    // Prepare the update object with proper type conversions
+    // Create updates object with existing values as fallback
     const updates = {
       code: updatedCode,
       discountType: updateData.discountType || existingCoupon.discountType,
@@ -117,126 +124,29 @@ const updateCoupon = async (req, res) => {
       isActive
     };
 
-    console.log('Update object prepared:', updates);
-
-    // Update using findByIdAndUpdate
-    const updatedCoupon = await Coupon.findByIdAndUpdate(
+    // Update the existing coupon
+    await Coupon.findByIdAndUpdate(
       couponId,
-      { $set: updates },
+      updates,
       { new: true, runValidators: true }
     );
 
-    if (!updatedCoupon) {
-      console.log('No coupon found to update');
-      return res.status(404).redirect('/admin/pageerror');
-    }
+    console.log('Coupon updated successfully');
 
-    console.log('Coupon updated successfully:', updatedCoupon);
-
-    // Fetch updated list of coupons
+    // Fetch all coupons for rendering
     const coupons = await Coupon.find();
-    return res.render('coupon', { message: 'Coupon updated successfully', coupons });
+    return res.render('coupon', { 
+      message: 'Coupon updated successfully', 
+      coupons 
+    });
+
   } catch (error) {
     console.error('Error updating coupon:', error);
-    return res.status(500).redirect('/admin/pageerror');
+    return res.redirect('/admin/pageerror');
   }
 };
 
 
-// Controller for applying a coupon with minPurchase validation
-// const applyCoupon = async (req, res) => {
-//   try {
-//     const { couponCode } = req.body;
-//     const userId = req.session.user?.id;
-
-//     if (!userId) {
-//       return res.json({
-//         success: false,
-//         message: 'User not authenticated'
-//       });
-//     }
-
-//     const cart = await Cart.findOne({ userId })
-//       .populate({ path: 'items.productId', select: 'salePrice name' });
-
-//     if (!cart || !cart.items || cart.items.length === 0) {
-//       return res.json({
-//         success: false,
-//         message: 'Cart is empty'
-//       });
-//     }
-
-//     // Calculate cart total
-//     const cartTotal = cart.items.reduce((total, item) => {
-//       return total + item.totalPrice;
-//     }, 0);
-
-//     // Find valid coupon
-//     const coupon = await Coupon.findOne({
-//       code: couponCode.toUpperCase(),
-//       isActive: true,
-//       validUntil: { $gt: new Date() }
-//     });
-
-//     if (!coupon) {
-//       return res.json({
-//         success: false,
-//         message: 'Invalid or expired coupon code'
-//       });
-//     }
-
-//     // Check if cart total meets the minPurchase requirement
-//     if (cartTotal < coupon.minPurchase) {
-//       return res.json({
-//         success: false,
-//         message: `Minimum purchase amount of ${coupon.minPurchase} is required to apply this coupon`
-//       });
-//     }
-
-//     // Calculate discount
-//     let discountAmount = 0;
-//     if (coupon.discountType === 'percentage') {
-//       discountAmount = (cartTotal * coupon.discountValue) / 100;
-//       if (coupon.maxDiscount) {
-//         discountAmount = Math.min(discountAmount, coupon.maxDiscount);
-//       }
-//     } else {
-//       discountAmount = Math.min(coupon.discountValue, cartTotal);
-//     }
-
-//     const newTotal = cartTotal - discountAmount;
-
-//     // Store in session
-//     req.session.appliedCoupon = {
-//       code: coupon.code,
-//       discountAmount: discountAmount,
-//       originalTotal: cartTotal,
-//       newTotal: newTotal
-//     };
-
-//     console.log('Coupon applied successfully:', {
-//       cartTotal,
-//       discountAmount,
-//       newTotal,
-//       couponCode: coupon.code
-//     });
-
-//     return res.json({
-//       success: true,
-//       message: 'Coupon applied successfully',
-//       discountAmount: discountAmount.toFixed(2),
-//       newTotal: newTotal.toFixed(2),
-//       originalTotal: cartTotal.toFixed(2)
-//     });
-//   } catch (error) {
-//     console.error('Error in applyCoupon:', error);
-//     return res.json({
-//       success: false,
-//       message: 'Error applying coupon',
-//       error: error.message
-//     });
-//   }
-// };
 
 
 const applyCoupon = async (req, res) => {
@@ -266,6 +176,9 @@ const applyCoupon = async (req, res) => {
     const cartTotal = cart.items.reduce((total, item) => {
       return total + item.totalPrice; // Ensure item.totalPrice reflects the item's price
     }, 0);
+
+    // Determine delivery charge based on cart total
+    const deliveryCharge = cartTotal < 1000 ? 250 : 0; // Example: ₹250 if total is less than ₹1000
 
     // Find valid coupon
     const coupon = await Coupon.findOne({
@@ -309,12 +222,13 @@ const applyCoupon = async (req, res) => {
     }
 
     // Calculate new total after applying the discount
-    const newTotal = cartTotal - discountAmount;
+    const newTotal = cartTotal - discountAmount + deliveryCharge;
 
     // Store applied coupon details in the session
     req.session.appliedCoupon = {
       code: coupon.code,
       discountAmount: discountAmount,
+      deliveryCharge: deliveryCharge,
       originalTotal: cartTotal,
       newTotal: newTotal
     };
@@ -322,6 +236,7 @@ const applyCoupon = async (req, res) => {
     console.log('Coupon applied successfully:', {
       cartTotal,
       discountAmount,
+      deliveryCharge,
       newTotal,
       couponCode: coupon.code
     });
@@ -330,6 +245,7 @@ const applyCoupon = async (req, res) => {
       success: true,
       message: 'Coupon applied successfully',
       discountAmount: discountAmount.toFixed(2),
+      deliveryCharge: deliveryCharge.toFixed(2),
       newTotal: newTotal.toFixed(2),
       originalTotal: cartTotal.toFixed(2)
     });
@@ -342,6 +258,7 @@ const applyCoupon = async (req, res) => {
     });
   }
 };
+
 
 const removeCoupon = async (req, res) => {
   try {

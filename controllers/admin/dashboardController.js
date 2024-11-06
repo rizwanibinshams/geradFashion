@@ -13,8 +13,8 @@ const dateUtils = {
                 end: moment().endOf('day')
             },
             weekly: {
-                start: moment().startOf('week'),
-                end: moment().endOf('week')
+                start: moment().subtract(6, 'days'),
+                end: moment()
             },
             monthly: {
                 start: moment().startOf('month'),
@@ -25,14 +25,13 @@ const dateUtils = {
                 end: moment().endOf('year')
             },
             custom: {
-                start: startDate ? moment(startDate).startOf('day') : moment().startOf('day'),
-                end: endDate ? moment(endDate).endOf('day') : moment().endOf('day')
+                start: startDate ? moment(startDate, 'DD-MM-YYYY').startOf('day') : moment().subtract(6, 'days'),
+                end: endDate ? moment(endDate, 'DD-MM-YYYY').endOf('day') : moment()
             }
         };
 
         return ranges[reportType] || ranges.weekly;
     },
-
     getPreviousPeriod: (dateRange) => {
         const duration = moment.duration(dateRange.end.diff(dateRange.start));
         const days = duration.asDays();
@@ -78,11 +77,10 @@ const dashboardService = {
                     }
                 }
             ]),
-            // Updated aggregation to count cancelled orders and their total amount
             Order.aggregate([
                 {
                     $match: {
-                        status: 'Cancelled', // Note the capitalization to match your schema
+                        status: 'Cancelled',
                         createdOn: {
                             $gte: dateRange.start.toDate(),
                             $lte: dateRange.end.toDate()
@@ -106,40 +104,83 @@ const dashboardService = {
             avgOrderValue: 0
         };
 
-        const cancelledOrdersStats = cancelledOrderStats[0] || { 
+        const cancelledStats = cancelledOrderStats[0] || {
             totalCancelledOrders: 0,
-            totalCancelledAmount: 0 
+            totalCancelledAmount: 0
         };
 
+        // Calculate completed orders (total - cancelled)
+        const totalCompletedOrders = stats.totalOrders - cancelledStats.totalCancelledOrders;
+
         return {
-            ...stats,
+            totalOrders: stats.totalOrders,
+            totalRevenue: stats.totalRevenue,
+            totalDiscount: stats.totalDiscount,
+            avgOrderValue: stats.avgOrderValue,
             totalUsers,
             totalProducts: productStats[0]?.totalProducts || 0,
             lowStockProducts: productStats[0]?.lowStock || 0,
-            totalCancelledOrders: cancelledOrdersStats.totalCancelledOrders,
-            totalCancelledAmount: cancelledOrdersStats.totalCancelledAmount
+            totalCancelledOrders: cancelledStats.totalCancelledOrders,
+            totalCancelledAmount: cancelledStats.totalCancelledAmount,
+            totalCompletedOrders
         };
     },
 
+    // Fixed payment method stats with date range
     async getPaymentMethodStats(dateRange) {
-        return Order.aggregate([
+        const stats = await Order.aggregate([
             {
                 $match: {
                     createdOn: {
                         $gte: dateRange.start.toDate(),
                         $lte: dateRange.end.toDate()
-                    }
+                    },
+                    // Optionally exclude cancelled orders if needed
+                    // status: { $ne: 'Cancelled' }
                 }
             },
             {
                 $group: {
                     _id: '$paymentMethod',
                     totalAmount: { $sum: '$finalAmount' },
-                    totalOrders: { $sum: 1 }
+                    totalOrders: { $sum: 1 },
+                    completedOrders: {
+                        $sum: {
+                            $cond: [
+                                { $ne: ['$status', 'Cancelled'] },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    completedAmount: {
+                        $sum: {
+                            $cond: [
+                                { $ne: ['$status', 'Cancelled'] },
+                                '$finalAmount',
+                                0
+                            ]
+                        }
+                    }
                 }
-            }
+            },
+            {
+                $project: {
+                    paymentMethod: '$_id',
+                    totalAmount: 1,
+                    totalOrders: 1,
+                    completedOrders: 1,
+                    completedAmount: 1,
+                    cancelledOrders: { $subtract: ['$totalOrders', '$completedOrders'] },
+                    cancelledAmount: { $subtract: ['$totalAmount', '$completedAmount'] }
+                }
+            },
+            { $sort: { completedAmount: -1 } }
         ]);
+
+        return stats;
     },
+  
 
     async getPeriodComparison(currentRange, previousRange) {
         const [currentStats, previousStats] = await Promise.all([
@@ -319,7 +360,7 @@ const dashboardService = {
             };
     
             salesSheet.addRow({
-                date: data._id,
+                date: moment(data._id).format('DD-MM-YYYY'),
                 orders: data.totalOrders,
                 revenue: data.totalRevenue,
                 discount: data.totalDiscount,
@@ -366,8 +407,8 @@ const dashboardService = {
         doc.moveDown();
         
         // Date Range - Add null checks
-        const startDate = dateRange.start ? dateRange.start.format('DD-MM-YYYY') : 'N/A';
-        const endDate = dateRange.end ? dateRange.end.format('DD-MM-YYYY') : 'N/A';
+        const startDate = dateRange.start ? dateRange.start.format('DD-MM-YYYY') : 'N/A'; 
+        const endDate = dateRange.end ? dateRange.end.format('DD-MM-YYYY') : 'N/A'; 
         doc.fontSize(12).text(`Period: ${startDate} to ${endDate}`);
         doc.moveDown();
         
@@ -417,14 +458,14 @@ const dashboardService = {
                 totalRevenue: data.totalRevenue || 0,
                 totalDiscount: data.totalDiscount || 0
             };
-    
+        
             const cancelledData = cancelledOrderMap.get(safeData._id) || { 
                 cancelledOrdersCount: 0, 
                 cancelledAmount: 0 
             };
-    
+        
             y = doc.y + 20;
-            doc.text(safeData._id, 50, y);
+            doc.text(moment(safeData._id).format('DD-MM-YYYY'), 50, y); // Change the date format here
             doc.text(safeData.totalOrders.toString(), 150, y);
             doc.text(`${safeData.totalRevenue.toFixed(2)}`, 250, y);
             doc.text(`${safeData.totalDiscount.toFixed(2)}`, 350, y);
@@ -436,46 +477,55 @@ const dashboardService = {
     }
 };
 
-const adminDashboardController = {
-    getDashboard: async (req, res, next) => {
-        try {
-            const { reportType = 'weekly', startDate, endDate } = req.query;
-            const dateRange = dateUtils.getDateRange(reportType, startDate, endDate);
-            const previousRange = dateUtils.getPreviousPeriod(dateRange);
 
-            const [
-                quickStats,
-                periodComparison,
-                salesAnalytics,
-                topProducts,
-                recentOrders,
-                paymentMethodStats
-            ] = await Promise.all([
-                dashboardService.getQuickStats(dateRange),
-                dashboardService.getPeriodComparison(dateRange, previousRange),
-                dashboardService.getSalesAnalytics(dateRange),
-                dashboardService.getTopProducts(dateRange),
-                dashboardService.getRecentOrders(dateRange),
-                dashboardService.getPaymentMethodStats(dateRange)
-            ]);
-            
-            res.render('dashboard', {
-                ...quickStats,
-                periodComparison,
-                salesAnalytics,
-                topProducts,
-                recentOrders,
-                paymentMethodStats,
-                reportType,
-                startDate: dateRange.start.format('DD-MM-YYYY'),
-                endDate: dateRange.end.format('DD-MM-YYYY'),
-                moment
-            });
-        } catch (error) {
-            console.error('Dashboard Error:', error);
-            next(error);
-        }
-    },
+    const adminDashboardController = {
+        getDashboard: async (req, res, next) => {
+            try {
+                const { reportType = 'weekly', startDate, endDate } = req.query;
+                const dateRange = dateUtils.getDateRange(reportType, startDate, endDate);
+                const previousRange = dateUtils.getPreviousPeriod(dateRange);
+    
+                const [
+                    quickStats,
+                    periodComparison,
+                    salesAnalytics,
+                    topProducts,
+                    recentOrders,
+                    paymentMethodStats
+                ] = await Promise.all([
+                    dashboardService.getQuickStats(dateRange),
+                    dashboardService.getPeriodComparison(dateRange, previousRange),
+                    dashboardService.getSalesAnalytics(dateRange),
+                    dashboardService.getTopProducts(dateRange),
+                    dashboardService.getRecentOrders(dateRange),
+                    dashboardService.getPaymentMethodStats(dateRange)
+                ]);
+                
+                // Calculate totals for payment methods
+                const paymentTotals = paymentMethodStats.reduce((acc, method) => ({
+                    totalAmount: acc.totalAmount + method.totalAmount,
+                    completedAmount: acc.completedAmount + method.completedAmount,
+                    cancelledAmount: acc.cancelledAmount + method.cancelledAmount
+                }), { totalAmount: 0, completedAmount: 0, cancelledAmount: 0 });
+                
+                res.render('dashboard', {
+                    ...quickStats,
+                    periodComparison,
+                    salesAnalytics,
+                    topProducts,
+                    recentOrders,
+                    paymentMethodStats,
+                    paymentTotals,
+                    reportType,
+                    startDate: dateRange.start.format('DD-MM-YYYY'),
+                    endDate: dateRange.end.format('DD-MM-YYYY'),
+                    moment
+                });
+            } catch (error) {
+                console.error('Dashboard Error:', error);
+                next(error);
+            }
+        },
 
     getDashboardData: async (req, res, next) => {
         try {

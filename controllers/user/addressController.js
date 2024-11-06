@@ -78,6 +78,90 @@ const addAddress = async (req, res) => {
         //res.redirect('/profile'); // Adjust the route to your actual profile page route
 
         // Instead of redirecting on success, return JSON response
+res.redirect("/profile") // Send the newly added address back to the client
+
+    } catch (error) {
+        console.error("Error adding address:", error.message); // Log specific error message
+        res.status(500).json({ error: 'An error occurred while adding the address' });
+    }
+};
+
+
+const CheckoutaddAddress = async (req, res) => {
+    try {
+        console.log("user eksdf", req.user); // Check user
+        console.log("body dvbjhvd", req.body); // Check request body
+
+        const {
+            name,
+            addressType,
+            street,
+            landMark,
+            city,
+            state,
+            pincode,
+            phone,
+            altPhone
+        } = req.body;
+
+        // Validate the request body
+        if (!name||!addressType || !street || !city || !state || !pincode || !phone) {
+            return res.status(400).json({ error: 'All fields are required' });
+        }
+
+        const userId = req.session.user?.id; // Ensure user is authenticated
+        if (!userId) {
+            return res.status(401).json({ error: 'User not authenticated' });
+        }
+
+        console.log("User ID:", userId); // Log the user ID
+
+        // Find the address document by userId
+        let userAddress = await Address.findOne({ userId });
+
+        if (!userAddress) {
+            // Create a new address document if it doesn't exist
+            userAddress = new Address({
+                userId,
+                address: [{
+                    name,
+                    addressType,
+                    street,
+                    landMark,
+                    city,
+                    state,
+                    pincode,
+                    phone,
+                    altPhone
+                }]
+            });
+        } else {
+            // Check if the address already exists to avoid duplicates
+            const existingAddress = userAddress.address.find(addr => 
+                addr.landMark === landMark && addr.street === street 
+            );
+
+            if (existingAddress) {
+                return res.status(409).json({ error: 'This address already exists' });
+            }
+
+            // Push the new address into the array
+            userAddress.address.push({
+                name,
+                addressType,
+                street,
+                landMark,
+                city,
+                state,
+                pincode,
+                phone,
+                altPhone
+            });
+        }
+
+        await userAddress.save();
+        
+        // Instead of redirecting on success, return JSON response
 res.status(201).json({ address: userAddress.address[userAddress.address.length - 1] }); // Send the newly added address back to the client
 
     } catch (error) {
@@ -276,5 +360,6 @@ module.exports ={
     removeAddress,
     getAddresses,
     getAddressById,
-    setDefaultAddress
+    setDefaultAddress,
+    CheckoutaddAddress
 }

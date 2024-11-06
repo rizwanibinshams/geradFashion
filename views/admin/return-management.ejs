@@ -1,54 +1,191 @@
-
-<%- include("../partials/admin/header") %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Return Management</title>
-    <!-- Include your CSS framework (e.g., Tailwind CSS) -->
+    <title>Return Management Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+    <%- include("../partials/admin/header") %>
+    <style>
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hover-shadow {
+            transition: all 0.3s ease;
+        }
+        .hover-shadow:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+    </style>
 </head>
-<body>
-    <div class="container mx-auto py-8">
-        <h1 class="text-3xl font-bold mb-6">Return Management</h1>
-        <table class="w-full table-auto">
-            <thead>
-                <tr class="bg-gray-200">
-                    <th class="px-4 py-2">Order ID</th>
-                    <th class="px-4 py-2">Reason</th>
-                    <th class="px-4 py-2">Comments</th>
-                    <th class="px-4 py-2">Request Date</th>
-                    <th class="px-4 py-2">Status</th>
-                    <th class="px-4 py-2">Processed By</th>
-                    <th class="px-4 py-2">Action</th>
-                </tr>
-            </thead>
-            <tbody>
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <!-- Dashboard Header -->
+        <div class="bg-white shadow-sm">
+            <div class="container mx-auto px-4 py-6">
+                <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Return Management</h1>
+                        <p class="text-sm text-gray-600 mt-1">Manage and process customer return requests</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="relative">
+                            <select 
+                                class="appearance-none bg-white border border-gray-300 rounded-lg pl-4 pr-10 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                onchange="filterByStatus(this.value)"
+                            >
+                                <option value="all">All Returns</option>
+                                <option value="pending_approval">Pending Approval</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                <svg class="fill-current h-4 w-4" viewBox="0 0 20 20">
+                                    <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="container mx-auto px-4 py-8">
+            <div class="grid gap-6">
                 <% returnRequests.forEach(order => { %>
-                <tr>
-                    <td class="border px-4 py-2"><%= order.orderId %></td>
-                    <td class="border px-4 py-2"><%= order.return.reason %></td>
-                    <td class="border px-4 py-2"><%= order.return.comments %></td>
-                    <td class="border px-4 py-2"><%= order.return.requestDate.toLocaleString() %></td>
-                    <td class="border px-4 py-2"><%= order.return.status %></td>
-                    <td class="border px-4 py-2"><%= order.return.processedBy?.name || 'N/A' %></td>
-                    <td class="border px-4 py-2">
-                        <% if (order.return.status === 'pending_approval') { %>
-                        <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2" onclick="approveReturn('<%= order._id %>')">Approve</button>
-                        <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onclick="rejectReturn('<%= order._id %>')">Reject</button>
-                        <% } else { %>
-                        <span class="text-gray-500">N/A</span>
-                        <% } %>
-                    </td>
-                </tr>
+                <div class="bg-white rounded-lg shadow hover-shadow">
+                    <div class="p-6">
+                        <div class="grid md:grid-cols-3 gap-6">
+                            <!-- Order Information -->
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h4 class="text-sm font-semibold text-gray-900">Order #<%= order.orderId %></h4>
+                                        <p class="text-sm text-gray-500">
+                                            Requested: <%= order.return.requestDate.toLocaleDateString('en-US', { 
+                                                year: 'numeric', 
+                                                month: 'short', 
+                                                day: 'numeric' 
+                                            }) %>
+                                        </p>
+                                    </div>
+                                    <span class="px-3 py-1 rounded-full text-sm font-medium <%= 
+                                        order.return.status === 'pending_approval' ? 'bg-yellow-100 text-yellow-800' :
+                                        order.return.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                        'bg-red-100 text-red-800'
+                                    %>">
+                                        <%= order.return.status.replace(/_/g, ' ').toUpperCase() %>
+                                    </span>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <h5 class="text-sm font-medium text-gray-700 mb-2">Return Details</h5>
+                                    <div class="space-y-2 text-sm text-gray-600">
+                                        <p><span class="font-medium">Reason:</span> <%= order.return.reason.replace(/_/g, ' ') %></p>
+                                        <% if (order.return.comments) { %>
+                                        <p><span class="font-medium">Customer Notes:</span> <%= order.return.comments %></p>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Product Information -->
+                            <div class="flex gap-4 bg-gray-50 rounded-lg p-4">
+                                <div class="w-24 h-24 rounded-lg overflow-hidden bg-white">
+                                    <img 
+                                        src="<%= helpers.getProductImage(order.orderedItems[0].product) %>"
+                                        alt="<%= order.orderedItems[0].product.productName %>"
+                                        class="w-full h-full object-contain"
+                                        onerror="this.onerror=null; this.src='/placeholder-image.jpg';"
+                                    >
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="font-medium text-gray-900">
+                                        <%= (order.orderedItems && order.orderedItems[0] && order.orderedItems[0].product) 
+                                            ? order.orderedItems[0].product.name 
+                                            : 'No product' %>
+                                    </h3>
+                                    <div class="mt-2 space-y-1">
+                                        <p class="text-sm text-gray-600">
+                                            <span class="font-medium">SKU:</span> 
+                                            <%= (order.orderedItems && order.orderedItems[0] && order.orderedItems[0].product) 
+                                                ? order.orderedItems[0].product.sku 
+                                                : 'N/A' %>
+                                        </p>
+                                        <p class="text-sm text-gray-600">
+                                            <span class="font-medium">Quantity:</span> 
+                                            <%= (order.orderedItems && order.orderedItems[0]) 
+                                                ? order.orderedItems[0].quantity 
+                                                : '0' %>
+                                        </p>
+                                        <p class="text-sm font-medium text-gray-900">
+                                            <span class="font-medium">Price:</span> 
+                                            ₹<%= (order.orderedItems && order.orderedItems[0]) 
+                                                ? order.orderedItems[0].price.toFixed(2) 
+                                                : '0.00' %>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="flex flex-col justify-center items-end">
+                                <% if (order.return.status === 'pending_approval') { %>
+                                <div class="space-y-3 w-full md:w-auto">
+                                    <button 
+                                        onclick="handleReturn('<%= order._id %>', 'approve')"
+                                        class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                        Approve Return
+                                    </button>
+                                    <button 
+                                        onclick="handleReturn('<%= order._id %>', 'reject')"
+                                        class="w-full md:w-auto border border-red-600 text-red-600 hover:bg-red-50 font-medium py-2 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                        Reject Return
+                                    </button>
+                                </div>
+                                <% } else { %>
+                                <div class="text-sm text-gray-500 italic">
+                                    Status updated: <%= order.return.processedDate?.toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric'
+                                    }) || 'N/A' %>
+                                </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <% }) %>
-            </tbody>
-        </table>
+            </div>
+        </div>
     </div>
 
+    <!-- Notification Component -->
+    <div id="notification-container" class="fixed top-4 right-4 z-50"></div>
+
     <script>
-        function approveReturn(orderId) {
+        function handleReturn(orderId, action) {
+            const isApprove = action === 'approve';
+            const confirmMessage = isApprove 
+                ? 'Are you sure you want to approve this return request?' 
+                : 'Are you sure you want to reject this return request?';
+            
+            if (!confirm(confirmMessage)) return;
+            
             fetch('/admin/orders/return', {
                 method: 'PUT',
                 headers: {
@@ -56,55 +193,56 @@
                 },
                 body: JSON.stringify({
                     orderId,
-                    status: 'approved',
-                    comment: 'Return request approved',
-                    
+                    status: isApprove ? 'approved' : 'rejected',
+                    comment: isApprove ? 'Return request approved' : 'Return request rejected'
                 })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Return request approved');
-                    window.location.reload();
+                    showNotification(
+                        `Return request ${isApprove ? 'approved' : 'rejected'} successfully`,
+                        'success'
+                    );
+                    setTimeout(() => window.location.reload(), 1500);
                 } else {
-                    alert('Failed to approve return request: ' + data.message);
+                    showNotification(data.message, 'error');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred while approving the return request');
+                showNotification('An error occurred while processing the request', 'error');
             });
         }
 
-        function rejectReturn(orderId) {
-            fetch('/admin/orders/return', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    orderId,
-                    status: 'rejected',
-                    comment: 'Return request rejected',
-                   
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Return request rejected');
-                    window.location.reload();
-                } else {
-                    alert('Failed to reject return request: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while rejecting the return request');
-            });
+        function filterByStatus(status) {
+            window.location.href = `/admin/returns?status=${status}`;
+        }
+
+        function showNotification(message, type) {
+            const container = document.getElementById('notification-container');
+            const notification = document.createElement('div');
+            notification.className = `fade-in mb-4 px-6 py-3 rounded-lg text-white flex items-center ${
+                type === 'success' ? 'bg-green-600' : 'bg-red-600'
+            }`;
+            
+            const icon = document.createElement('span');
+            icon.className = 'mr-2';
+            icon.innerHTML = type === 'success' 
+                ? '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>'
+                : '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+            
+            notification.appendChild(icon);
+            notification.appendChild(document.createTextNode(message));
+            
+            container.appendChild(notification);
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
         }
     </script>
+    
+    <%- include("../partials/admin/footer") %>
 </body>
 </html>
-
-<%- include("../partials/admin/footer") %>

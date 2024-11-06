@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html>
 <%- include("../partials/admin/header") %>
+
+
+
+
 <head>
     <style>
         .content-main {
@@ -147,10 +151,10 @@
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <label class="form-label">Size</label>
-                                    <select class="form-select" name="size">
+                                    <select class="form-select" name="size[]" multiple>
                                         <% if (size && size.length > 0) { %>
                                             <% for (let i = 0; i < size.length; i++) { %>
-                                                <option value="<%= size[i] %>"><%= size[i] %></option>
+                                                <option value="<%= size[i] %>" <%= product.size.includes(size[i]) ? 'selected' : '' %>><%= size[i] %></option>
                                             <% } %>
                                         <% } else { %>
                                             <option value="NSZ">No Sizes Available</option>
@@ -158,6 +162,7 @@
                                     </select>
                                     <div id="size-error" class="error-message"></div>
                                 </div>
+                                
 
                                 <div class="col-md-6 mb-4">
                                     <label class="form-label">Category</label>
@@ -239,13 +244,12 @@
                                                 <div class="image-preview">
                                                     <img src="" alt="" id="imgView<%= i %>">
                                                     <input class="form-control mt-3" type="file" name="images" 
-                                                           id="input<%= i %>" accept="image/png, image/jpeg, image/jpg"
-                                                           onchange="viewImage<%= i %>(event), viewImage(event, <%= i %>)">
+                                                           id="input<%= i %>" accept="image/png, image/jpeg, image/jpg">
                                                 </div>
-                                                <div class="image-cropper d-none align-items-center">
-                                                    <img src="" id="croppedImg<%= i %>" alt="">
+                                                <div class="image-cropper d-none">
+                                                    <img src="" id="croppedImg<%= i %>" alt="" class="mb-2">
                                                     <button type="button" id="saveButton<%= i %>" 
-                                                            class="btn btn-primary btn-sm mt-2">Save Crop</button>
+                                                            class="btn btn-primary btn-sm">Save Crop</button>
                                                 </div>
                                             </div>
                                         <% } %>
@@ -356,92 +360,143 @@ function clearErrorMessages() {
 
         
         
-        function viewImage1(event) {
-                   document.getElementById('imgView1').src = URL.createObjectURL(event.target.files[0])
-               }
+       // Store croppers in an object to manage multiple instances
+const croppers = {};
+
+function initializeCropper(index) {
+    // Destroy existing cropper if any
+    if (croppers[index]) {
+        croppers[index].destroy();
+        croppers[index] = null;
+    }
+
+    const imageElement = document.getElementById(`imgView${index}`);
+    const cropperContainer = document.querySelector(`#croppedImg${index}`).closest('.image-cropper');
+    
+    // Initialize Cropper
+    croppers[index] = new Cropper(imageElement, {
+        aspectRatio: 1,
+        viewMode: 1,
+        guides: true,
+        background: false,
+        autoCropArea: 0.8,
+        zoomable: true,
+        ready() {
+            // Show cropper container when ready
+            cropperContainer.classList.remove('d-none');
+            cropperContainer.classList.add('d-flex');
+        }
+    });
+}
+
+function viewImage(event, index) {
+    const input = event.target;
+    const file = input.files[0];
+    
+    if (!file) return;
+
+    // Clear previous preview
+    const imageElement = document.getElementById(`imgView${index}`);
+    const cropperContainer = document.querySelector(`#croppedImg${index}`).closest('.image-cropper');
+    
+    // Reset containers
+    cropperContainer.classList.add('d-none');
+    cropperContainer.classList.remove('d-flex');
+    
+    // Create and handle FileReader
+    const reader = new FileReader();
+    reader.onload = function() {
+        imageElement.src = reader.result;
+        initializeCropper(index);
         
-               function viewImage2(event) {
-                   document.getElementById('imgView2').src = URL.createObjectURL(event.target.files[0])
-               }
+        // Handle save button click
+        const saveButton = document.getElementById(`saveButton${index}`);
+        saveButton.onclick = async function() {
+            if (!croppers[index]) return;
+            
+            try {
+                // Get cropped canvas and convert to blob
+                const croppedCanvas = croppers[index].getCroppedCanvas({
+                    width: 600,  // Set desired output size
+                    height: 600,
+                    imageSmoothingEnabled: true,
+                    imageSmoothingQuality: 'high'
+                });
+
+                // Update preview
+                const croppedImage = document.getElementById(`croppedImg${index}`);
+                croppedImage.src = croppedCanvas.toDataURL('image/jpeg', 0.9);
+
+                // Convert to file and update input
+                const blob = await new Promise(resolve => croppedCanvas.toBlob(resolve, 'image/jpeg', 0.9));
+                const fileName = `cropped-${Date.now()}-${index}.jpg`;
+                const croppedFile = new File([blob], fileName, { type: 'image/jpeg' });
+
+                // Update file input
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(croppedFile);
+                input.files = dataTransfer.files;
+
+                // Cleanup
+                croppers[index].destroy();
+                croppers[index] = null;
+                cropperContainer.classList.add('d-none');
+                cropperContainer.classList.remove('d-flex');
+                
+                // Update main preview
+                imageElement.src = URL.createObjectURL(croppedFile);
+            } catch (error) {
+                console.error('Error during image cropping:', error);
+                alert('There was an error processing the image. Please try again.');
+            }
+        };
+    };
+
+    reader.readAsDataURL(file);
+}
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Remove the individual viewImage1, viewImage2, etc. functions
+    const fileInputs = document.querySelectorAll('input[type="file"][name="images"]');
+    fileInputs.forEach((input, idx) => {
+        input.removeEventListener('change', window[`viewImage${idx + 1}`]);
+        input.addEventListener('change', (e) => viewImage(e, idx + 1));
+    });
+});
+
+        //        const selectedImages = [];
+        //    document.getElementById("imageInput").addEventListener("change", handleFileSelect);
         
-               function viewImage3(event) {
-                   document.getElementById('imgView3').src = URL.createObjectURL(event.target.files[0])
-               }
-        
-               function viewImage4(event) {
-                   document.getElementById('imgView4').src = URL.createObjectURL(event.target.files[0])
-               }
-        
-        
-               function viewImage(event, index) {
-                   let input = event.target;
-                   let reader = new FileReader();
-                   reader.onload = function () {
-                       let dataURL = reader.result;
-                       let image = document.getElementById('imgView' + index);
-                       image.src = dataURL;
-                       let cropper = new Cropper(image, {
-                           aspectRatio: 1,
-                           viewMode: 1,
-                           guides: true,
-                           background: false,
-                           autoCropArea: 1,
-                           zoomable: true
-                       });
-                       let cropperContainer = document.querySelector('#croppedImg' + index).parentNode;
-                       cropperContainer.style.display = 'block';
-                       let saveButton = document.querySelector('#saveButton' + index);
-                       saveButton.addEventListener('click', async function () {
-                           let croppedCanvas = cropper.getCroppedCanvas();
-                           let croppedImage = document.getElementById("croppedImg" + index);
-                           croppedImage.src = croppedCanvas.toDataURL('image/jpeg', 1.0);
-                           let timestamp = new Date().getTime();
-                           let fileName = `cropped-img-${timestamp}-${index}.png`;
-                           await croppedCanvas.toBlob(blob => {
-                               let input = document.getElementById('input' + index);
-                               let imgFile = new File([blob], fileName, blob)
-                               const fileList = new DataTransfer();
-                               fileList.items.add(imgFile);
-                               input.files = fileList.files
-                           });
-                           cropperContainer.style.display = 'none';
-                       });
-                   };
-                   reader.readAsDataURL(input.files[0]);
-               }
-        
-               const selectedImages = [];
-           document.getElementById("imageInput").addEventListener("change", handleFileSelect);
-        
-               function handleFileSelect(event) {
-                   const addedImagesContainer = document.getElementById("addedImagesContainer");
-                   addedImagesContainer.innerHTML = "";
-                   const files = event.target.files;
-                   for (let i = 0; i < files.length; i++) {
-                       const file = files[i];
-                       selectedImages.push(file);
-                       const thumbnail = document.createElement("div");
-                       thumbnail.classList.add("thumbnail");
-                       const img = document.createElement("img");
-                       img.src = URL.createObjectURL(file);
-                       img.alt = "thumbnail";
-                       img.style.width = "50px";
-                       img.style.height = "auto";
-                       const removeIcon = document.createElement("span");
-                       removeIcon.classList.add("remove-icon");
-                       removeIcon.innerHTML = "&times;";
-                       removeIcon.addEventListener("click", function () {
-                           const index = selectedImages.indexOf(file);
-                           if (index !== -1) {
-                               selectedImages.splice(index, 1);
-                           }
-                           thumbnail.remove();
-                       });
-                       thumbnail.appendChild(img);
-                       thumbnail.appendChild(removeIcon);
-                       addedImagesContainer.appendChild(thumbnail);
-                   }
-               };
+        //        function handleFileSelect(event) {
+        //            const addedImagesContainer = document.getElementById("addedImagesContainer");
+        //            addedImagesContainer.innerHTML = "";
+        //            const files = event.target.files;
+        //            for (let i = 0; i < files.length; i++) {
+        //                const file = files[i];
+        //                selectedImages.push(file);
+        //                const thumbnail = document.createElement("div");
+        //                thumbnail.classList.add("thumbnail");
+        //                const img = document.createElement("img");
+        //                img.src = URL.createObjectURL(file);
+        //                img.alt = "thumbnail";
+        //                img.style.width = "50px";
+        //                img.style.height = "auto";
+        //                const removeIcon = document.createElement("span");
+        //                removeIcon.classList.add("remove-icon");
+        //                removeIcon.innerHTML = "&times;";
+        //                removeIcon.addEventListener("click", function () {
+        //                    const index = selectedImages.indexOf(file);
+        //                    if (index !== -1) {
+        //                        selectedImages.splice(index, 1);
+        //                    }
+        //                    thumbnail.remove();
+        //                });
+        //                thumbnail.appendChild(img);
+        //                thumbnail.appendChild(removeIcon);
+        //                addedImagesContainer.appendChild(thumbnail);
+        //            }
+        //        };
 
 
                function deleteSingleImage(imageId,productId){

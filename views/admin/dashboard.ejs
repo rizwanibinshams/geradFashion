@@ -41,7 +41,8 @@
         </div>
 
         <!-- Quick Stats Section -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <!-- Revenue Card -->
             <div class="bg-white p-6 rounded-lg shadow">
                 <h3 class="text-gray-500 text-sm mb-2">Total Revenue</h3>
                 <p class="text-2xl font-bold" id="totalRevenue">₹<%= totalRevenue.toFixed(2) %></p>
@@ -51,6 +52,8 @@
                     </span>
                 </p>
             </div>
+        
+            <!-- Total Orders Card -->
             <div class="bg-white p-6 rounded-lg shadow">
                 <h3 class="text-gray-500 text-sm mb-2">Total Orders</h3>
                 <p class="text-2xl font-bold" id="totalOrders"><%= totalOrders %></p>
@@ -60,43 +63,73 @@
                     </span>
                 </p>
             </div>
+        
+            <!-- Completed Orders Card -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-gray-500 text-sm mb-2">Completed Orders</h3>
+                <p class="text-2xl font-bold" id="totalCompletedOrders"><%= totalCompletedOrders %></p>
+                <p class="text-sm text-gray-500">
+                    <%= ((totalCompletedOrders / totalOrders) * 100).toFixed(1) %>% completion rate
+                </p>
+            </div>
+        
+            <!-- Average Order Value Card -->
             <div class="bg-white p-6 rounded-lg shadow">
                 <h3 class="text-gray-500 text-sm mb-2">Average Order Value</h3>
                 <p class="text-2xl font-bold" id="avgOrderValue">₹<%= avgOrderValue.toFixed(2) %></p>
             </div>
+        
+            <!-- Total Discount Card -->
             <div class="bg-white p-6 rounded-lg shadow">
                 <h3 class="text-gray-500 text-sm mb-2">Total Discount Given</h3>
                 <p class="text-2xl font-bold" id="totalDiscount">₹<%= totalDiscount.toFixed(2) %></p>
             </div>
+        
+            <!-- Cancelled Orders Card -->
             <div class="bg-white p-6 rounded-lg shadow">
-                <h3 class="text-gray-500 text-sm mb-2">Total Cancelled Orders</h3>
+                <h3 class="text-gray-500 text-sm mb-2">Cancelled Orders</h3>
                 <p class="text-2xl font-bold" id="totalCancelledOrders"><%= totalCancelledOrders %></p>
-                <p class="text-sm" id="cancelledOrdersComparison">
-                    Cancelled Amount: ₹<%= totalCancelledAmount.toFixed(2) %>
+                <p class="text-sm text-gray-500">
+                    <%= ((totalCancelledOrders / totalOrders) * 100).toFixed(1) %>% cancellation rate
+                    <br>
+                    Amount: ₹<%= totalCancelledAmount.toFixed(2) %>
                 </p>
             </div>
+        
+            <!-- Payment Methods Card -->
             <div class="bg-white p-6 rounded-lg shadow">
-                <h3 class="text-gray-500 text-sm mb-2">Payment Method Breakdown</h3>
+                <h3 class="text-gray-500 text-sm mb-2">Payment Methods</h3>
                 <div id="paymentMethodStats">
-                    <% let totalPaymentAmount = 0 %>
                     <% paymentMethodStats.forEach(method => { %>
-                        <div class="flex justify-between mb-2">
-                            <span><%= method._id %></span>
-                            <span>
-                                ₹<%= method.totalAmount.toFixed(2) %> 
-                                (<%= ((method.totalAmount / totalRevenue) * 100).toFixed(1) %>%)
-                            </span>
+                        <div class="mb-3">
+                            <div class="flex justify-between mb-1">
+                                <span class="font-medium"><%= method._id %></span>
+                                <span class="font-medium">₹<%= method.completedAmount.toFixed(2) %></span>
+                            </div>
+                            <div class="text-sm text-gray-500 flex justify-between">
+                                <span>Completed: <%= method.completedOrders %></span>
+                                <span>Cancelled: <%= method.cancelledOrders %></span>
+                            </div>
                         </div>
-                        <% totalPaymentAmount += method.totalAmount %>
                     <% }); %>
-                    <div class="border-t mt-2 pt-2 font-bold flex justify-between">
-                        <span>Total</span>
-                        <span>₹<%= totalPaymentAmount.toFixed(2) %></span>
-                    </div>
+                    
+                    
                 </div>
             </div>
+
+            <!-- end quick start  -->
         </div>
-        
+<!-- <div class="border-t mt-3 pt-2">
+                        <div class="flex justify-between font-medium text-gray-600">
+                            <span>Total Completed:</span>
+                            <span>₹<%= paymentTotals.completedAmount.toFixed(2) %></span>
+                        </div>
+                        <div class="flex justify-between mt-1 text-sm text-gray-500">
+                            <span>Total Cancelled:</span>
+                            <span>₹<%= paymentTotals.cancelledAmount.toFixed(2) %></span>
+                        </div>
+                    </div> -->
+
         <!-- Charts Section -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <div class="bg-white p-6 rounded-lg shadow">
@@ -176,12 +209,12 @@
     <script>
         // Initialize Flatpickr date pickers
         const startDatePicker = flatpickr("#startDate", {
-            dateFormat: "Y-m-d",
+            dateFormat: "d-m-y",
             defaultDate: "<%= startDate %>"
         });
 
         const endDatePicker = flatpickr("#endDate", {
-            dateFormat: "Y-m-d",
+            dateFormat: "d-m-y",
             defaultDate: "<%= endDate %>"
         });
 

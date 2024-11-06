@@ -185,7 +185,13 @@
                                 <h5 class="text-lg font-medium mb-4">Saved Addresses</h5>
                                 <% addresses.forEach(function(address) { %>
                                     <div class="address-card">
-                                        <input class="form-check-input" type="radio" name="address" id="<%= address._id %>" value="<%= address._id %>">
+                                        <input class="form-check-input" 
+                                        type="radio" 
+                                        name="address" 
+                                        id="<%= address._id %>" 
+                                        value="<%= address._id %>"
+                                        <%= (address._id.toString() === defaultAddressId?.toString()) ? 'checked' : '' %>>
+                                 
                                         <label class="form-check-label" for="<%= address._id %>">
                                             <span class="font-medium"><%= address.name || 'Name not provided' %></span><br>
                                             <span class="text-gray-600">
@@ -321,7 +327,7 @@
                                     <tr>
                                         <td class="py-4 font-bold text-lg">Total</td>
                                         <td class="text-right font-bold text-lg">
-                                            ₹<%= (total < 1000 ? total + 250 : total).toFixed(2) %>
+                                            ₹<%= (total < 1000 ? total + 250 : total) - (discountAmount || 0) %>
                                         </td>
                                     </tr>
                                 </tfoot>
@@ -538,7 +544,7 @@
     }
 
     try {
-        const response = await fetch('/addAddress', {
+        const response = await fetch('/CheckoutaddAddress', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -555,20 +561,27 @@
         }
 
         // Add the new address to the list of saved addresses
-        const savedAddresses = document.getElementById('savedAddresses');
-        const newAddressHtml = `
-            <div class="form-check mb-4 animate__animated animate__fadeIn bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition duration-300">
-                <input class="form-check-input" type="radio" name="address" id="${result.address._id}" value="${result.address._id}">
-                <label class="form-check-label ml-2 cursor-pointer" for="${result.address._id}">
-                    <span class="font-medium text-gray-700">${result.address.name || 'Name not provided'}</span><br>
-                    <span class="text-sm text-gray-500">${result.address.addressType || 'Default Type'},
-                    ${result.address.street || 'Street not provided'},
-                    ${result.address.city || 'City not provided'},
-                    ${result.address.state || 'State not provided'} - 
-                    ${result.address.pincode || 'Zip not provided'}</span>
-                </label>
-            </div>
-        `;
+        // Update the part where you add a new address
+            const savedAddresses = document.getElementById('savedAddresses');
+            const existingAddresses = savedAddresses.querySelectorAll('input[type="radio"]');
+            const newAddressHtml = `
+                <div class="form-check mb-4 animate__animated animate__fadeIn bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition duration-300">
+                    <input class="form-check-input" 
+                        type="radio" 
+                        name="address" 
+                        id="${result.address._id}" 
+                        value="${result.address._id}"
+                        ${existingAddresses.length === 0 ? 'checked' : ''}>
+                    <label class="form-check-label ml-2 cursor-pointer" for="${result.address._id}">
+                        <span class="font-medium text-gray-700">${result.address.name || 'Name not provided'}</span><br>
+                        <span class="text-sm text-gray-500">${result.address.addressType || 'Default Type'},
+                        ${result.address.street || 'Street not provided'},
+                        ${result.address.city || 'City not provided'},
+                        ${result.address.state || 'State not provided'} - 
+                        ${result.address.pincode || 'Zip not provided'}</span>
+                    </label>
+                </div>
+            `;
         savedAddresses.insertAdjacentHTML('beforeend', newAddressHtml);
 
         // Clear the form
@@ -842,14 +855,48 @@ function handleOrderResponse(data) {
 }
 
 
-       // applycoupon 
-        async function applyCoupon() {
-    const couponCode = document.getElementById('couponCode').value.trim();
+    // Helper function to handle errors
+function handleError(message) {
+    alert(message);
+}
+
+// Helper function to add discount row to cart table
+function addDiscountRow(discountAmount) {
+    // Remove any existing discount row first
+    removeExistingDiscountRow();
+    
+    const tbody = document.querySelector('tbody');
+    const discountRow = document.createElement('tr');
+    discountRow.id = 'discountRow';
+    discountRow.innerHTML = `
+        <td class="text">Discount Applied:</td>
+        <td  class="text-right text-green-600">-₹${discountAmount.toFixed(2)}</td>
+    `;
+    tbody.appendChild(discountRow);
+}
+
+// Helper function to remove existing discount row
+function removeExistingDiscountRow() {
+    const existingDiscountRow = document.getElementById('discountRow');
+    if (existingDiscountRow) {
+        existingDiscountRow.remove();
+    }
+}
+
+// Main function to apply coupon
+async function applyCoupon() {
+    const couponInput = document.getElementById('couponCode');
+    const couponCode = couponInput.value.trim();
     
     if (!couponCode) {
-        alert('Please enter a valid coupon code.');
+        handleError('Please enter a valid coupon code.');
         return;
     }
+
+    // Disable the apply button and input while processing
+    const applyButton = document.getElementById('applyCouponBtn');
+    applyButton.disabled = true;
+    couponInput.disabled = true;
 
     try {
         const response = await fetch('/applyCoupon', {
@@ -857,7 +904,7 @@ function handleOrderResponse(data) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ couponCode: couponCode }) 
+            body: JSON.stringify({ couponCode }) 
         });
 
         const data = await response.json();
@@ -866,72 +913,59 @@ function handleOrderResponse(data) {
         if (data.success) {
             updateCartDisplay(data);
         } else {
-            handleError(data.message);
+            handleError(data.message || 'Invalid coupon code');
+            // Re-enable input and button on error
+            applyButton.disabled = false;
+            couponInput.disabled = false;
         }
     } catch (error) {
         console.error('Error:', error);
-        handleError('Error applying coupon');
+        handleError('Error applying coupon. Please try again.');
+        // Re-enable input and button on error
+        applyButton.disabled = false;
+        couponInput.disabled = false;
     }
 }
 
-
+// Function to update cart display after successful coupon application
 function updateCartDisplay(data) {
     // Get elements
-    const cartItemsTable = document.getElementById('cartItems');
     const totalElement = document.querySelector('tfoot tr:last-child td:last-child');
     const discountAppliedDiv = document.getElementById('discountApplied');
     const discountAmountSpan = document.getElementById('discountAmount');
-
-    // Remove existing discount row
-    removeExistingDiscountRow();
+    const removeCouponBtn = document.getElementById('removeCouponBtn');
+    const applyCouponBtn = document.getElementById('applyCouponBtn');
+    const couponInput = document.getElementById('couponCode');
 
     // Format numbers
     const discountAmount = parseFloat(data.discountAmount);
     const newTotal = parseFloat(data.newTotal);
 
-    // Add new discount row
-    addDiscountRow(cartItemsTable, discountAmount);
-
     // Update total and discount display
     totalElement.textContent = `₹${newTotal.toFixed(2)}`;
-    discountAppliedDiv.classList.remove('hidden');
-    discountAmountSpan.textContent = `₹${discountAmount.toFixed(2)}`;
+    
+    if (discountAppliedDiv && discountAmountSpan) {
+        discountAppliedDiv.classList.remove('hidden');
+        discountAmountSpan.textContent = `₹${discountAmount.toFixed(2)}`;
+    }
 
-    // Disable coupon 
-    disableCouponInputs();
+    // Add discount row to cart
+    addDiscountRow(discountAmount);
 
+    // Update UI elements
+    removeCouponBtn.classList.remove('hidden');
+    applyCouponBtn.classList.add('hidden');
+    couponInput.disabled = true;
+
+    // Show success message
     alert('Coupon applied successfully!');
 }
 
-function removeExistingDiscountRow() {
-    const existingDiscountRow = document.querySelector('.discount-row');
-    if (existingDiscountRow) {
-        existingDiscountRow.remove();
-    }
-}
-
-function addDiscountRow(cartItemsTable, discountAmount) {
-    const discountRow = `
-        <tr class="discount-row border-b">
-            <td class="px-4 py-2 text-green-600">Discount Applied</td>
-            <td class="px-4 py-2 text-right text-green-600">-₹${discountAmount.toFixed(2)}</td>
-        </tr>
-    `;
-    cartItemsTable.insertAdjacentHTML('beforeend', discountRow);
-}
-
-function disableCouponInputs() {
-    document.getElementById('couponCode').disabled = true;
-    document.querySelector('button[onclick="applyCoupon()"]').disabled = true;
-}
-
-function handleError(message) {
-    alert(message || 'Error applying coupon');
-    document.getElementById('discountApplied').classList.add('hidden');
-}
-
-
+// Function to remove coupon
 async function removeCoupon() {
+    const removeCouponBtn = document.getElementById('removeCouponBtn');
+    removeCouponBtn.disabled = true;
+
     try {
         const response = await fetch('/removeCoupon', {
             method: 'POST',
@@ -946,55 +980,48 @@ async function removeCoupon() {
         if (data.success) {
             resetCouponDisplay(data);
         } else {
-            handleError(data.message);
+            handleError(data.message || 'Error removing coupon');
+            removeCouponBtn.disabled = false;
         }
     } catch (error) {
         console.error('Error:', error);
-        handleError('Error removing coupon');
+        handleError('Error removing coupon. Please try again.');
+        removeCouponBtn.disabled = false;
     }
 }
 
+// Function to reset display after coupon removal
 function resetCouponDisplay(data) {
     // Get elements
-    const cartItemsTable = document.getElementById('cartItems');
     const totalElement = document.querySelector('tfoot tr:last-child td:last-child');
     const discountAppliedDiv = document.getElementById('discountApplied');
     const couponInput = document.getElementById('couponCode');
-    const applyCouponBtn = document.getElementById('applyCouponBtn');
     const removeCouponBtn = document.getElementById('removeCouponBtn');
+    const applyCouponBtn = document.getElementById('applyCouponBtn');
 
     // Remove discount row
     removeExistingDiscountRow();
 
-    // Update total
-    totalElement.textContent = `₹${parseFloat(data.newTotal).toFixed(2)}`;
+    // Calculate final total with delivery charge
+    const originalTotal = parseFloat(data.originalTotal);
+    const deliveryCharge = originalTotal < 1000 ? 250 : 0;
+    const finalTotal = originalTotal + deliveryCharge;
 
-    // Hide discount applied message
-    discountAppliedDiv.classList.add('hidden');
+    // Update UI
+    totalElement.textContent = `₹${finalTotal.toFixed(2)}`;
+    if (discountAppliedDiv) {
+        discountAppliedDiv.classList.add('hidden');
+    }
 
-    // Reset and enable coupon input
+    // Reset input and buttons
     couponInput.value = '';
     couponInput.disabled = false;
-    applyCouponBtn.disabled = false;
-
-    // Hide remove button and show apply button
     removeCouponBtn.classList.add('hidden');
     applyCouponBtn.classList.remove('hidden');
+    applyCouponBtn.disabled = false;
 
     alert('Coupon removed successfully!');
 }
-
-// Modify the existing disableCouponInputs function to show the remove button
-function disableCouponInputs() {
-    const couponInput = document.getElementById('couponCode');
-    const applyCouponBtn = document.getElementById('applyCouponBtn');
-    const removeCouponBtn = document.getElementById('removeCouponBtn');
-
-    couponInput.disabled = true;
-    applyCouponBtn.classList.add('hidden');
-    removeCouponBtn.classList.remove('hidden');
-}
-
 
     </script>
 </body>

@@ -5,12 +5,20 @@
             <form id="categoryForm" method="post" action="/admin/editCategory/<%= category._id %>">
                 <div class="mb-4 mt-30">
                     <label for="categoryName" class="form-label">Name</label>
-                    <input type="text" id="categoryName" name="categoryName" value="<%= category.name %>" class="form-control border" />
+                    <input type="text" 
+                           id="categoryName" 
+                           name="categoryName" 
+                           value="<%= category.name %>" 
+                           class="form-control border"
+                           maxlength="50" />
                 </div>
                 
                 <div class="mb-4">
                     <label class="form-label">Description</label>
-                    <textarea id="description" name="description" class="form-control border"><%= category.description %></textarea>
+                    <textarea id="description" 
+                              name="description" 
+                              class="form-control border"
+                              maxlength="200"><%= category.description %></textarea>
                 </div>
 
                 <div class="d-grid text-end mt-30 col-md-5">
@@ -29,25 +37,34 @@
         const categoryName = document.getElementById('categoryName').value.trim();
         const description = document.getElementById('description').value.trim();
         
-        const namePattern = /^[A-Za-z\s]+$/; 
-        let valid = true;
-        let errorMessage = "";
+        // Updated regex to allow numbers and some special characters
+        const namePattern = /^[A-Za-z0-9\s&-]+$/; 
+        let errors = [];
 
-        if (!namePattern.test(categoryName)) {
-            errorMessage += "Category name should contain only alphabets and spaces.\n";
-            valid = false;
+        // Validation checks
+        if (categoryName === "") {
+            errors.push("Category name cannot be empty");
+        } else if (categoryName.length < 3) {
+            errors.push("Category name must be at least 3 characters long");
+        } else if (categoryName.length > 50) {
+            errors.push("Category name cannot exceed 50 characters");
+        } else if (!namePattern.test(categoryName)) {
+            errors.push("Category name can only contain letters, numbers, spaces, & and -");
         }
 
         if (description === "") {
-            errorMessage += "Description cannot be empty.";
-            valid = false;
+            errors.push("Description cannot be empty");
+        } else if (description.length < 5) {
+            errors.push("Description must be at least 5 characters long");
+        } else if (description.length > 200) {
+            errors.push("Description cannot exceed 200 characters");
         }
 
-        if (!valid) {
+        if (errors.length > 0) {
             Swal.fire({
                 icon: 'error',
                 title: 'Validation Error',
-                text: errorMessage,
+                html: errors.join('<br>'),
                 confirmButtonText: 'OK'
             });
         } else {
@@ -62,6 +79,17 @@
             description: document.getElementById('description').value.trim()
         };
 
+        // Show loading state
+        Swal.fire({
+            title: 'Updating Category',
+            text: 'Please wait...',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            willOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
         fetch(form.action, {
             method: 'POST',
             headers: {
@@ -69,21 +97,20 @@
             },
             body: JSON.stringify(formData)
         })
-        .then(response => {
+        .then(async response => {
+            const data = await response.json();
+            
             if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.error) {
-                throw new Error(data.error);
+                throw new Error(data.error || 'An error occurred while updating the category');
             }
             
+            return data;
+        })
+        .then(data => {
             Swal.fire({
                 icon: 'success',
                 title: 'Success',
-                text: 'Category updated successfully',
+                text: data.message || 'Category updated successfully',
                 confirmButtonText: 'OK'
             }).then((result) => {
                 if (result.isConfirmed) {
@@ -95,11 +122,53 @@
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: error.message || 'An unexpected error occurred. Please try again.',
+                text: error.message,
                 confirmButtonText: 'OK'
             });
         });
     }
+
+    // Optional: Add real-time validation feedback
+    const categoryNameInput = document.getElementById('categoryName');
+    const descriptionInput = document.getElementById('description');
+
+    categoryNameInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^A-Za-z0-9\s&-]/g, '');
+    });
+
+    // Add character counters
+    categoryNameInput.addEventListener('input', updateCharacterCount);
+    descriptionInput.addEventListener('input', updateCharacterCount);
+
+    function updateCharacterCount(e) {
+        const maxLength = this.maxLength;
+        const currentLength = this.value.length;
+        
+        // Create or update counter element
+        let counter = this.nextElementSibling;
+        if (!counter || !counter.classList.contains('char-counter')) {
+            counter = document.createElement('small');
+            counter.classList.add('char-counter', 'text-muted');
+            this.parentNode.insertBefore(counter, this.nextSibling);
+        }
+        
+        counter.textContent = `${currentLength}/${maxLength} characters`;
+        
+        // Visual feedback when approaching limit
+        if (currentLength >= maxLength - 10) {
+            counter.classList.add('text-danger');
+        } else {
+            counter.classList.remove('text-danger');
+        }
+    }
 </script>
+
+<style>
+    .char-counter {
+        display: block;
+        margin-top: 5px;
+        font-size: 0.8em;
+    }
+</style>
 
 <%- include("../partials/admin/footer") %>

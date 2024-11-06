@@ -33,9 +33,25 @@ router.post('/signup',userController.signup)
 router.post('/verifyOtp',userController.verifyOtp)
 router.post('/resendOtp',userController.resendOtp)
 router.get('/auth/google',passport.authenticate('google',{scope:['profile','email']}))
-router.get('/auth/google/callback',passport.authenticate('google',{failureRedirect:'/signup'}),(req,res)=>{
-    res.redirect('/')
-})
+// router.get('/auth/google/callback',passport.authenticate('google',{failureRedirect:'/signup'}),(req,res)=>{
+//     res.redirect('/')
+// })
+router.get('/auth/google/callback', 
+    passport.authenticate('google', { failureRedirect: '/login' }),
+    (req, res) => {
+      // Set session data
+      req.session.user = {
+        id: req.user._id,
+        email: req.user.email,
+        name: req.user.name
+      };
+      
+      // Redirect to returnTo URL or default to home
+      const returnTo = req.session.returnTo || '/';
+      delete req.session.returnTo;
+      res.redirect(returnTo);
+    }
+  );
 
 
  // Login Management
@@ -64,7 +80,7 @@ router.get('/products', productController.getAllProducts);
 
 //cart controll
 
-router.get('/cart', cartController.getCart);
+router.get('/cart', auth.isAuthenticated, cartController.getCart);
 
 // Add to cart
 router.post('/addToCart', cartController.addToCart);
@@ -114,7 +130,7 @@ router.post("/setDefaultAddress/:addressId", addressController.setDefaultAddress
 
 router.post('/update-profile',auth.AdressMiddleware,userController.updateProfile)
 
-
+router.post("/CheckoutaddAddress",addressController.CheckoutaddAddress)
 
 
 //checkout page 
@@ -161,5 +177,8 @@ router.post('/wallet/deduct', walletController.deductMoneyFromWallet);
 
 router.post('/create-razorpay-order',paymentsController.createOrder)
 router.post('/verify-payment', paymentsController.verifyPayment);
+
+router.get("/contact",userController.loadContact)
+
 
 module.exports = router

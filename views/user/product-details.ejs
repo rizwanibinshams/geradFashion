@@ -113,7 +113,7 @@
                 <div class="product__details__pic space-y-6">
                     <div class="zoom-container bg-white p-4">
                         <img id="main-image"
-                             src="/uploads/re-image/<%= product.productImage[0] %>" 
+                             src="/uploads/product-images/<%= product.productImage[0] %>" 
                              alt="<%= product.productName %>" 
                              class="w-full h-auto object-cover transition-opacity duration-300">
                         <div class="zoom-lens"></div>
@@ -123,9 +123,9 @@
                     <!-- Thumbnails -->
                     <div class="thumbnail-container flex space-x-4 overflow-x-auto pb-4">
                         <% product.productImage.forEach(function(image, index) { %>
-                            <img src="/uploads/re-image/<%= image %>" 
+                            <img src="/uploads/product-images/<%= image %>" 
                                  class="thumbnail w-24 h-24 object-cover rounded-lg cursor-pointer <%= index === 0 ? 'active' : 'opacity-60' %>" 
-                                 onclick="changeImage('/uploads/re-image/<%= image %>', this)" 
+                                 onclick="changeImage('/uploads/product-images/<%= image %>', this)" 
                                  alt="<%= product.productName %>">
                         <% }) %>
                     </div>
@@ -183,9 +183,9 @@
                     </div>
 
                     <!-- Size Selection -->
-                    <div class="mb-8">
+                    <div class="mb-8 ">
                         <label for="size-select" class="block text-gray-700 font-medium mb-2">Select Size</label>
-                        <select id="size-select" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
+                        <select id="size-select" class="w-1/4 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
                             <% if (product.size && product.size.length > 0) { %>
                                 <% product.size.forEach(size => { %>
                                     <option value="<%= size %>"><%= size %></option>
@@ -390,69 +390,85 @@
 
         // Enhanced Add to Cart functionality
         function addToCart(productId) {
-            const quantity = document.getElementById('quantity-input').value;
-            const size = document.getElementById('size-select').value;
+    const quantity = document.getElementById('quantity-input').value;
+    const size = document.getElementById('size-select').value;
 
-            $.ajax({
-                url: '/addToCart',
-                method: 'POST',
-                data: {
-                    productId: productId,
-                    quantity: quantity,
-                    size: size
-                },
-                beforeSend: function() {
-                    Swal.fire({
-                        title: 'Adding to Cart...',
-                        html: 'Please wait',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-                },
-                success: function(response) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Added to Cart!',
-                        text: 'Product added successfully',
-                        showConfirmButton: false,
-                        timer: 1500,
-                        customClass: {
-                            popup: 'animate__animated animate__fadeInUp'
-                        }
-                    }).then(() => {
-                        location.reload();
-                    });
-                },
-                error: function(xhr) {
-                    if (xhr.status === 401) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Not Logged In',
-                            text: 'Please log in to add items to your cart',
-                            showConfirmButton: true,
-                            confirmButtonText: 'Log In',
-                            showCancelButton: true,
-                            cancelButtonText: 'Cancel',
-                            customClass: {
-                                popup: 'animate__animated animate__fadeInDown'
-                            }
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                window.location.href = '/login';
-                            }
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Oops...',
-                            text: 'Something went wrong! Please try again.',
-                        });
-                    }
+    $.ajax({
+        url: '/addToCart',
+        method: 'POST',
+        data: {
+            productId: productId,
+            quantity: quantity,
+            size: size
+        },
+        beforeSend: function() {
+            Swal.fire({
+                title: 'Adding to Cart...',
+                html: 'Please wait',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
                 }
             });
+        },
+        success: function(response) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Added to Cart!',
+                text: 'Product added successfully',
+                showCancelButton: true,
+                confirmButtonText: 'Go to Cart',
+                cancelButtonText: 'Continue Shopping',
+                customClass: {
+                    popup: 'animate__animated animate__fadeInUp'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Redirect to the cart page
+                    window.location.href = '/cart';
+                } else {
+                    // Optionally, you can just reload the page or do nothing
+                    location.reload();
+                }
+            });
+        },
+        error: function(xhr) {
+            let errorMessage = 'Something went wrong! Please try again.';
+            
+            // Check if there's a specific error message from the server
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                errorMessage = xhr.responseJSON.message; // Use the message from the server
+            } else if (xhr.status === 401) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Not Logged In',
+                    text: 'Please log in to add items to your cart',
+                    showConfirmButton: true,
+                    confirmButtonText: 'Log In',
+                    showCancelButton: true,
+                    cancelButtonText: 'Cancel',
+                    customClass: {
+                        popup: 'animate__animated animate__fadeInDown'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/login';
+                    }
+                });
+                return; // Prevent showing the general error message
+            }
+
+            // Show the error message in SweetAlert
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: errorMessage,
+            });
         }
+    });
+}
+
+
 
      
 

@@ -1,0 +1,106 @@
+
+<%- include("../partials/user/header") %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact - Gerad Fashion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Navigation -->
+   
+
+    <!-- Hero Section -->
+    <div class="bg-[url('/api/placeholder/1920/400')] bg-cover bg-center h-64 relative">
+        <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <h2 class="text-white text-4xl font-light tracking-widest">CONTACT US</h2>
+        </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="container mx-auto px-6 py-16">
+        <div class="max-w-4xl mx-auto">
+            <!-- Contact Info Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                <div class="text-center">
+                    <i class="fas fa-map-marker-alt text-2xl text-gray-800 mb-4"></i>
+                    <h3 class="font-medium mb-2">VISIT US</h3>
+                    <p class="text-gray-600">
+                        Gerad Fashion<br>
+                        BTM, 4th Stage<br>
+                        Bengaluru - 570076
+                    </p>
+                </div>
+                <div class="text-center">
+                    <i class="fas fa-envelope text-2xl text-gray-800 mb-4"></i>
+                    <h3 class="font-medium mb-2">EMAIL US</h3>
+                    <p class="text-gray-600">
+                        contact@geradfashion.com<br>
+                        support@geradfashion.com
+                    </p>
+                </div>
+                <div class="text-center">
+                    <i class="fas fa-phone text-2xl text-gray-800 mb-4"></i>
+                    <h3 class="font-medium mb-2">CALL US</h3>
+                    <p class="text-gray-600">
+                        +91 9995203149<br>
+                        Mon - Sat (10:00 - 19:00)
+                    </p>
+                </div>
+            </div>
+
+            <!-- Contact Form -->
+            <div class="bg-white shadow-lg rounded-lg p-8 max-w-2xl mx-auto">
+                <h3 class="text-2xl font-light text-center mb-8">GET IN TOUCH</h3>
+                <form class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <input type="text" placeholder="Name" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent">
+                        </div>
+                        <div>
+                            <input type="email" placeholder="Email" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent">
+                        </div>
+                    </div>
+                    <div>
+                        <input type="text" placeholder="Subject" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent">
+                    </div>
+                    <div>
+                        <textarea rows="4" placeholder="Message" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"></textarea>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="bg-black text-white px-8 py-3 rounded-md hover:bg-gray-800 transition duration-300">
+                            SEND MESSAGE
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Social Links -->
+            <div class="text-center mt-16">
+                <h3 class="text-xl font-light mb-6">FOLLOW US</h3>
+                <div class="flex justify-center space-x-6">
+                    <a href="#" class="text-gray-800 hover:text-gray-600">
+                        <i class="fab fa-instagram text-2xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-800 hover:text-gray-600">
+                        <i class="fab fa-facebook text-2xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-800 hover:text-gray-600">
+                        <i class="fab fa-twitter text-2xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-800 hover:text-gray-600">
+                        <i class="fab fa-pinterest text-2xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+   
+</body>
+</html>
+
+<%- include("../partials/user/footer") %>

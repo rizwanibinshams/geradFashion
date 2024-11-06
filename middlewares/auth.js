@@ -51,6 +51,14 @@ const adminAuth = (req,res,next)=>{
 // }
 
 
+const isAuthenticated = (req, res, next) => {
+    if (req.session && req.session.user && req.session.user.id)  {
+        next();
+    } else {
+        res.redirect('/login');
+    }
+};
+
 const AdressMiddleware = (req, res, next) => {
     if (req.session.user && req.session.user.id) {
         req.user = req.session.user; // Set user to req.user
@@ -79,5 +87,6 @@ module.exports ={
 userAuth,
 adminAuth,
 isLogout,
-AdressMiddleware
+AdressMiddleware,
+isAuthenticated
 }

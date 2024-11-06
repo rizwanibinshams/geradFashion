@@ -32,6 +32,9 @@ const productSchema = new Schema({
         type: Number,
         default: 0,
     },
+    previousSalePrice: {
+         type: Number
+         },
     quantity: {
         type: Number,
         default: 0,
