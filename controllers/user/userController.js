@@ -584,6 +584,14 @@ const loadContact = async (req,res)=>{
     }
 }
 
+const loadAbout= async (req,res)=>{
+    try {
+        res.render("about")
+    } catch (error) {
+        console.log(error);
+        
+    }
+}
 
 
 module.exports={
@@ -599,7 +607,8 @@ module.exports={
     loadProfile,
     updateProfile,
     success,
-    loadContact
+    loadContact,
+    loadAbout
     
     
 }

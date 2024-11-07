@@ -1,326 +1,405 @@
+
+
 <!DOCTYPE html>
-<html lang="zxx">
-  <head>
+<html lang="en">
+<head>
     <meta charset="UTF-8" />
-    <meta name="description" content="Male_Fashion Template" />
-    <meta name="keywords" content="Male_Fashion, unica, creative, html" />
+    <meta name="description" content="Join Gerad-Fashion - Exclusive Fashion for the Modern Sophisticate" />
+    <meta name="keywords" content="luxury fashion, men's fashion, designer clothing, Gerad-Fashion" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Male-Fashion</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800;900&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="css/font-awesome.min.css" type="text/css" />
-    <link rel="stylesheet" href="css/elegant-icons.css" type="text/css" />
-    <link rel="stylesheet" href="css/magnific-popup.css" type="text/css" />
-    <link rel="stylesheet" href="css/nice-select.css" type="text/css" />
-    <link rel="stylesheet" href="css/owl.carousel.min.css" type="text/css" />
-    <link rel="stylesheet" href="css/slicknav.min.css" type="text/css" />
-    <link rel="stylesheet" href="css/style.css" type="text/css" />
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-      rel="stylesheet"
-    />
+    <title>Join Gerad-Fashion - Exclusive Fashion Membership</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
     <style>
-      .header__nav__option .sign-in-link {
-        font-size: 16px;
-        color: #333;
-        margin-right: 15px;
-        text-decoration: none;
-        font-weight: 600;
-      }
-      .header__nav__option .sign-in-link:hover {
-        color: #ff7f50;
-      }
-      .signup-section {
-        display: flex;
-        justify-content: space-between;
-        flex-wrap: wrap;
-      }
-      .signup-form,
-      .signup-image {
-        flex: 1;
-        padding: 10px;
-      }
-      .signup-form {
-        max-width: 50%;
-      }
-      .signup-image {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        max-width: 40%;
-      }
-      .signup-image img {
-        max-width: 100%;
-        height: auto;
-      }
-      .social-btns {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin-top: 10px;
-      }
-      .social-btns button {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-      }
-      .spacer {
-        height: 30px; 
-      }
-      .form-group label {
-        font-size: 0.875rem; 
-      }
-      .form-control {
-        font-size: 0.875rem; 
-        padding: 0.5rem; 
-      }
-      .btn-primary {
-        padding: 0.5rem 1rem; 
-        font-size: 0.875rem; 
-      }
-      .card-title {
-        font-size: 1.25rem; 
-      }
-      .signup-image .sign-in-link {
-        color: #333;
-        text-decoration: none;
-      }
-      .signup-image .sign-in-link:hover {
-        color: #ff7f50;
-      }
-      .text-message{
-        color: red;
-        font-size: 0.75rem;
-        display: none;
-      }
+        :root {
+            --primary-color: #1a1a1a;
+            --accent-color: #c4a747;
+            --text-color: #333333;
+            --light-gray: #f5f5f5;
+            --error-color: #dc3545;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-gray);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: var(--text-color);
+        }
+
+        .header {
+            background: var(--primary-color);
+            padding: 1.5rem 0;
+            
+        }
+
+        .brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            color: white;
+            text-align: center;
+            letter-spacing: 4px;
+            font-weight: 500;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 3rem auto;
+            padding: 0 1.5rem;
+            flex-grow: 1;
+        }
+
+        .signup-card {
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        }
+
+        .signup-section {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 2rem;
+        }
+
+        .signup-form {
+            padding: 3rem;
+        }
+
+        .signup-image {
+            background: linear-gradient(45deg, #1a1a1a, #2c2c2c);
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+
+        .welcome-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .form-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #e1e1e1;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: var(--light-gray);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background: white;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .btn-primary:hover {
+            background: #000;
+            transform: translateY(-1px);
+        }
+
+        .social-login {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e1e1e1;
+        }
+
+        .social-text {
+            color: #666;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-google {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.8rem;
+            border: 1px solid #e1e1e1;
+            border-radius: 4px;
+            background: white;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-google:hover {
+            background: var(--light-gray);
+        }
+
+        .text-message {
+            color: var(--error-color);
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
+            display: none;
+        }
+
+        .sign-in-link {
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-top: 2rem;
+            display: inline-block;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid transparent;
+        }
+
+        .sign-in-link:hover {
+            border-bottom-color: white;
+        }
+
+        .footer {
+            background: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .signup-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .signup-image {
+                padding: 2rem;
+                order: -1;
+            }
+
+            .signup-form {
+                padding: 2rem;
+            }
+
+            .container {
+                margin: 0;
+                padding: 0;
+            }
+
+            .signup-card {
+                border-radius: 0;
+            }
+        }
     </style>
-  </head>
-  <body>
-    <div class="container mt-5 mb-1">
-      <div class="row justify-content-center">
-        <div class="col-md-8">
-          <div class="card">
-            <div class="card-body signup-section">
-              <div class="signup-form">
-                <h3 class="card-title text-center">Sign Up</h3>
+</head>
+<body>
+    <header class="header ">
+        <h1 class="brand">GERAD-FASHION</h1>
+        
+    </header>
 
-                <form id="signupform" method="post" action="/signup">
-                  <div class="form-group">
-                    <label for="name">Full Name</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="name" 
-                        name="name"
-                      placeholder="Enter Name" 
-                    />
-                    <div class="text-message" id="error1"></div>
-                  
-                  </div>
-                  <div class="form-group">
-                    <label for="email">Email address</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      name="email"
-                      id="email"
-                      placeholder="Enter email"
-                    />
-                    <div class="text-message" id="error2"></div>
-                  </div>
-                  <div class="form-group">
-                    <label for="phone">Phone Number</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      name="phone"
-                      id="phone"
-                      placeholder="Enter phone number"
-                    />
-                    <div class="text-message" id="error3"></div>
-                  </div>
-                  <div class="form-group">
-                    <label for="password">Password</label>
-                    <input
-                      type="password"
-                      class="form-control"
-                      id="password"
-                      name="password"
-                      placeholder="Password"
-                    />
-                    <div class="text-message" id="error4"></div>
-                  </div>
-                  <div class="form-group">
-                    <label for="confirm-password">Confirm Password</label>
-                    <input
-                      type="password"
-                      class="form-control"
-                      name="cPassword"
-                      id="confirm-password"
-                      placeholder="Confirm Password"
-                    />
-                    <div class="text-message" id="error5"></div>
-                  </div>
-                  <%if(locals.message && message.length>0){%>
-                    <div class="alert alert-danger text-center">
-                      <%=message%>
-                    </div>
-                    <%}%>
-                  <div
-                    class="d-flex justify-content-between align-items-center"
-                  >
-                    <button type="submit" class="btn btn-primary">
-                      Sign Up
-                    </button>
-                    <div class="mt-2px">
-                      <p>or sign up with</p>
-                    </div>
-                    <div class="social-btns">
-                      <a  href="/auth/google" class="btn btn-outline-danger">
-                        <img
-                          src="img/googlesignup.png"
-                          alt="Google Logo"
-                          style="width: 24px; height: 24px"
-                        />
-                      </a>
-                    </div>
-                  </div>
-                </form>
-              </div>
-              <div class="signup-image">
-                <a href="/">
-                  <img src="img/signup.svg" alt="Shopping Site" />
-                </a>
-                <div class="text-center mt-2">
-                  <a href="/login" class="sign-in-link"
-                    >Already registered? Log in</a
-                  >
+    <div class="container">
+        <div class="signup-card">
+            <div class="signup-section">
+                <div class="signup-form">
+                    <h2 class="form-title">Create Your Account</h2>
+
+                    <form id="signupform" method="post" action="/signup">
+                        <div class="form-group">
+                            <label for="name">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Enter your full name" />
+                            <div class="text-message" id="error1"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" />
+                            <div class="text-message" id="error2"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" placeholder="Enter your phone number" />
+                            <div class="text-message" id="error3"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Create a password" />
+                            <div class="text-message" id="error4"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirm-password">Confirm Password</label>
+                            <input type="password" class="form-control" id="confirm-password" name="cPassword" placeholder="Confirm your password" />
+                            <div class="text-message" id="error5"></div>
+                        </div>
+
+                        <button type="submit" class="btn-primary">Create Account</button>
+
+                        <div class="social-login">
+                            <p class="social-text">Or sign up with</p>
+                            <a href="/auth/google" class="btn-google">
+                                <i class="fab fa-google"></i>
+                                <span>Continue with Google</span>
+                            </a>
+                        </div>
+                    </form>
                 </div>
-              </div>
+
+                <div class="signup-image">
+                    <h2 class="welcome-text">Welcome to Exclusive Fashion</h2>
+                    <p>Join our community of fashion enthusiasts and discover curated collections that define modern elegance.</p>
+                    <a href="/login" class="sign-in-link">Already have an account? Sign in</a>
+                    <a href="/" class="sign-in-link">You want to go Home? Home</a>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
     </div>
-    <div class="spacer"></div>
-    <%-include("../partials/user/footer.ejs")%>
 
-
+    <footer class="footer">
+        <p>&copy; 2024 Gerad-Fashion. All rights reserved.</p>
+    </footer>
 
     <script>
-const nameid = document.getElementById('name');
-const emailid = document.getElementById('email');
-const phoneid = document.getElementById('phone');
-const passid = document.getElementById('password');
-const cpassid = document.getElementById('confirm-password');
-const error1 = document.getElementById('error1');
-const error2 = document.getElementById('error2');
-const error3 = document.getElementById('error3');
-const error4 = document.getElementById('error4');
-const error5 = document.getElementById('error5');
-const signform = document.getElementById('signupform');
+        const nameid = document.getElementById('name');
+        const emailid = document.getElementById('email');
+        const phoneid = document.getElementById('phone');
+        const passid = document.getElementById('password');
+        const cpassid = document.getElementById('confirm-password');
+        const error1 = document.getElementById('error1');
+        const error2 = document.getElementById('error2');
+        const error3 = document.getElementById('error3');
+        const error4 = document.getElementById('error4');
+        const error5 = document.getElementById('error5');
+        const signform = document.getElementById('signupform');
 
-function nameValidateChecking() {
-  const nameval = nameid.value;
-  const namepattern = /^[A-Za-z\s]+$/;
+        function nameValidateChecking() {
+            const nameval = nameid.value;
+            const namepattern = /^[A-Za-z\s]+$/;
 
-  if (nameval.trim() === "") {
-    error1.style.display = 'block';
-    error1.innerHTML = 'Enter a valid name';
-  } else if (!namepattern.test(nameval)) {
-    error1.style.display = 'block';
-    error1.innerHTML = 'Name should contain only letters and spaces';
-  } else {
-    error1.style.display = 'none';
-    error1.innerHTML = '';
-  }
-}
+            if (nameval.trim() === "") {
+                error1.style.display = 'block';
+                error1.innerHTML = 'Please enter your name';
+            } else if (!namepattern.test(nameval)) {
+                error1.style.display = 'block';
+                error1.innerHTML = 'Name should contain only letters and spaces';
+            } else {
+                error1.style.display = 'none';
+                error1.innerHTML = '';
+            }
+        }
 
-function emailValidateChecking() {
-  const emailval = emailid.value;
-  const emailpattern = /^[a-z0-9._-]+@[a-z]+\.[a-z]{2,3}$/;
+        function emailValidateChecking() {
+            const emailval = emailid.value;
+            const emailpattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-  if (!emailpattern.test(emailval)) {
-    error2.style.display = 'block';
-    error2.innerHTML = 'Invalid email format';
-  } else {
-    error2.style.display = 'none';
-    error2.innerHTML = '';
-  }
-}
+            if (!emailpattern.test(emailval)) {
+                error2.style.display = 'block';
+                error2.innerHTML = 'Please enter a valid email address';
+            } else {
+                error2.style.display = 'none';
+                error2.innerHTML = '';
+            }
+        }
 
-function phoneValidateChecking() {
-  const phoneval = phoneid.value;
+        function phoneValidateChecking() {
+            const phoneval = phoneid.value;
+            const phonepattern = /^\d{10}$/;
 
-  if (phoneval.trim() === "") {
-    error3.style.display = 'block';
-    error3.innerHTML = 'Enter a valid phone number';
-  } else if (phoneval.length !== 10) {
-    error3.style.display = 'block';
-    error3.innerHTML = 'Enter a 10 digit number';
-  } else {
-    error3.style.display = 'none';
-    error3.innerHTML = '';
-  }
-}
+            if (!phonepattern.test(phoneval)) {
+                error3.style.display = 'block';
+                error3.innerHTML = 'Please enter a valid 10-digit phone number';
+            } else {
+                error3.style.display = 'none';
+                error3.innerHTML = '';
+            }
+        }
 
-function passValidateChecking() {
-  const passval = passid.value;
-  const cpassval = cpassid.value;
-  const alpha = /[a-zA-Z]/;
-  const digit = /\d/;
+        function passValidateChecking() {
+            const passval = passid.value;
+            const cpassval = cpassid.value;
+            const passpattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
-  if (passval.length < 8) {
-    error4.style.display = 'block';
-    error4.innerHTML = 'Password should contain a minimum of 8 characters';
-  } else if (!alpha.test(passval) || !digit.test(passval)) {
-    error4.style.display = 'block';
-    error4.innerHTML = 'Password should contain both letters and numbers';
-  } else {
-    error4.style.display = 'none';
-    error4.innerHTML = '';
-  }
+            if (!passpattern.test(passval)) {
+                error4.style.display = 'block';
+                error4.innerHTML = 'Password must be at least 8 characters long and contain both letters and numbers';
+            } else {
+                error4.style.display = 'none';
+                error4.innerHTML = '';
+            }
 
-  if (passval !== cpassval) {
-    error5.style.display = 'block';
-    error5.innerHTML = 'Passwords do not match';
-  } else {
-    error5.style.display = 'none';
-    error5.innerHTML = '';
-  }
-}
+            if (passval !== cpassval) {
+                error5.style.display = 'block';
+                error5.innerHTML = 'Passwords do not match';
+            } else {
+                error5.style.display = 'none';
+                error5.innerHTML = '';
+            }
+        }
 
-document.addEventListener('DOMContentLoaded', function () {
-  signform.addEventListener('submit', function (e) {
-    nameValidateChecking();
-    emailValidateChecking();
-    phoneValidateChecking();
-    passValidateChecking();
+        signform.addEventListener('submit', function (e) {
+            e.preventDefault();
+            
+            nameValidateChecking();
+            emailValidateChecking();
+            phoneValidateChecking();
+            passValidateChecking();
 
-    
-    if (
-      error1.innerHTML ||
-      error2.innerHTML ||
-      error3.innerHTML ||
-      error4.innerHTML ||
-      error5.innerHTML
-    ) {
-      e.preventDefault();
-    }
-  });
-});
+            if (
+                !error1.innerHTML &&
+                !error2.innerHTML &&
+                !error3.innerHTML &&
+                !error4.innerHTML &&
+                !error5.innerHTML
+            ) {
+                this.submit();
+            }
+        });
 
-
+        // Real-time validation
+        nameid.addEventListener('blur', nameValidateChecking);
+        emailid.addEventListener('blur', emailValidateChecking);
+        phoneid.addEventListener('blur', phoneValidateChecking);
+        passid.addEventListener('blur', passValidateChecking);
+        cpassid.addEventListener('blur', passValidateChecking);
     </script>
-  </body>
+</body>
 </html>
-

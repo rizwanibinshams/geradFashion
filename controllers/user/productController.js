@@ -239,33 +239,39 @@ const getAllProducts = async (req, res) => {
 
 const searchProducts = async (req, res) => {
     try {
-        const { search, page = 1, limit = 20, category, sort } = req.query; // Added sort to query
-        let query = {};
+        const { query, page = 1, limit = 20, category, sort } = req.query; // Changed from 'search' to 'query'
+        
+        console.log('Search Query:', query); // Log the actual query parameter
+        
+        let searchQuery = {};
 
-        // Define the search query based on the search parameter
-        if (search) {
-            query = {
+        // Define the search query based on the query parameter
+        if (query) {
+            searchQuery = {
                 $and: [
                     { isBlocked: false },
                     {
                         $or: [
-                            { productName: { $regex: search, $options: 'i' } },
-                            { description: { $regex: search, $options: 'i' } },
-                            { brand: { $regex: search, $options: 'i' } },
-                            { color: { $regex: search, $options: 'i' } },
-                            { size: { $regex: search, $options: 'i' } }
+                            { productName: { $regex: query, $options: 'i' } },
+                            { description: { $regex: query, $options: 'i' } },
+                            { brand: { $regex: query, $options: 'i' } },
+                            { color: { $regex: query, $options: 'i' } },
+                            { size: { $regex: query, $options: 'i' } }
                         ]
                     }
                 ]
             };
         } else {
-            query = { isBlocked: false };
+            searchQuery = { isBlocked: false };
         }
 
+        // Get total count for pagination
+        const totalCount = await Product.countDocuments(searchQuery);
+
         // Fetch products with populated category
-        const products = await Product.find(query)
+        const products = await Product.find(searchQuery)
             .populate('category')
-            .sort({ createdAt: -1 }) // Default sorting, can be overridden later
+            .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(parseInt(limit));
 
@@ -277,34 +283,33 @@ const searchProducts = async (req, res) => {
                 : '/placeholder-image.jpg'
         }));
 
-        console.log('Search Query:', search);
         console.log('Products found:', products.length);
 
         // Determine current values
-        const currentCategory = category || 'All'; // Default to 'All' if no category is specified
-        const currentSort = sort || 'default'; // Default sort value
+        const currentCategory = category || 'All';
+        const currentSort = sort || 'default';
 
         if (req.xhr || req.headers.accept.indexOf('json') > -1) {
             return res.json({
                 success: true,
                 products: processedProducts,
-                count: processedProducts.length,
+                count: totalCount,
                 currentPage: parseInt(page),
-                totalPages: Math.ceil(processedProducts.length / limit),
+                totalPages: Math.ceil(totalCount / limit),
             });
         }
 
         // Render products page with search results
         return res.render('allProducts', {
             products: processedProducts,
-            searchQuery: search || '',
+            searchQuery: query || '',
             user: req.user,
-            title: search ? `Search results for "${search}"` : 'All Products',
+            title: query ? `Search results for "${query}"` : 'All Products',
             currentPage: parseInt(page),
-            totalPages: Math.ceil(processedProducts.length / limit),
-            currentCategory, // Pass currentCategory to the template
-            currentSort, // Pass currentSort to the template
-            categories: await Category.find({}), // Ensure you fetch categories if needed
+            totalPages: Math.ceil(totalCount / limit),
+            currentCategory,
+            currentSort,
+            categories: await Category.find({}),
         });
 
     } catch (error) {
@@ -322,30 +327,28 @@ const searchProducts = async (req, res) => {
 };
 
 
-
 // Get search suggestions
 const getSearchSuggestions = async (req, res) => {
     try {
         const { query } = req.query;
-     
         
         if (!query) {
             return res.json([]); // Return an empty array if no query is provided
         }
 
+        // Modified search query to only look for products that start with the search term
         const searchQuery = {
             $and: [
                 { isBlocked: false },
                 {
                     $or: [
-                        { productName: { $regex: query, $options: 'i' } },
-                        { brand: { $regex: query, $options: 'i' } }
+                        // Using ^ in regex to match from the start of the string
+                        { productName: { $regex: `^${query}`, $options: 'i' } },
+                        { brand: { $regex: `^${query}`, $options: 'i' } }
                     ]
                 }
             ]
         };
-
-     
 
         // Fetch suggestions with populated category and selected fields
         const suggestions = await Product.find(searchQuery)
@@ -361,7 +364,6 @@ const getSearchSuggestions = async (req, res) => {
                 : '/placeholder-image.jpg'
         }));
 
-       
         res.json(processedSuggestions);
         
     } catch (error) {
@@ -369,6 +371,52 @@ const getSearchSuggestions = async (req, res) => {
         res.status(500).json({ error: 'Error getting suggestions' });
     }
 };
+// Update the getSearchSuggestions function
+// const getSearchSuggestions = async (req, res) => {
+//     try {
+//         const { query } = req.query;
+        
+//         console.log('Received search query:', query); // Add this for debugging
+        
+//         if (!query) {
+//             return res.json([]); // Return an empty array if no query is provided
+//         }
+
+//         const searchQuery = {
+//             $and: [
+//                 { isBlocked: false },
+//                 {
+//                     $or: [
+//                         { productName: { $regex: query, $options: 'i' } },
+//                         { brand: { $regex: query, $options: 'i' } }
+//                     ]
+//                 }
+//             ]
+//         };
+
+//         // Fetch suggestions with populated category and selected fields
+//         const suggestions = await Product.find(searchQuery)
+//             .populate('category')
+//             .select('productName brand category salePrice productImage')
+//             .limit(5);
+
+//         console.log('Found suggestions:', suggestions.length); // Add this for debugging
+
+//         // Process suggestions to include correct image paths
+//         const processedSuggestions = suggestions.map(suggestion => ({
+//             ...suggestion.toObject(),
+//             productImage: suggestion.productImage && suggestion.productImage.length > 0
+//                 ? path.join('/uploads/product-images', suggestion.productImage[0])
+//                 : '/placeholder-image.jpg'
+//         }));
+
+//         res.json(processedSuggestions);
+        
+//     } catch (error) {
+//         console.error('Error in getSearchSuggestions function:', error.message);
+//         res.status(500).json({ error: 'Error getting suggestions' });
+//     }
+// };
 
 
 module.exports ={

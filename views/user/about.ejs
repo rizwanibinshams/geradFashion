@@ -1,0 +1,83 @@
+<%- include("../partials/user/header") %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Gerad-Fashion</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .hero-image {
+      background-image: url('/api/placeholder/1200/500');
+      background-size: cover;
+      background-position: center;
+      height: 500px;
+    }
+  </style>
+</head>
+<body>
+  <div class="hero-image">
+    <div class="flex items-center justify-center h-full bg-black bg-opacity-50 text-white text-4xl font-bold">
+      About Gerad-Fashion
+    </div>
+  </div>
+
+  <div class="container mx-auto py-12">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+      <div>
+        <h2 class="text-3xl font-bold mb-4">Our Story</h2>
+        <p class="text-gray-700 leading-relaxed">
+          Gerad-Fashion is a premier men's clothing brand that was founded in 2024 with the goal of providing high-quality, stylish apparel to the modern gentleman. Our passion for fashion and commitment to excellence have driven us to become a leader in the industry.
+        </p>
+      </div>
+      <div>
+        <h2 class="text-3xl font-bold mb-4">Our Mission</h2>
+        <p class="text-gray-700 leading-relaxed">
+          At Gerad-Fashion, we believe that fashion is not just about trends, but about self-expression and confidence. Our mission is to empower our customers to look and feel their best, whether they're heading to the office, a special event, or just running errands.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gray-100 py-12">
+    <div class="container mx-auto">
+      <h2 class="text-3xl font-bold text-center mb-8">Our Team</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="text-center">
+          <img src="/img/me.jpeg" alt="Team Member 1" class="rounded-full w-32 h-32 mx-auto mb-4">
+          <h3 class="text-xl font-bold">Riznx</h3>
+          <p class="text-gray-700">Creative Director</p>
+        </div>
+        <div class="text-center">
+          <img src="/api/placeholder/300/300" alt="Team Member 2" class="rounded-full w-32 h-32 mx-auto mb-4">
+          <h3 class="text-xl font-bold">Jane Smith</h3>
+          <p class="text-gray-700">Head of Design</p>
+        </div>
+        <div class="text-center">
+          <img src="/api/placeholder/300/300" alt="Team Member 3" class="rounded-full w-32 h-32 mx-auto mb-4">
+          <h3 class="text-xl font-bold">Michael Johnson</h3>
+          <p class="text-gray-700">Brand Manager</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white py-12">
+    <div class="container mx-auto">
+      <h2 class="text-3xl font-bold mb-4">Privacy Policy</h2>
+      <p class="text-gray-700 leading-relaxed">
+        At Gerad-Fashion, we are committed to protecting the privacy and security of our customers. We collect and use personal information only for the purposes of providing our products and services, and we will never share or sell your information to third parties without your consent.
+      </p>
+      <p class="text-gray-700 leading-relaxed mt-4">
+        We use industry-standard security measures to protect your data, and we will always be transparent about what information we collect and how we use it. If you have any questions or concerns about our privacy practices, please don't hesitate to contact us.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Add any additional JavaScript functionality here
+  </script>
+</body>
+</html>
+<%- include("../partials/user/footer") %>

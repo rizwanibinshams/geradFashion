@@ -82,7 +82,7 @@
     </style>
 </head>
 <body class="bg-gray-50">
-    <main class="container mx-auto px-4 py-12">
+    <main class="container mx-auto px-4 py-12 mt-15">
         <!-- Elegant Breadcrumbs -->
         <nav aria-label="breadcrumb" class="mb-12">
             <ol class="flex items-center space-x-2 text-sm text-gray-500">
@@ -181,14 +181,14 @@
                                     <p class="text-sm text-gray-500 mb-4">Available: <%= product.quantity %></p>
 
                                     <!-- Wishlist Button -->
-                                    <button onclick="addToWishlist('<%= product._id %>', this)" 
-                                            data-product-id="<%= product._id %>" 
-                                            class="w-full bg-black hover:bg-gray-900 text-white py-3 rounded-lg transition-colors duration-300 flex items-center justify-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                        </svg>
-                                        Add to Wishlist
-                                    </button>
+                                    <button 
+                                    data-product-id="<%= product._id %>" 
+                                    class="w-full bg-black hover:bg-gray-900 text-white py-3 rounded-lg transition-colors duration-300 flex items-center justify-center gap-2 wishlist-button">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                    </svg>
+                                    <span>Add to Wishlist</span>
+                                </button>
                                 </div>
                             </div>
                         <% }) %>
@@ -207,70 +207,131 @@
 
     <script>
        
-        document.getElementById('priceFilter').addEventListener('change', function() {
-            const value = this.value;
-            const currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set('sort', value);
-            window.location.href = currentUrl.toString();
+       document.addEventListener('DOMContentLoaded', function() {
+    const wishlistButtons = document.querySelectorAll('button[data-product-id]');
+
+    wishlistButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = button.getAttribute('data-product-id');
+            const isInWishlist = button.querySelector('span').textContent === 'In Wishlist';
+
+            if (isInWishlist) {
+                removeFromWishlist(productId, button);
+            } else {
+                addToWishlist(productId, button);
+            }
         });
+    });
 
-        async function addToWishlist(productId, button) {
-    try {
-        // Disable button and show spinner
-        button.classList.add('opacity-50', 'cursor-not-allowed');
-        const originalContent = button.innerHTML;
-        button.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+    async function addToWishlist(productId, button) {
+        try {
+            button.classList.add('opacity-50', 'cursor-not-allowed');
+            button.querySelector('span').textContent = 'Adding...';
 
-        // Send the request to add the product to the wishlist
-        const response = await fetch('/wishlist/add', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ productId }),
-            credentials: 'same-origin'
-        });
+            const response = await fetch('/wishlist/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ productId }),
+                credentials: 'same-origin'
+            });
 
-        const data = await response.json();
+            if (!response.ok) {
+                throw new Error('Failed to add to wishlist');
+            }
 
-        if (!response.ok) throw new Error(data.message);
+            const data = await response.json();
 
-        // Change button to indicate success
-        button.classList.remove('bg-black');
-        button.classList.add('bg-green-600');
-        button.innerHTML = '<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>';
+            button.classList.remove('bg-black', 'hover:bg-gray-900', 'opacity-50', 'cursor-not-allowed');
+            button.classList.add('bg-green-600', 'hover:bg-green-700', 'text-white');
+            button.querySelector('span').textContent = 'In Wishlist';
 
-        // Display SweetAlert success message
-        Swal.fire({
-            title: 'Success!',
-            text: 'The product has been added to your wishlist.',
-            icon: 'success',
-            confirmButtonText: 'OK',
-            timer: 2000
-        });
-
-        // Revert button back to original after 2 seconds
-        setTimeout(() => {
-            button.innerHTML = originalContent;
-            button.classList.remove('bg-green-600');
-            button.classList.add('bg-black');
+            Swal.fire({
+                icon: 'success',
+                title: 'Added to Wishlist',
+                text: data.message,
+                showConfirmButton: false,
+                timer: 1500,
+                customClass: {
+                    popup: 'animate__animated animate__fadeIn'
+                }
+            });
+        } catch (error) {
+            console.error('Error:', error);
             button.classList.remove('opacity-50', 'cursor-not-allowed');
-        }, 2000);
+            button.querySelector('span').textContent = 'Add to Wishlist';
 
-    } catch (error) {
-        console.error('Error:', error);
-
-        // Revert button to original content
-        button.innerHTML = originalContent;
-        button.classList.remove('opacity-50', 'cursor-not-allowed');
-
-        
-        Swal.fire({
-            title: 'Error!',
-            text: 'Something went wrong. Please try again.',
-            icon: 'error',
-            confirmButtonText: 'OK'
-        });
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to add to wishlist. Please try again.',
+            });
+        }
     }
-}
+
+    async function removeFromWishlist(productId, button) {
+        try {
+            button.classList.add('opacity-50', 'cursor-not-allowed');
+            button.querySelector('span').textContent = 'Removing...';
+
+            const response = await fetch(`/wishlist/remove/${productId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'same-origin'
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to remove from wishlist');
+            }
+
+            button.classList.remove('bg-green-600', 'hover:bg-green-700', 'text-white', 'opacity-50', 'cursor-not-allowed');
+            button.classList.add('bg-black', 'hover:bg-gray-900');
+            button.querySelector('span').textContent = 'Add to Wishlist';
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Removed',
+                text: 'Product removed from wishlist',
+                showConfirmButton: false,
+                timer: 1500,
+                customClass: {
+                    popup: 'animate__animated animate__fadeIn'
+                }
+            });
+        } catch (error) {
+            console.error('Error:', error);
+            button.classList.remove('opacity-50', 'cursor-not-allowed');
+            button.querySelector('span').textContent = 'In Wishlist';
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to remove from wishlist. Please try again.',
+            });
+        }
+    }
+});
+
+// Get the price filter select element
+const priceFilterSelect = document.getElementById('priceFilter');
+
+// Add an event listener to the select element
+priceFilterSelect.addEventListener('change', (event) => {
+  // Get the selected sorting option
+  const selectedSort = event.target.value;
+
+  // Construct the URL with the selected sorting option
+  const currentUrl = new URL(window.location.href);
+  const searchParams = new URLSearchParams(currentUrl.search);
+  searchParams.set('sort', selectedSort);
+
+  // Update the URL and reload the page
+  currentUrl.search = searchParams.toString();
+  window.location.href = currentUrl.toString();
+});
 
     </script>
 </body>

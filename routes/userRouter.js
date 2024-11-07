@@ -19,7 +19,7 @@ const auth = require('../middlewares/auth')
 router.get('/pageNotFound',userController.pageNotFound)
 //search 
 
-router.get('/products/search',productController.searchProducts)
+router.get('/api/products/search',productController.searchProducts)
 router.get('/products/suggestions', productController.getSearchSuggestions);
 
  // Example route to get product details
@@ -154,7 +154,9 @@ router.get('/wishlist', wishlistController.getWishlist);
 
 
 
+//about page
 
+router.get("/about",userController.loadAbout)
 
 
 // Route to add money to the wallet

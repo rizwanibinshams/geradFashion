@@ -2,56 +2,42 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="description" content="Male_Fashion Template">
-    <meta name="keywords" content="Male_Fashion, unica, creative, html">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Gerad-Fashion</title>
-
-    <!-- Tailwind CSS -->
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/ScrollTrigger.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"
+     integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <style>
-       
-       header {
-            position: static;  /* Changed from fixed to sticky */
-            top: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-
+        /* Refined animations and transitions */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .animate-fadeIn {
-            animation: fadeIn 0.3s ease-out;
+        @keyframes slideIn {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
         }
 
-        .dropdown-content {
-            transform: translateY(-10px);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease-in-out;
+        .logo-text {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: all 0.3s ease;
         }
 
-        .dropdown-content.active {
-            transform: translateY(0);
-            opacity: 1;
-            visibility: visible;
+        .logo-text:hover {
+            transform: scale(1.05);
         }
 
         .nav-link {
             position: relative;
-            padding-bottom: 2px;
         }
 
         .nav-link::after {
@@ -70,148 +56,187 @@
             width: 100%;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+        .mobile-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
         }
 
-        .cart-badge {
-            animation: pulse 2s infinite;
+        .mobile-nav-item {
+            transition: all 0.3s ease;
         }
 
-        .logo-text {
-    background: linear-gradient(135deg, #f97316, #ea580c);
-    background-clip: text; /* Add this line for non-webkit browsers */
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    transition: all 0.3s ease;
-    font-size: 2em; /* Ensure the text is large enough */
-    display: inline-block; /* Ensure the element can take up the width of the text */
-}
+        .mobile-nav-item.active {
+            color: #f97316;
+            transform: translateY(-4px);
+        }
 
-        .logo-text:hover {
-            transform: scale(1.05);
+        .search-results {
+            max-height: 70vh;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #f97316 #f1f1f1;
+        }
+
+        .search-results::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .search-results::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .search-results::-webkit-scrollbar-thumb {
+            background: #f97316;
+            border-radius: 3px;
+        }
+
+        @media (max-width: 768px) {
+            .desktop-nav {
+                display: none;
+            }
+
+            .mobile-search-bar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                background: white;
+                z-index: 1000;
+                padding: 0.75rem;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
         }
     </style>
 </head>
 
-<body class="bg-gray-50">
-    <div class="h-[72px] lg:h-[84px] hidden"><!-- Spacer div --></div>
-    <header class="bg-white shadow-lg w-full transition-all duration-300" id="header">
-        <div class="container mx-auto px-6 py-4">
+<body class="bg-gray-50 relative">
+    <!-- Desktop Header -->
+    <header class="bg-white shadow-lg w-full transition-all duration-300 desktop-nav">
+        <div class="container mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
-                <!-- Logo Section -->
-                <div class="header__logo">
-                    <a href="/" class="text-3xl font-extrabold logo-text">
-                        Gerad-Fashion
-                    </a>
-                </div>
-    
-                <!-- Navigation Menu -->
-                <nav class="header__menu hidden lg:flex space-x-8">
-                    <ul class="flex items-center space-x-8 text-lg font-medium text-gray-800">
-                        <li><a href="/" class="nav-link hover:text-orange-500 transition-all duration-300">Home</a></li>
-                        <li><a href="/products" class="nav-link hover:text-orange-500 transition-all duration-300">Products</a></li>
-                        <li><a href="./contact" class="nav-link hover:text-orange-500 transition-all duration-300">Contacts</a></li>
-                        <li><a href="#" class="nav-link hover:text-orange-500 transition-all duration-300">About Us</a></li>
-                    </ul>
+                <!-- Logo -->
+                <a href="/" class="text-3xl font-extrabold logo-text">
+                    Gerad-Fashion
+                </a>
+
+                <!-- Main Navigation -->
+                <nav class="hidden lg:flex space-x-8">
+                    <a href="/" class="nav-link text-gray-800 hover:text-orange-500 transition-all duration-300">Home</a>
+                    <a href="/products" class="nav-link text-gray-800 hover:text-orange-500 transition-all duration-300">Products</a>
+                    <a href="/contact" class="nav-link text-gray-800 hover:text-orange-500 transition-all duration-300">Contact</a>
+                    <a href="/about" class="nav-link text-gray-800 hover:text-orange-500 transition-all duration-300">About</a>
                 </nav>
 
-                <!-- Search Input -->
-                <div class="relative hidden md:block">
-                    <input type="text" id="search-input" 
-                           placeholder="Search products..." 
-                           class="w-64 pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300">
-                    <button id="search-button" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-orange-500">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </button>
+                <!-- Search Bar -->
+                <div class="hidden md:flex items-end  max-w-md mx-4">
+                    <div class="relative w-full">
+                        <input type="text" id="search-input"
+                            class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                            placeholder="Search products...">
+                        <button id="search-button" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-orange-500">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
                 </div>
-                <!-- User Options and Icons -->
-                <div class="header__nav__option flex items-center space-x-6 ">
-                    <% if (typeof user !== 'undefined' && user !== null) { %> 
+
+                <!-- User Actions -->
+                <div class="flex items-center space-x-6">
+                    <% if (typeof user !== 'undefined' && user !== null) { %>
                         <div class="relative">
-                            <button id="user-menu-button" 
-                                    class="text-lg font-semibold text-gray-800 hover:text-orange-500 transition-all duration-300 flex items-center">
-                                <%= user.name %>
-                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
+                            <button id="user-menu-button" class="flex items-center space-x-2 text-gray-800 hover:text-orange-500">
+                                <i class="fas fa-user-circle text-xl"></i>
+                                <span class="font-medium"><%= user.name %></span>
                             </button>
-                            <ul id="user-dropdown" class="dropdown-content absolute right-0 mt-2  bg-white shadow-xl rounded-lg py-2 w-48 z-50" >
-                                <li><a href="/profile" class="block px-4 py-2 text-gray-800 hover:bg-orange-500 hover:text-white transition-all duration-300 z-50">Profile</a></li>
-                                <li><a href="/logout" class="block px-4 py-2 text-gray-800 hover:bg-orange-500 hover:text-white transition-all duration-300 z-50">Logout</a></li>
-                            </ul>
+                            <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl">
+                                <a href="/profile" class="block px-4 py-2 text-gray-800 hover:bg-orange-500 hover:text-white">Profile</a>
+                                <a href="/logout" class="block px-4 py-2 text-gray-800 hover:bg-orange-500 hover:text-white">Logout</a>
+                            </div>
                         </div>
                     <% } else { %>
-                        <a href="/signup" class="text-lg font-semibold text-gray-800 hover:text-orange-500 transition-all duration-300">Sign Up</a>
-                        <a href="/login" class="text-lg font-semibold text-gray-800 hover:text-orange-500 transition-all duration-300">Log in</a>
+                        <div class="flex items-center space-x-4">
+                            <a href="/login" class="px-4 py-2 text-orange-500 border border-orange-500 rounded-full hover:bg-orange-500 hover:text-white transition-all duration-300">
+                                Login
+                            </a>
+                            <a href="/signup" class="px-4 py-2 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-all duration-300">
+                                Sign Up
+                            </a>
+                        </div>
                     <% } %>
-
-                    <button class="transition-transform duration-300 hover:scale-110 lg:hidden" id="mobile-menu-button">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
-                        </svg>
-                    </button>
-                   
-                    <a href="/wishlist" class="transition-transform duration-300 hover:scale-110">
-                        <img src="img/icon/heart.png" alt="Favorites" class="w-5">
-                    </a>
-                    <button id="cart-button" class="transition-transform duration-300 hover:scale-110 relative" onclick="fetchCart()">
-                        <img src="img/icon/cart.png" alt="Cart" class="w-5">
-                        <span class="cart-badge absolute -top-2 -right-2 bg-orange-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">0</span>
-                    </button>
+                    
+                    <!-- Cart and Wishlist -->
+                    <div class="flex items-center space-x-4">
+                        <a href="/wishlist" class="text-gray-800 hover:text-orange-500">
+                            <i class="fas fa-heart text-xl"></i>
+                        </a>
+                        <button onclick="fetchCart()" class="text-gray-800 hover:text-orange-500 relative">
+                            <i class="fas fa-shopping-cart text-xl"></i>
+                            <!-- <span class="absolute -top-2 -right-2 bg-orange-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                                0
+                            </span> -->
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Mobile Menu -->
-    <div id="mobile-menu" class="fixed inset-0 bg-gray-800 bg-opacity-75 z-[1001] hidden">
-        <div class="flex flex-col h-full bg-white w-64 ml-auto">
-            <div class="p-4 flex justify-between items-center border-b">
-                <h2 class="text-2xl font-bold text-gray-800">Menu</h2>
-                <button id="close-mobile-menu" class="text-gray-600 hover:text-gray-800">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
+    <!-- Mobile Header -->
+    <div class="mobile-search-bar md:hidden">
+        <div class="flex items-center justify-between px-4 py-2">
+            <a href="/" class="text-2xl font-bold logo-text">Gerad-Fashion</a>
+            <div class="relative flex-1 mx-4">
+                <input type="text" id="mobile-search-input"
+                    class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                    placeholder="Search...">
+                <button id="mobile-search-button" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    <i class="fas fa-search"></i>
                 </button>
             </div>
-            <nav class="flex-grow">
-                <ul class="p-4 space-y-4">
-                    <li><a href="/" class="block text-lg font-semibold text-gray-800 hover:text-orange-500 transition-all duration-300">Home</a></li>
-                    <li><a href="/products" class="block text-lg font-semibold text-gray-800 hover:text-orange-500 transition-all duration-300">Products</a></li>
-                    <li><a href="./contact" class="block text-lg font-semibold text-gray-800 hover:text-orange-500 transition-all duration-300">Contacts</a></li>
-                    <li><a href="#" class="block text-lg font-semibold text-gray-800 hover:text-orange-500 transition-all duration-300">About Us</a></li>
-                </ul>
-            </nav>
         </div>
     </div>
 
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-nav md:hidden fixed bottom-0 left-0 right-0">
+        <div class="grid grid-cols-5 gap-1 py-2 px-4">
+            <a href="/" class="mobile-nav-item flex flex-col items-center space-y-1">
+                <i class="fas fa-home text-xl"></i>
+                <span class="text-xs">Home</span>
+            </a>
+            <a href="/products" class="mobile-nav-item flex flex-col items-center space-y-1">
+                <i class="fas fa-shopping-bag text-xl"></i>
+                <span class="text-xs">Shop</span>
+            </a>
+            <button onclick="fetchCart()" class="mobile-nav-item flex flex-col items-center space-y-1">
+                <i class="fas fa-shopping-cart text-xl"></i>
+                <span class="text-xs">Cart</span>
+            </button>
+            <a href="/wishlist" class="mobile-nav-item flex flex-col items-center space-y-1">
+                <i class="fas fa-heart text-xl"></i>
+                <span class="text-xs">Wishlist</span>
+            </a>
+            <div class="relative">
+                <button onclick="toggleAccountMenu()" class="mobile-nav-item flex flex-col items-center space-y-1">
+                    <i class="fas fa-user text-xl"></i>
+                    <span class="text-xs">Account</span>
+                </button>
+                <!-- Account dropdown menu -->
+                <div id="mobile-account-menu" class="hidden absolute bottom-full right-0 mb-2 w-48 bg-white rounded-lg shadow-xl">
+                    <a href="/profile" class="block px-4 py-2 text-gray-800 hover:bg-orange-500 hover:text-white">Profile</a>
+                    <a href="/logout" class="block px-4 py-2 text-gray-800 hover:bg-orange-500 hover:text-white">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
     <script>
-        // User dropdown toggle
-        const userMenuButton = document.getElementById('user-menu-button');
-        const userDropdown = document.getElementById('user-dropdown');
-        let isDropdownOpen = false;
-
-        if (userMenuButton && userDropdown) {
-            userMenuButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                isDropdownOpen = !isDropdownOpen;
-                userDropdown.classList.toggle('active', isDropdownOpen);
-            });
-
-            // Close dropdown when clicking outside
-            document.addEventListener('click', (e) => {
-                if (isDropdownOpen && !userDropdown.contains(e.target) && !userMenuButton.contains(e.target)) {
-                    isDropdownOpen = false;
-                    userDropdown.classList.remove('active');
-                }
-            });
-        }
-
+        // Mobile navigation active state
+       
         // Cart fetch function
         async function fetchCart() {
             try {
@@ -234,58 +259,7 @@
             }
         }
 
-        // Header scroll effect with smooth transition
-        let lastScroll = 0;
-        const header = document.getElementById('header');
        
-
-        window.addEventListener('scroll', () => {
-            const currentScroll = window.pageYOffset;
-            
-            // Show/hide header based on scroll direction
-            if (currentScroll > lastScroll && currentScroll > 200) {
-                // Scrolling down & past banner
-                header.style.transform = 'translateY(-100%)';
-                spacer.classList.add('hidden');
-            } else {
-                // Scrolling up or at top
-                header.style.transform = 'translateY(0)';
-                spacer.classList.add('hidden');
-            }
-
-            // Add shadow and padding changes
-            if (currentScroll > 50) {
-                header.classList.add('py-2', 'shadow-md');
-                header.classList.remove('py-4');
-            } else {
-                header.classList.add('py-4');
-                header.classList.remove('py-2', 'shadow-md');
-            }
-
-            lastScroll = currentScroll;
-        });
-        // Mobile menu toggle with enhanced animation
-        const mobileMenuButton = document.getElementById('mobile-menu-button');
-        const closeMobileMenuButton = document.getElementById('close-mobile-menu');
-        const mobileMenu = document.getElementById('mobile-menu');
-
-        mobileMenuButton.addEventListener('click', () => {
-            mobileMenu.classList.remove('hidden');
-            gsap.from(mobileMenu.querySelector('div'), {
-                x: '100%',
-                duration: 0.3,
-                ease: 'power2.out'
-            });
-        });
-
-        closeMobileMenuButton.addEventListener('click', () => {
-            gsap.to(mobileMenu.querySelector('div'), {
-                x: '100%',
-                duration: 0.3,
-                ease: 'power2.in',
-                onComplete: () => mobileMenu.classList.add('hidden')
-            });
-        });
 
         // Animate header elements on page load
         document.addEventListener('DOMContentLoaded', () => {
@@ -297,6 +271,28 @@
                 ease: 'power2.out'
             });
         });
+
+// User Menu Dropdown Toggle
+document.addEventListener('DOMContentLoaded', () => {
+    const userMenuButton = document.getElementById('user-menu-button');
+    const userDropdown = document.getElementById('user-dropdown');
+
+    if (userMenuButton && userDropdown) {
+        // Toggle dropdown
+        userMenuButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userDropdown.classList.toggle('hidden');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!userMenuButton.contains(e.target) && !userDropdown.contains(e.target)) {
+                userDropdown.classList.add('hidden');
+            }
+        });
+    }
+});
+
 
         //search main 
     //     function handleSearch() {
@@ -329,28 +325,36 @@
         this.searchInput = document.getElementById('search-input');
         this.searchButton = document.getElementById('search-button');
         this.searchResults = document.createElement('div');
-        this.searchResults.className = 'absolute w-full bg-white mt-1 rounded-lg shadow-lg z-50 hidden';
-        this.searchInput.parentNode.appendChild(this.searchResults);
+        this.searchResults.className = 'search-results absolute w-full bg-white mt-1 rounded-lg shadow-lg z-50 hidden';
         
-        this.setupEventListeners();
+        if (this.searchInput) {
+            this.searchInput.parentNode.appendChild(this.searchResults);
+            this.setupEventListeners();
+        }
     }
 
     setupEventListeners() {
         // Debounced search as user types
         this.searchInput.addEventListener('input', this.debounce(() => {
-            this.handleSearch();
+            const query = this.searchInput.value.trim();
+            if (query.length >= 2) {
+                this.handleSearch(query);
+            } else {
+                this.searchResults.classList.add('hidden');
+            }
         }, 300));
 
         // Handle enter key
         this.searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                this.performSearch();
+                e.preventDefault();
+                this.performSearch(this.searchInput.value.trim());
             }
         });
 
         // Handle search button click
         this.searchButton.addEventListener('click', () => {
-            this.performSearch();
+            this.performSearch(this.searchInput.value.trim());
         });
 
         // Close search results when clicking outside
@@ -361,113 +365,165 @@
         });
     }
 
-    async handleSearch() {
-        const query = this.searchInput.value.trim();
-        
-        if (query.length < 2) {
-            this.searchResults.classList.add('hidden');
-            return;
-        }
-
-        try {
-            const response = await fetch(`/products/suggestions?query=${encodeURIComponent(query)}`);
-            if (!response.ok) throw new Error('Failed to get suggestions');
-            
-            const suggestions = await response.json();
-            this.displaySuggestions(suggestions);
-        } catch (error) {
-            console.error('Search error:', error);
-        }
-    }
-
-    displaySuggestions(suggestions) {
-        const query = this.searchInput.value.trim();
-        
+    async handleSearch(query) {
         if (!query) {
             this.searchResults.classList.add('hidden');
             return;
         }
 
+        try {
+            this.setLoadingState(true);
+            const response = await fetch(`/api/products/search?query=${encodeURIComponent(query)}`, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Search failed: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            
+            // Log the response for debugging
+            console.log('Search results:', data);
+            
+            // Check if the response has the expected structure
+            if (data && data.success && Array.isArray(data.products)) {
+                this.displayResults(data.products, query);
+            } else {
+                console.error('Unexpected response format:', data);
+                this.displayError('Invalid response format');
+            }
+        } catch (error) {
+            console.error('Search error:', error);
+            this.displayError('Failed to fetch search results');
+        } finally {
+            this.setLoadingState(false);
+        }
+    }
+
+    displayResults(results, query) {
         this.searchResults.classList.remove('hidden');
 
-        if (suggestions.length === 0) {
-            this.searchResults.innerHTML = `
-                <div class="p-4 text-center">
-                    <div class="mb-2">
-                        <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z">
-                            </path>
-                        </svg>
-                    </div>
-                    <div class="text-gray-600 font-medium mb-1">No products found</div>
-                    <div class="text-gray-500 text-sm">
-                        No results found for "${query}".<br>
-                        Try checking your spelling or using different keywords.
-                    </div>
-                </div>`;
+        if (!results || results.length === 0) {
+            this.searchResults.innerHTML = this.getNoResultsTemplate(query);
             return;
         }
 
-        this.searchResults.innerHTML = suggestions.map(item => `
+        this.searchResults.innerHTML = results.map(item => this.getResultItemTemplate(item, query)).join('');
+    }
+
+    getResultItemTemplate(item, query) {
+        return `
             <div class="p-2 hover:bg-gray-100 cursor-pointer flex items-center gap-3" 
                  onclick="window.location.href='/products/${item._id}'">
-                <img src="${item.productImage}" 
-                     alt="${item.productName}" 
+                <img src="${this.escapeHtml(item.productImage)}" 
+                     alt="${this.escapeHtml(item.productName)}" 
                      class="w-12 h-12 object-cover rounded">
                 <div>
                     <div class="font-medium">
-                        ${this.highlightMatch(item.productName, this.searchInput.value)}
+                        ${this.highlightMatch(item.productName, query)}
                     </div>
                     <div class="text-sm text-gray-600">
-                        ${item.brand} | ${item.category.name}
+                        ${this.escapeHtml(item.brand)} | ${this.escapeHtml(item.category?.name || 'Unknown Category')}
                     </div>
                     <div class="text-sm font-semibold text-orange-500">
                         ₹${item.salePrice}
                     </div>
                 </div>
-            </div>
-        `).join('');
+            </div>`;
+    }
+    performSearch(query) {
+        if (!query) return;
+        window.location.href = `/products?search=${encodeURIComponent(query)}`;
     }
 
-    async performSearch() {
-        const query = this.searchInput.value.trim();
-        
+    getNoResultsTemplate(query) {
+        return `
+            <div class="p-4 text-center">
+                <div class="mb-2">
+                    <i class="fas fa-search text-4xl text-gray-400"></i>
+                </div>
+                <div class="text-gray-600 font-medium mb-1">No products found</div>
+                <div class="text-gray-500 text-sm">
+                    No results found for "${this.escapeHtml(query)}".<br>
+                    Try checking your spelling or using different keywords.
+                </div>
+            </div>`;
+    }
+
+    // getResultItemTemplate(item, query) {
+    //     return `
+    //         <div class="p-2 hover:bg-gray-100 cursor-pointer flex items-center gap-3" 
+    //              onclick="window.location.href='/products/${item._id}'">
+    //             <img src="${this.escapeHtml(item.productImage)}" 
+    //                  alt="${this.escapeHtml(item.productName)}" 
+    //                  class="w-12 h-12 object-cover rounded">
+    //             <div>
+    //                 <div class="font-medium">
+    //                     ${this.highlightMatch(item.productName, query)}
+    //                 </div>
+    //                 <div class="text-sm text-gray-600">
+    //                     ${this.escapeHtml(item.brand)} | ${this.escapeHtml(item.category.name)}
+    //                 </div>
+    //                 <div class="text-sm font-semibold text-orange-500">
+    //                     ₹${item.salePrice}
+    //                 </div>
+    //             </div>
+    //         </div>`;
+    // }
+
+    displayError(message) {
+        this.searchResults.classList.remove('hidden');
+        this.searchResults.innerHTML = `
+            <div class="p-4 text-center text-red-500">
+                <i class="fas fa-exclamation-circle mr-2"></i>
+                ${this.escapeHtml(message)}
+            </div>`;
+    }
+
+    setLoadingState(isLoading) {
+        if (isLoading) {
+            this.searchButton.innerHTML = `
+                <i class="fas fa-spinner fa-spin"></i>`;
+        } else {
+            this.searchButton.innerHTML = `
+                <i class="fas fa-search"></i>`;
+        }
+    }
+
+    async performSearch(query) {
         if (!query) return;
 
-        // Show loading state
-        this.searchButton.innerHTML = `
-            <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>`;
-
         try {
-            const response = await fetch(`/products/search?search=${encodeURIComponent(query)}`);
-            if (!response.ok) throw new Error('Search failed');
-
+            
             window.location.href = `/products?search=${encodeURIComponent(query)}`;
         } catch (error) {
             console.error('Search error:', error);
-            // Show error notification
             Swal.fire({
                 icon: 'error',
                 title: 'Search Failed',
                 text: 'Please try again later',
                 timer: 2000
             });
-        } finally {
-            // Restore search button
-            this.searchButton.innerHTML = `
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>`;
         }
     }
 
     highlightMatch(text, query) {
-        const regex = new RegExp(`(${query})`, 'gi');
-        return text.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
+        if (!query || !text) return this.escapeHtml(text);
+        const regex = new RegExp(`(${this.escapeRegExp(query)})`, 'gi');
+        return this.escapeHtml(text).replace(regex, '<mark class="bg-yellow-200">$1</mark>');
+    }
+
+    escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    escapeRegExp(str) {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
     debounce(func, wait) {
@@ -479,9 +535,86 @@
     }
 }
 
-// Initialize search when document is ready
+// Initialize when document is ready
 document.addEventListener('DOMContentLoaded', () => {
     new ProductSearch();
+});
+
+
+const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
+        const currentPath = window.location.pathname;
+
+        mobileNavItems.forEach(item => {
+            const link = item.getAttribute('href');
+            if (link === currentPath) {
+                item.classList.add('active');
+            }
+        });
+
+        // Search functionality for mobile
+        class MobileSearch extends ProductSearch {
+            constructor() {
+                super();
+                this.mobileSearchInput = document.getElementById('mobile-search-input');
+                this.mobileSearchButton = document.getElementById('mobile-search-button');
+                
+                if (this.mobileSearchInput && this.mobileSearchButton) {
+                    this.setupMobileEventListeners();
+                }
+            }
+
+            setupMobileEventListeners() {
+                this.mobileSearchInput.addEventListener('input', this.debounce(() => {
+                    this.handleSearch(this.mobileSearchInput.value);
+                }, 300));
+
+                this.mobileSearchButton.addEventListener('click', () => {
+                    this.performSearch(this.mobileSearchInput.value);
+                });
+
+                this.mobileSearchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.performSearch(this.mobileSearchInput.value);
+                    }
+                });
+            }
+        }
+
+        // Initialize mobile search
+        document.addEventListener('DOMContentLoaded', () => {
+            new MobileSearch();
+        });
+
+        // Smooth scroll handling
+        let lastScroll = 0;
+        const header = document.querySelector('header');
+        const mobileSearchBar = document.querySelector('.mobile-search-bar');
+
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            
+            if (currentScroll > lastScroll && currentScroll > 100) {
+                mobileSearchBar?.classList.add('-translate-y-full');
+            } else {
+                mobileSearchBar?.classList.remove('-translate-y-full');
+            }
+
+            lastScroll = currentScroll;
+        });
+
+
+        function toggleAccountMenu() {
+    const menu = document.getElementById('mobile-account-menu');
+    menu.classList.toggle('hidden');
+}
+
+// Close menu when clicking outside
+document.addEventListener('click', function(event) {
+    const menu = document.getElementById('mobile-account-menu');
+    const accountButton = event.target.closest('.mobile-nav-item');
+    if (!accountButton && !menu.classList.contains('hidden')) {
+        menu.classList.add('hidden');
+    }
 });
 
 
