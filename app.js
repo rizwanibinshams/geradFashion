@@ -18,12 +18,12 @@ db()
 
 app.use(session({
     resave: false,
-    saveUninitialized: false, // Changed to false for better security
+    saveUninitialized: false, 
     secret: process.env.SESSION_SECRET,
     cookie: {
         secure: process.env.NODE_ENV === 'production', // Only use secure in production
         httpOnly: true,
-        maxAge: 72 * 60 * 60 * 1000 //72 hourse 
+        maxAge: 72 * 60 * 60 * 1000 //72 hrs
     }
 }))
 

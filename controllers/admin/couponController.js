@@ -13,7 +13,11 @@ const createCoupon = async (req, res) => {
     if (!code || !discountType || !discountValue || !validFrom || !validUntil || !maxUses || !minPurchase) {
       console.log('Missing required fields');
       const coupons = await Coupon.find();
-      return res.render('coupon', { error: 'Missing required fields', coupons });
+      return res.render('coupon', { 
+        error: 'Missing required fields', 
+        coupons, 
+        message: null 
+      });
     }
 
     // Clean and standardize the coupon code
@@ -28,7 +32,11 @@ const createCoupon = async (req, res) => {
     if (existingCoupon) {
       console.log('Duplicate coupon code:', standardizedCode);
       const coupons = await Coupon.find();
-      return res.render('coupon', { error: 'Duplicate coupon code', coupons });
+      return res.render('coupon', { 
+        error: 'Duplicate coupon code', 
+        coupons, 
+        message: null 
+      });
     }
 
     // Create the new coupon with standardized code
@@ -46,21 +54,25 @@ const createCoupon = async (req, res) => {
     });
 
     // Save with error handling
-    try {
-      await newCoupon.save();
-      console.log('Coupon saved successfully:', newCoupon);
-      const coupons = await Coupon.find();
-      return res.render('coupon', { message: 'Coupon created successfully', coupons });
-    } catch (saveError) {
-      if (saveError.code === 11000) {
-        console.log('Duplicate key error during save');
-        const coupons = await Coupon.find();
-        return res.render('coupon', { error: 'Duplicate coupon code', coupons });
-      }
-      throw saveError;
-    }
+    await newCoupon.save();
+    console.log('Coupon saved successfully:', newCoupon);
+    const coupons = await Coupon.find();
+    return res.render('coupon', { 
+      message: 'Coupon created successfully', 
+      coupons, 
+      error: null 
+    });
+
   } catch (error) {
     console.error('Error saving coupon:', error);
+    if (error.code === 11000) {
+      const coupons = await Coupon.find();
+      return res.render('coupon', { 
+        error: 'Duplicate coupon code', 
+        coupons, 
+        message: null 
+      });
+    }
     return res.redirect('/admin/pageerror');
   }
 };
@@ -80,7 +92,11 @@ const updateCoupon = async (req, res) => {
     if (!couponId || !couponId.match(/^[0-9a-fA-F]{24}$/)) {
       console.log('Invalid or missing coupon ID');
       const coupons = await Coupon.find();
-      return res.render('coupon', { error: 'Invalid or missing coupon ID', coupons });
+      return res.render('coupon', { 
+        error: 'Invalid or missing coupon ID', 
+        coupons, 
+        message: null 
+      });
     }
 
     // Find the existing coupon first
@@ -137,7 +153,8 @@ const updateCoupon = async (req, res) => {
     const coupons = await Coupon.find();
     return res.render('coupon', { 
       message: 'Coupon updated successfully', 
-      coupons 
+      coupons,
+      error: null
     });
 
   } catch (error) {
@@ -362,9 +379,15 @@ const getCouponById = async (req, res) => {
 const getAllCoupons = async (req, res) => {
   try {
     const coupons = await Coupon.find();
-    res.status(200).render('coupon', { coupons });
+    // Always pass both error and message, with null as default
+    res.render('coupon', { 
+      coupons,
+      error: null,
+      message: null
+    });
   } catch (error) {
-    res.status(500).redirect('/admin/pageerror')
+    console.error('Error fetching coupons:', error);
+    res.redirect('/admin/pageerror');
   }
 };
 

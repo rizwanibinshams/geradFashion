@@ -14,121 +14,237 @@
 <body class="bg-gray-100">
     <div class="p-6">
         <!-- Date Range Selection -->
-        <div class="bg-white p-4 rounded-lg shadow mb-6">
-            <div class="flex flex-wrap items-center gap-4">
-                <select id="reportType" class="border rounded p-2">
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
-                    <option value="custom">Custom Range</option>
-                </select>
-                <div id="dateRangeContainer" class="flex gap-2 items-center" style="display: none;">
-                    <input type="text" id="startDate" class="border rounded p-2" placeholder="Start Date">
-                    <span>to</span>
-                    <input type="text" id="endDate" class="border rounded p-2" placeholder="End Date">
-                </div>
-                <button onclick="applyDateFilter()" class="bg-blue-500 text-white px-4 py-2 rounded">
+       <!-- Date Range Selection -->
+<div class="bg-white rounded-xl shadow-lg mb-8">
+    <div class="p-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">Analytics Dashboard</h2>
+        <div class="flex flex-wrap items-center gap-4">
+            <select id="reportType" class="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200">
+                <option value="daily">Daily Report</option>
+                <option value="weekly">Weekly Report</option>
+                <option value="monthly">Monthly Report</option>
+                <option value="yearly">Yearly Report</option>
+                <option value="custom">Custom Range</option>
+            </select>
+            
+            <div id="dateRangeContainer" class="flex gap-3 items-center" style="display: none;">
+                <input type="text" id="startDate" class="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200" placeholder="Start Date">
+                <span class="text-gray-500">to</span>
+                <input type="text" id="endDate" class="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200" placeholder="End Date">
+            </div>
+            
+            <div class="flex gap-3">
+                <button onclick="applyDateFilter()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
+                    </svg>
                     Apply Filter
                 </button>
-                <button onclick="downloadReport('excel')" class="bg-green-500 text-white px-4 py-2 rounded">
-                    Export as Excel
+                
+                <button onclick="downloadReport('excel')" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                    Export Excel
                 </button>
-                <button onclick="downloadReport('pdf')" class="bg-red-500 text-white px-4 py-2 rounded">
-                    Export as PDF
+                
+                <button onclick="downloadReport('pdf')" class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                    Export PDF
                 </button>
             </div>
         </div>
-
+    </div>
+</div>
+ <!-- end Date Range Selection -->
         <!-- Quick Stats Section -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-6">
             <!-- Revenue Card -->
-            <div class="bg-white p-6 rounded-lg shadow">
-                <h3 class="text-gray-500 text-sm mb-2">Total Revenue</h3>
-                <p class="text-2xl font-bold" id="totalRevenue">₹<%= totalRevenue.toFixed(2) %></p>
-                <p class="text-sm" id="revenueComparison">
-                    <span class="text-<%= periodComparison.revenueGrowth >= 0 ? 'green' : 'red' %>-500">
-                        <%= periodComparison.revenueGrowth.toFixed(1) %>% from previous period
+            <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
+              <div class="p-6 border-b border-gray-50">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center">
+                    <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mr-4">
+                      <i class="fas fa-indian-rupee-sign text-blue-500 text-xl"></i>
+                    </div>
+                    <div>
+                      <h3 class="text-gray-400 text-sm font-medium">Total Revenue</h3>
+                      <p class="text-2xl font-bold text-gray-800" id="totalRevenue">₹<%= totalRevenue.toFixed(2) %></p>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center">
+                  <p class="text-sm" id="revenueComparison">
+                    <i class="fas fa-<%= periodComparison.revenueGrowth >= 0 ? 'arrow-up' : 'arrow-down' %> mr-1 text-<%= periodComparison.revenueGrowth >= 0 ? 'green' : 'red' %>-500"></i>
+                    <span class="text-<%= periodComparison.revenueGrowth >= 0 ? 'green' : 'red' %>-500 font-medium">
+                      <%= periodComparison.revenueGrowth.toFixed(1) %>%
                     </span>
-                </p>
+                    <span class="text-gray-500 ml-1">from previous period</span>
+                  </p>
+                </div>
+              </div>
             </div>
         
-            <!-- Total Orders Card -->
-            <div class="bg-white p-6 rounded-lg shadow">
-                <h3 class="text-gray-500 text-sm mb-2">Total Orders</h3>
-                <p class="text-2xl font-bold" id="totalOrders"><%= totalOrders %></p>
-                <p class="text-sm" id="ordersComparison">
-                    <span class="text-<%= periodComparison.orderGrowth >= 0 ? 'green' : 'red' %>-500">
-                        <%= periodComparison.orderGrowth.toFixed(1) %>% from previous period
+            <!-- Orders Card -->
+            <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
+              <div class="p-6 border-b border-gray-50">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center">
+                    <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mr-4">
+                      <i class="fas fa-shopping-cart text-purple-500 text-xl"></i>
+                    </div>
+                    <div>
+                      <h3 class="text-gray-400 text-sm font-medium">Total Orders</h3>
+                      <p class="text-2xl font-bold text-gray-800" id="totalOrders"><%= totalOrders %></p>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center">
+                  <p class="text-sm" id="ordersComparison">
+                    <i class="fas fa-<%= periodComparison.orderGrowth >= 0 ? 'arrow-up' : 'arrow-down' %> mr-1 text-<%= periodComparison.orderGrowth >= 0 ? 'green' : 'red' %>-500"></i>
+                    <span class="text-<%= periodComparison.orderGrowth >= 0 ? 'green' : 'red' %>-500 font-medium">
+                      <%= periodComparison.orderGrowth.toFixed(1) %>%
                     </span>
-                </p>
+                    <span class="text-gray-500 ml-1">from previous period</span>
+                  </p>
+                </div>
+              </div>
             </div>
         
             <!-- Completed Orders Card -->
-            <div class="bg-white p-6 rounded-lg shadow">
-                <h3 class="text-gray-500 text-sm mb-2">Completed Orders</h3>
-                <p class="text-2xl font-bold" id="totalCompletedOrders"><%= totalCompletedOrders %></p>
-                <p class="text-sm text-gray-500">
-                    <%= ((totalCompletedOrders / totalOrders) * 100).toFixed(1) %>% completion rate
-                </p>
+            <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
+              <div class="p-6 border-b border-gray-50">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center">
+                    <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center mr-4">
+                      <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                    </div>
+                    <div>
+                      <h3 class="text-gray-400 text-sm font-medium">Completed Orders</h3>
+                      <p class="text-2xl font-bold text-gray-800" id="totalCompletedOrders"><%= totalCompletedOrders %></p>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center">
+                  <p class="text-sm text-gray-500">
+                    <span class="font-medium"><%= ((totalCompletedOrders / totalOrders) * 100).toFixed(1) %>%</span> completion rate
+                  </p>
+                </div>
+              </div>
             </div>
         
             <!-- Average Order Value Card -->
-            <div class="bg-white p-6 rounded-lg shadow">
-                <h3 class="text-gray-500 text-sm mb-2">Average Order Value</h3>
-                <p class="text-2xl font-bold" id="avgOrderValue">₹<%= avgOrderValue.toFixed(2) %></p>
+            <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
+              <div class="p-6 border-b border-gray-50">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center">
+                    <div class="w-12 h-12 bg-yellow-50 rounded-lg flex items-center justify-center mr-4">
+                      <i class="fas fa-chart-line text-yellow-500 text-xl"></i>
+                    </div>
+                    <div>
+                      <h3 class="text-gray-400 text-sm font-medium">Average Order Value</h3>
+                      <p class="text-2xl font-bold text-gray-800" id="avgOrderValue">₹<%= avgOrderValue.toFixed(2) %></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
         
             <!-- Total Discount Card -->
-            <div class="bg-white p-6 rounded-lg shadow">
-                <h3 class="text-gray-500 text-sm mb-2">Total Discount Given</h3>
-                <p class="text-2xl font-bold" id="totalDiscount">₹<%= totalDiscount.toFixed(2) %></p>
+            <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
+              <div class="p-6 border-b border-gray-50">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center">
+                    <div class="w-12 h-12 bg-red-50 rounded-lg flex items-center justify-center mr-4">
+                      <i class="fas fa-tags text-red-500 text-xl"></i>
+                    </div>
+                    <div>
+                      <h3 class="text-gray-400 text-sm font-medium">Total Discount Given</h3>
+                      <p class="text-2xl font-bold text-gray-800" id="totalDiscount">₹<%= totalDiscount.toFixed(2) %></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
         
             <!-- Cancelled Orders Card -->
-            <div class="bg-white p-6 rounded-lg shadow">
-                <h3 class="text-gray-500 text-sm mb-2">Cancelled Orders</h3>
-                <p class="text-2xl font-bold" id="totalCancelledOrders"><%= totalCancelledOrders %></p>
-                <p class="text-sm text-gray-500">
-                    <%= ((totalCancelledOrders / totalOrders) * 100).toFixed(1) %>% cancellation rate
-                    <br>
-                    Amount: ₹<%= totalCancelledAmount.toFixed(2) %>
-                </p>
+            <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
+              <div class="p-6 border-b border-gray-50">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center">
+                    <div class="w-12 h-12 bg-pink-50 rounded-lg flex items-center justify-center mr-4">
+                      <i class="fas fa-ban text-pink-500 text-xl"></i>
+                    </div>
+                    <div>
+                      <h3 class="text-gray-400 text-sm font-medium">Cancelled Orders</h3>
+                      <p class="text-2xl font-bold text-gray-800" id="totalCancelledOrders"><%= totalCancelledOrders %></p>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex flex-col">
+                  <p class="text-sm text-gray-500">
+                    <span class="font-medium"><%= ((totalCancelledOrders / totalOrders) * 100).toFixed(1) %>%</span> cancellation rate
+                  </p>
+                  <p class="text-sm text-gray-500 mt-1">
+                    Amount: <span class="font-medium">₹<%= totalCancelledAmount.toFixed(2) %></span>
+                  </p>
+                </div>
+              </div>
             </div>
         
             <!-- Payment Methods Card -->
-            <div class="bg-white p-6 rounded-lg shadow">
-                <h3 class="text-gray-500 text-sm mb-2">Payment Methods</h3>
-                <div id="paymentMethodStats">
-                    <% paymentMethodStats.forEach(method => { %>
-                        <div class="mb-3">
-                            <div class="flex justify-between mb-1">
-                                <span class="font-medium"><%= method._id %></span>
-                                <span class="font-medium">₹<%= method.completedAmount.toFixed(2) %></span>
-                            </div>
-                            <div class="text-sm text-gray-500 flex justify-between">
-                                <span>Completed: <%= method.completedOrders %></span>
-                                <span>Cancelled: <%= method.cancelledOrders %></span>
-                            </div>
-                        </div>
-                    <% }); %>
-                    
-                    
+            <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
+              <div class="p-6 border-b border-gray-50">
+                <div class="flex items-center mb-4">
+                  <div class="w-12 h-12 bg-indigo-50 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-credit-card text-indigo-500 text-xl"></i>
+                  </div>
+                  <h3 class="text-gray-400 text-sm font-medium">Payment Methods</h3>
                 </div>
+                <div id="paymentMethodStats" class="space-y-4">
+                  <% paymentMethodStats.forEach(method => { %>
+                    <div class="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
+                      <div class="flex justify-between mb-2">
+                        <span class="font-medium text-gray-700"><%= method._id %></span>
+                        <span class="font-medium text-gray-800">₹<%= method.completedAmount.toFixed(2) %></span>
+                      </div>
+                      <div class="text-sm text-gray-500 flex justify-between">
+                        <span>
+                          <i class="fas fa-check-circle text-green-500 mr-1"></i>
+                          <%= method.completedOrders %>
+                        </span>
+                        <span>
+                          <i class="fas fa-times-circle text-red-500 mr-1"></i>
+                          <%= method.cancelledOrders %>
+                        </span>
+                      </div>
+                    </div>
+                  <% }); %>
+                </div>
+              </div>
             </div>
+        
+            <!-- Active Users Card -->
+            <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
+              <div class="p-6 border-b border-gray-50">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center">
+                    <div class="w-12 h-12 bg-teal-50 rounded-lg flex items-center justify-center mr-4">
+                      <i class="fas fa-users text-teal-500 text-xl"></i>
+                    </div>
+                    <div>
+                      <h3 class="text-gray-400 text-sm font-medium">Active Users</h3>
+                      <p class="text-2xl font-bold text-gray-800" id="activeUsers"><%= activeUsers %></p>
+                    </div>
+                  </div>
+                </div>
+                <p class="text-sm text-gray-500">Total non-blocked users</p>
+              </div>
+            </div>
+          </div>
 
-            <!-- end quick start  -->
-        </div>
-<!-- <div class="border-t mt-3 pt-2">
-                        <div class="flex justify-between font-medium text-gray-600">
-                            <span>Total Completed:</span>
-                            <span>₹<%= paymentTotals.completedAmount.toFixed(2) %></span>
-                        </div>
-                        <div class="flex justify-between mt-1 text-sm text-gray-500">
-                            <span>Total Cancelled:</span>
-                            <span>₹<%= paymentTotals.cancelledAmount.toFixed(2) %></span>
-                        </div>
-                    </div> -->
 
         <!-- Charts Section -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -204,226 +320,428 @@
                 </div>
             </div>
         </div>
+
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <!-- Top Categories Card -->
+          <div class="bg-white p-6 rounded-lg shadow">
+              <div class="flex justify-between items-center mb-4">
+                  <h2 class="text-xl font-bold">Top Categories</h2>
+              </div>
+              <div class="overflow-x-auto">
+                  <table class="w-full">
+                      <thead>
+                          <tr class="border-b">
+                              <th class="text-left py-2">Category</th>
+                              <th class="text-right py-2">Orders</th>
+                              <th class="text-right py-2">Quantity</th>
+                              <th class="text-right py-2">Revenue</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                        <% topCategories.forEach(category => { %>
+                        <tr class="border-b">
+                            <td class="py-2"><%= category.categoryName %></td>
+                            <td class="text-right"><%= category.totalOrders %></td>
+                            <td class="text-right"><%= category.totalQuantity %></td>
+                            <td class="text-right">₹<%= category.totalRevenue.toFixed(2) %></td>
+                        </tr>
+                        <% }); %>
+                    </tbody>
+                  </table>
+              </div>
+          </div>
+      
+          <!-- Top Brands Card -->
+          <div class="bg-white p-6 rounded-lg shadow">
+              <div class="flex justify-between items-center mb-4">
+                  <h2 class="text-xl font-bold">Top Brands</h2>
+              </div>
+              <div class="overflow-x-auto">
+                  <table class="w-full">
+                      <thead>
+                          <tr class="border-b">
+                              <th class="text-left py-2">Brand</th>
+                              <th class="text-right py-2">Orders</th>
+                              <th class="text-right py-2">Quantity</th>
+                              <th class="text-right py-2">Revenue</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <% topBrands.forEach(brand => { %>
+                          <tr class="border-b">
+                              <td class="py-2"><%= brand._id %></td>
+                              <td class="text-right"><%= brand.totalOrders %></td>
+                              <td class="text-right"><%= brand.totalQuantity %></td>
+                              <td class="text-right">₹<%= brand.totalRevenue.toFixed(2) %></td>
+                          </tr>
+                          <% }); %>
+                      </tbody>
+                  </table>
+              </div>
+          </div>
+      </div>
+
     </div>
 
     <script>
-        // Initialize Flatpickr date pickers
-        const startDatePicker = flatpickr("#startDate", {
-            dateFormat: "d-m-y",
-            defaultDate: "<%= startDate %>"
-        });
 
-        const endDatePicker = flatpickr("#endDate", {
-            dateFormat: "d-m-y",
-            defaultDate: "<%= endDate %>"
-        });
 
-        // Initialize Charts
-        const salesData = <%- JSON.stringify(salesAnalytics) %>;
-        
-        // Trend Chart
-        const trendCtx = document.getElementById('trendChart').getContext('2d');
-        const trendChart = new Chart(trendCtx, {
-            type: 'line',
-            data: {
-                labels: salesData.map(item => moment(item._id).format('MMM DD')),
-                datasets: [{
-                    label: 'Revenue',
-                    data: salesData.map(item => item.totalRevenue),
-                    borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.1,
-                    yAxisID: 'y'
-                }, {
-                    label: 'Orders',
-                    data: salesData.map(item => item.totalOrders),
-                    borderColor: 'rgb(255, 99, 132)',
-                    tension: 0.1,
-                    yAxisID: 'y1'
-                }]
+// Initialize Flatpickr date pickers
+function initializeDatePickers() {
+    flatpickr("#startDate", {
+        dateFormat: "d-m-y",
+        defaultDate: startDate
+    });
+
+    flatpickr("#endDate", {
+        dateFormat: "d-m-y",
+        defaultDate: endDate
+    });
+}
+
+// Initialize Charts
+function initializeCharts() {
+    const trendCtx = document.getElementById('trendChart').getContext('2d');
+    const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+
+    // Shared chart options for consistent styling
+    const sharedOptions = {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: {
+                    padding: 20,
+                    font: { size: 12 }
+                }
             },
-            options: {
-                responsive: true,
-                interaction: {
-                    mode: 'index',
-                    intersect: false,
+            tooltip: {
+                mode: 'index',
+                intersect: false,
+                padding: 10,
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                titleColor: '#000',
+                titleFont: {
+                    size: 14,
+                    weight: 'bold'
                 },
-                scales: {
-                    y: {
-                        type: 'linear',
-                        display: true,
-                        position: 'left',
-                        title: {
-                            display: true,
-                            text: 'Revenue (₹)'
-                        }
-                    },
-                    y1: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
-                        title: {
-                            display: true,
-                            text: 'Orders'
-                        },
-                        grid: {
-                            drawOnChartArea: false
-                        }
-                    }
-                }
+                bodyColor: '#666',
+                bodyFont: { size: 12 },
+                borderColor: '#ddd',
+                borderWidth: 1
             }
-        });
+        }
+    };
 
-        // Distribution Chart
-        const distributionCtx = document.getElementById('distributionChart').getContext('2d');
-        const distributionChart = new Chart(distributionCtx, {
-            type: 'bar',
-            data: {
-                labels: salesData.map(item => moment(item._id).format('MMM DD')),
-                datasets: [{
-                    label: 'Revenue',
-                    data: salesData.map(item => item.totalRevenue),
-                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
-                    borderColor: 'rgb(75, 192, 192)',
-                    borderWidth: 1
-                }, {
-                    label: 'Discount',
-                    data: salesData.map(item => item.totalDiscount),
-                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                    borderColor: 'rgb(255, 99, 132)',
-                    borderWidth: 1
-                }]
+    // Initialize Trend Chart
+    window.trendChart = new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Revenue',
+                data: [],
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                yAxisID: 'y'
+            }, {
+                label: 'Orders',
+                data: [],
+                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                yAxisID: 'y1'
+            }]
+        },
+        options: {
+            ...sharedOptions,
+            interaction: {
+                mode: 'index',
+                intersect: false
             },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Amount (₹)'
-                        }
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 45
                     }
+                },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Revenue (₹)',
+                        font: { weight: 'bold' }
+                    },
+                    grid: { borderDash: [2, 2] }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Orders',
+                        font: { weight: 'bold' }
+                    },
+                    grid: { display: false }
                 }
             }
-        });
-
-        // Handle report type change
-        document.getElementById('reportType').addEventListener('change', function() {
-            const dateRangeContainer = document.getElementById('dateRangeContainer');
-            dateRangeContainer.style.display = this.value === 'custom' ? 'flex' : 'none';
-            
-            if (this.value !== 'custom') {
-                applyDateFilter();
-            }
-        });
-
-        // Apply date filter function
-        async function applyDateFilter() {
-            const reportType = document.getElementById('reportType').value;
-            let params = new URLSearchParams({ reportType });
-            
-            if (reportType === 'custom') {
-                const startDate = document.getElementById('startDate').value;
-                const endDate = document.getElementById('endDate').value;
-                params.append('startDate', startDate);
-                params.append('endDate', endDate);
-            }
-            
-            try {
-                const response = await fetch(`/admin/dashboard/data?${params.toString()}`);
-                const data = await response.json();
-                
-                updateDashboardData(data);
-            } catch (error) {
-                console.error('Error fetching dashboard data:', error);
-            }
         }
-
-        // Update dashboard data
-        function updateDashboardData(data) {
-            // Update stats
-            document.getElementById('totalRevenue').textContent = `₹${data.quickStats.totalRevenue.toFixed(2)}`;
-            document.getElementById('totalOrders').textContent = data.quickStats.totalOrders;
-            document.getElementById('avgOrderValue').textContent = `₹${data.quickStats.avgOrderValue.toFixed(2)}`;
-            document.getElementById('totalDiscount').textContent = `₹${data.quickStats.totalDiscount.toFixed(2)}`;
-            
-
-            document.getElementById('totalCancelledOrders').textContent = data.quickStats.totalCancelledOrders;
-    document.getElementById('cancelledOrdersComparison').textContent = 
-        `Cancelled Amount: ₹${data.quickStats.totalCancelledAmount.toFixed(2)}`;
-
-
-        const paymentMethodStatsContainer = document.getElementById('paymentMethodStats');
-    paymentMethodStatsContainer.innerHTML = ''; // Clear existing content
-
-    let totalPaymentAmount = 0;
-    data.paymentMethodStats.forEach(method => {
-        totalPaymentAmount += method.totalAmount;
     });
 
-    data.paymentMethodStats.forEach(method => {
+    // Initialize Distribution Chart
+    window.distributionChart = new Chart(distributionCtx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Revenue',
+                data: [],
+                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                borderColor: 'rgb(75, 192, 192)',
+                borderWidth: 1,
+                borderRadius: 4
+            }, {
+                label: 'Discount',
+                data: [],
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                borderColor: 'rgb(255, 99, 132)',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            ...sharedOptions,
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Amount (₹)',
+                        font: { weight: 'bold' }
+                    },
+                    grid: { borderDash: [2, 2] }
+                }
+            }
+        }
+    });
+}
+
+// Format dates based on report type
+function formatChartDate(date, reportType) {
+    switch(reportType) {
+        case 'daily':
+            return moment(date).format('MMM DD');
+        case 'weekly':
+            return `Week ${moment(date).week()}`;
+        case 'monthly':
+            return moment(date).format('MMM YYYY');
+        case 'yearly':
+            return moment(date).format('YYYY');
+        default:
+            return moment(date).format('MMM DD');
+    }
+}
+
+// Update charts with new data
+function updateCharts(salesData, reportType) {
+    const labels = salesData.map(item => formatChartDate(item._id, reportType));
+    
+    // Update Trend Chart
+    trendChart.data.labels = labels;
+    trendChart.data.datasets[0].data = salesData.map(item => item.totalRevenue);
+    trendChart.data.datasets[1].data = salesData.map(item => item.totalOrders);
+    trendChart.update();
+    
+    // Update Distribution Chart
+    distributionChart.data.labels = labels;
+    distributionChart.data.datasets[0].data = salesData.map(item => item.totalRevenue);
+    distributionChart.data.datasets[1].data = salesData.map(item => item.totalDiscount);
+    distributionChart.update();
+}
+
+// Update dashboard data
+function updateDashboardData(data) {
+    // Update quick stats
+    document.getElementById('totalRevenue').textContent = `₹${data.quickStats.totalRevenue.toFixed(2)}`;
+    document.getElementById('totalOrders').textContent = data.quickStats.totalOrders;
+    document.getElementById('totalCompletedOrders').textContent = data.quickStats.totalCompletedOrders;
+    document.getElementById('avgOrderValue').textContent = `₹${data.quickStats.avgOrderValue.toFixed(2)}`;
+    document.getElementById('totalDiscount').textContent = `₹${data.quickStats.totalDiscount.toFixed(2)}`;
+    document.getElementById('totalCancelledOrders').textContent = data.quickStats.totalCancelledOrders;
+    document.getElementById('activeUsers').textContent = data.quickStats.activeUsers;
+
+    // Update payment methods stats
+    updatePaymentMethodStats(data.paymentMethodStats);
+    
+    // Update tables
+    updateTopProducts(data.topProducts);
+    updateRecentOrders(data.recentOrders);
+    updateTopCategories(data.topCategories);
+    updateTopBrands(data.topBrands);
+}
+
+// Update payment method statistics
+function updatePaymentMethodStats(paymentMethods) {
+    const container = document.getElementById('paymentMethodStats');
+    container.innerHTML = '';
+
+    const totalAmount = paymentMethods.reduce((sum, method) => sum + method.totalAmount, 0);
+
+    paymentMethods.forEach(method => {
+        const percentage = ((method.totalAmount / totalAmount) * 100).toFixed(1);
         const methodDiv = document.createElement('div');
-        methodDiv.classList.add('flex', 'justify-between', 'mb-2');
+        methodDiv.className = 'border-b border-gray-100 pb-3 last:border-0 last:pb-0';
         methodDiv.innerHTML = `
-            <span>${method._id}</span>
-            <span>₹${method.totalAmount.toFixed(2)} (${((method.totalAmount / totalPaymentAmount) * 100).toFixed(1)}%)</span>
+            <div class="flex justify-between mb-2">
+                <span class="font-medium text-gray-700">${method._id}</span>
+                <span class="font-medium text-gray-800">₹${method.totalAmount.toFixed(2)}</span>
+            </div>
+            <div class="text-sm text-gray-500 flex justify-between">
+                <span>
+                    <i class="fas fa-check-circle text-green-500 mr-1"></i>
+                    ${method.completedOrders}
+                </span>
+                <span>
+                    <i class="fas fa-times-circle text-red-500 mr-1"></i>
+                    ${method.cancelledOrders}
+                </span>
+            </div>
         `;
-        paymentMethodStatsContainer.appendChild(methodDiv);
+        container.appendChild(methodDiv);
     });
+}
 
-    // Add total row
-    const totalDiv = document.createElement('div');
-    totalDiv.classList.add('border-t', 'mt-2', 'pt-2', 'font-bold', 'flex', 'justify-between');
-    totalDiv.innerHTML = `
-        <span>Total</span>
-        <span>₹${totalPaymentAmount.toFixed(2)}</span>
-    `;
-    paymentMethodStatsContainer.appendChild(totalDiv);
-            // Update charts
-            updateCharts(data.salesAnalytics);
-            
-            // Update tables
-            updateTables(data.topProducts, data.recentOrders);
-        }
+// Update top products table
+function updateTopProducts(products) {
+    const tbody = document.getElementById('topProductsBody');
+    tbody.innerHTML = products.map(product => `
+        <tr class="border-b">
+            <td class="py-2">${product.productInfo.productName}</td>
+            <td class="text-right">${product.totalQuantity}</td>
+            <td class="text-right">₹${product.totalRevenue.toFixed(2)}</td>
+        </tr>
+    `).join('');
+}
 
-        // Update charts function
-        function updateCharts(salesData) {
-            const labels = salesData.map(item => moment(item._id).format('MMM DD'));
-            
-            // Update trend chart
-            trendChart.data.labels = labels;
-            trendChart.data.datasets[0].data = salesData.map(item => item.totalRevenue);
-            trendChart.data.datasets[1].data = salesData.map(item => item.totalOrders);
-            trendChart.update();
-            
-            // Update distribution chart
-            distributionChart.data.labels = labels;
-            distributionChart.data.datasets[0].data = salesData.map(item => item.totalRevenue);
-            distributionChart.data.datasets[1].data = salesData.map(item => item.totalDiscount);
-            distributionChart.update();
-        }
+// Update recent orders table
+function updateRecentOrders(orders) {
+    const tbody = document.getElementById('recentOrdersBody');
+    tbody.innerHTML = orders.map(order => `
+        <tr class="border-b">
+            <td class="py-2">#${order._id.toString().slice(-6)}</td>
+            <td>${order.user.name}</td>
+            <td class="text-right">₹${order.finalAmount.toFixed(2)}</td>
+            <td class="text-right">
+                <span class="px-2 py-1 rounded text-sm ${
+                    order.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                    order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                    'bg-red-100 text-red-800'
+                }">
+                    ${order.status}
+                </span>
+            </td>
+        </tr>
+    `).join('');
+}
 
-        // Download report function
-        function downloadReport(format) {
-            const reportType = document.getElementById('reportType').value;
-            const params = new URLSearchParams({
-                reportType,
-                format
-            });
-            
-            if (reportType === 'custom') {
-                params.append('startDate', document.getElementById('startDate').value);
-                params.append('endDate', document.getElementById('endDate').value);
-            }
-            
-            window.location.href = `/admin/download?${params.toString()}`;
-        }
+// Apply date filter and fetch new data
+async function applyDateFilter() {
+    const reportType = document.getElementById('reportType').value;
+    let params = new URLSearchParams({ reportType });
+    
+    if (reportType === 'custom') {
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        params.append('startDate', startDate);
+        params.append('endDate', endDate);
+    }
+    
+    try {
+        const response = await fetch(`/admin/dashboard/data?${params.toString()}`);
+        const data = await response.json();
+        
+        updateCharts(data.salesAnalytics, reportType);
+        updateDashboardData(data);
+    } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+    }
+}
 
-        // Initialize with default selection
-        document.getElementById('reportType').value = '<%= reportType %>';
-        if ('<%= reportType %>' === 'custom') {
-            document.getElementById('dateRangeContainer').style.display = 'flex';
+// Download report function
+function downloadReport(format) {
+    const reportType = document.getElementById('reportType').value;
+    const params = new URLSearchParams({
+        reportType,
+        format
+    });
+    
+    if (reportType === 'custom') {
+        params.append('startDate', document.getElementById('startDate').value);
+        params.append('endDate', document.getElementById('endDate').value);
+    }
+    
+    window.location.href = `/admin/download?${params.toString()}`;
+}
+
+// Initialize everything when the DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize date pickers
+    initializeDatePickers();
+    
+    // Initialize charts
+    initializeCharts();
+    
+    // Set initial report type
+    const reportType = '<%= reportType %>';
+    document.getElementById('reportType').value = reportType;
+    document.getElementById('dateRangeContainer').style.display = 
+        reportType === 'custom' ? 'flex' : 'none';
+    
+    // Load initial data
+    const initialSalesData = JSON.parse('<%- JSON.stringify(salesAnalytics) %>');
+    updateCharts(initialSalesData, reportType);
+    
+    // Add report type change handler
+    document.getElementById('reportType').addEventListener('change', function() {
+        const dateRangeContainer = document.getElementById('dateRangeContainer');
+        dateRangeContainer.style.display = this.value === 'custom' ? 'flex' : 'none';
+        
+        if (this.value !== 'custom') {
+            applyDateFilter();
         }
+    });
+    
+    // Add card hover effects
+    document.querySelectorAll('.hover\\:shadow-md').forEach(card => {
+        card.addEventListener('mouseover', () => {
+            card.classList.add('shadow-md');
+            card.classList.remove('shadow-sm');
+        });
+        
+        card.addEventListener('mouseout', () => {
+            card.classList.remove('shadow-md');
+            card.classList.add('shadow-sm');
+        });
+    });
+});
     </script>
 </body>
 </html>

@@ -334,7 +334,7 @@
                                                                     <% order.orderedItems.forEach(function(item) { %>
                                                                         <li class="flex items-start space-x-4">
                                                                             <div class="w-24 h-32 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden">
-                                                                                <img src="<%= item.productImage %>" alt="<%= item.product.productName %>" class="w-full h-full object-cover">
+                                                                                <img src="<%= item.productImage %>" alt="<%= item?.product?.productName || ' ' %>" class="w-full h-full object-cover">
                                                                             </div>
                                                                             <div class="flex-1 min-w-0">
                                                                                 <div class="flex justify-between items-start">
@@ -342,7 +342,7 @@
                                                                                         <%= item.product?.productName || 'Product No Longer Available' %>
                                                                                     </h5>
                                                                                     <% if (order.status === 'Pending' && (!item.status || item.status === 'Pending')) { %>
-                                                                                        <button onclick="showCancelModal('<%= order._id %>', '<%= item._id %>', '<%= item.product.productName %>')" 
+                                                                                        <button onclick="showCancelModal('<%= order._id %>', '<%= item._id %>', '<%= item?.product?.productName %>')" 
                                                                                             class="text-sm text-red-600 hover:text-red-800 ml-4 flex-shrink-0">
                                                                                             Cancel Item
                                                                                         </button>

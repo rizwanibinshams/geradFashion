@@ -1,25 +1,17 @@
 
 
 <%- include("../partials/user/header") %>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Page</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-   
-</head>
+
 <body class="bg-gray-100 ">
    
 
-    <main class="container mx-auto px-4 py-8 mt-16">
+    <main class="container mx-auto px-4 py-8 mt-16 ">
         <!-- Hero Banner Section -->
         <section class="mb-12 relative overflow-hidden rounded-lg shadow-lg">
             
                
                 <!-- Add more hero items here if needed -->
-                <div class="relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-50 before:z-10 z-0">
+                <div class="relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-50 before:z-10 z-20"> <!-- Updated z-index -->
                     <img src="/img/banner2.avif" alt="Banner Image" class="absolute inset-0 w-full h-full object-cover z-0" />
               
                     <div class="min-h-[350px] relative z-50 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6 ">
@@ -306,7 +298,7 @@ async function addToWishlist(productId, button) {
         // Reset button state in case of failure
         button.classList.remove('opacity-50', 'cursor-not-allowed');
         button.classList.add('bg-slate-900', 'hover:bg-gray-700'); // Reapply original styles
-        button.textContent = 'Add to Wishlist'; // Reset text
+        button.textContent = 'Wishlist'; // Reset text
 
         // Show the SVG icon again if it exists
         const svgIcon = button.querySelector('svg');

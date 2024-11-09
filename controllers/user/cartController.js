@@ -190,23 +190,44 @@ const getCart = async (req, res) => {
       });
     }
 
-    const total = cart.items.reduce(
-      (sum, item) => sum + (item.productId.salePrice * item.quantity), 
+    // Filter out any items where productId is null (deleted products)
+    const validCartItems = cart.items.filter(item => item.productId != null);
+
+    // If some items were filtered out, update the cart in the database
+    if (validCartItems.length !== cart.items.length) {
+      await Cart.findOneAndUpdate(
+        { userId },
+        { items: validCartItems },
+        { new: true }
+      );
+    }
+
+    const total = validCartItems.reduce(
+      (sum, item) => sum + (item.productId.salePrice * item.quantity),
       0
     );
 
     res.render('cart', { 
-      cart: cart.items, 
+      cart: validCartItems, 
       total, 
       user: userData,
       userEmail: req.session.user.email 
     });
   } catch (error) {
     console.error("Error fetching cart:", error);
-    res.status(500).json({ 
-      message: "Error fetching cart", 
-      error: error.message 
-    });
+    
+    // Send a more user-friendly error response
+    if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+      // If it's an AJAX request, send JSON response
+      res.status(500).json({ 
+        message: "Unable to load your shopping cart at this time. Please try again later.",
+        error: error.message 
+      });
+    } else {
+      // For regular requests, render an error page or redirect with flash message
+      req.flash('error', 'Unable to load your shopping cart. Please try again later.');
+      res.redirect('/');
+    }
   }
 };
 

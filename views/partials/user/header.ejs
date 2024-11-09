@@ -202,25 +202,27 @@
     </div>
 
     <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-nav md:hidden fixed bottom-0 left-0 right-0">
-        <div class="grid grid-cols-5 gap-1 py-2 px-4">
-            <a href="/" class="mobile-nav-item flex flex-col items-center space-y-1">
-                <i class="fas fa-home text-xl"></i>
-                <span class="text-xs">Home</span>
-            </a>
-            <a href="/products" class="mobile-nav-item flex flex-col items-center space-y-1">
-                <i class="fas fa-shopping-bag text-xl"></i>
-                <span class="text-xs">Shop</span>
-            </a>
-            <button onclick="fetchCart()" class="mobile-nav-item flex flex-col items-center space-y-1">
-                <i class="fas fa-shopping-cart text-xl"></i>
-                <span class="text-xs">Cart</span>
-            </button>
-            <a href="/wishlist" class="mobile-nav-item flex flex-col items-center space-y-1">
-                <i class="fas fa-heart text-xl"></i>
-                <span class="text-xs">Wishlist</span>
-            </a>
-            <div class="relative">
+   <!-- Updated Mobile Bottom Navigation -->
+<nav class="mobile-nav md:hidden fixed bottom-0 left-0 right-0">
+    <div class="grid grid-cols-5 gap-1 py-2 px-4">
+        <a href="/" class="mobile-nav-item flex flex-col items-center space-y-1">
+            <i class="fas fa-home text-xl"></i>
+            <span class="text-xs">Home</span>
+        </a>
+        <a href="/products" class="mobile-nav-item flex flex-col items-center space-y-1">
+            <i class="fas fa-shopping-bag text-xl"></i>
+            <span class="text-xs">Shop</span>
+        </a>
+        <button onclick="fetchCart()" class="mobile-nav-item flex flex-col items-center space-y-1">
+            <i class="fas fa-shopping-cart text-xl"></i>
+            <span class="text-xs">Cart</span>
+        </button>
+        <a href="/wishlist" class="mobile-nav-item flex flex-col items-center space-y-1">
+            <i class="fas fa-heart text-xl"></i>
+            <span class="text-xs">Wishlist</span>
+        </a>
+        <div class="relative ml-3" >
+            <% if (typeof user !== 'undefined' && user !== null) { %>
                 <button onclick="toggleAccountMenu()" class="mobile-nav-item flex flex-col items-center space-y-1">
                     <i class="fas fa-user text-xl"></i>
                     <span class="text-xs">Account</span>
@@ -230,11 +232,41 @@
                     <a href="/profile" class="block px-4 py-2 text-gray-800 hover:bg-orange-500 hover:text-white">Profile</a>
                     <a href="/logout" class="block px-4 py-2 text-gray-800 hover:bg-orange-500 hover:text-white">Logout</a>
                 </div>
-            </div>
+            <% } else { %>
+                <button onclick="toggleAuthMenu()" class="mobile-nav-item flex flex-col items-center space-y-1">
+                    <i class="fas fa-user text-xl"></i>
+                    <span class="text-xs">Login</span>
+                </button>
+                <!-- Auth dropdown menu -->
+                <div id="mobile-auth-menu" class="hidden absolute bottom-full right-0 mb-2 w-48 bg-white rounded-lg shadow-xl">
+                    <a href="/login" class="block px-4 py-2 text-gray-800 hover:bg-orange-500 hover:text-white">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login
+                    </a>
+                    <a href="/signup" class="block px-4 py-2 text-gray-800 hover:bg-orange-500 hover:text-white">
+                        <i class="fas fa-user-plus mr-2"></i>Sign Up
+                    </a>
+                </div>
+            <% } %>
         </div>
-    </nav>
+    </div>
+</nav>
 
-    <script>
+<!-- Add this JavaScript for the auth menu toggle -->
+<script>
+function toggleAuthMenu() {
+    const menu = document.getElementById('mobile-auth-menu');
+    menu.classList.toggle('hidden');
+}
+
+// Close auth menu when clicking outside
+document.addEventListener('click', function(event) {
+    const menu = document.getElementById('mobile-auth-menu');
+    const authButton = event.target.closest('.mobile-nav-item');
+    if (!authButton && menu && !menu.classList.contains('hidden')) {
+        menu.classList.add('hidden');
+    }
+});
+
         // Mobile navigation active state
        
         // Cart fetch function
@@ -293,6 +325,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+
+function toggleAuthMenu() {
+    const menu = document.getElementById('mobile-auth-menu');
+    menu.classList.toggle('hidden');
+}
+
+// Close auth menu when clicking outside
+document.addEventListener('click', function(event) {
+    const menu = document.getElementById('mobile-auth-menu');
+    const authButton = event.target.closest('.mobile-nav-item');
+    if (!authButton && menu && !menu.classList.contains('hidden')) {
+        menu.classList.add('hidden');
+    }
+});
 
         //search main 
     //     function handleSearch() {

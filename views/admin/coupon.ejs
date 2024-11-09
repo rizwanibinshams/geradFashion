@@ -70,35 +70,53 @@
             </form>
         </div>
 
-        <div id="errorMessage" class="bg-red-100 text-red-700 p-4 rounded-lg mb-6 fade-in" style="display: none;"></div>
-            <p id="errorText"></p>
-        </div>
+        <!-- Check for error messages -->
+<% if (typeof error !== 'undefined' && error) { %>
+    <div class="bg-red-100 text-red-700 p-4 rounded-lg mb-6 fade-in">
+        <p><%= error %></p>
+    </div>
+<% } %>
 
-        <div id="couponList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+<!-- Check for success messages -->
+<% if (typeof message !== 'undefined' && message) { %>
+    <div class="bg-green-100 text-green-700 p-4 rounded-lg mb-6 fade-in">
+        <p><%= message %></p>
+    </div>
+<% } %>
+      
+       
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <% if (coupons && coupons.length > 0) { %>
-                <% coupons.forEach(coupon => { %>
-                    <div class="bg-white p-4 rounded-lg shadow-md fade-in">
-                        <h3 class="text-xl font-bold mb-2"><%= coupon.code %></h3>
-                        <p>Discount: <%= coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}` %></p>
-                        <p>Minimum Purchase: ₹<%= coupon.minPurchase %></p>
-                        <p>Valid From: <%= coupon.validFrom.toDateString() %></p>
-                        <p>Valid Until: <%= coupon.validUntil.toDateString() %></p>
-                        <p>Max Uses: <%= coupon.maxUses %></p>
-                        <p>Status: <%= coupon.isActive ? 'Active' : 'Inactive' %></p>
-                        <div class="mt-4">
-                            <button onclick="editCoupon('<%= coupon._id %>')" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded mr-2">
-                                Edit
-                            </button>
-                            <button onclick="deleteCoupon('<%= coupon._id %>')" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
-                                Delete
-                            </button>
-                        </div>
-                    </div>
-                <% }) %>
+              <% coupons.forEach(coupon => { %>
+                <div class="bg-white p-6 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl">
+                  <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-2xl font-bold"><%= coupon.code %></h3>
+                    <span class="inline-block px-3 py-1 bg-<%= coupon.isActive ? 'green' : 'red' %>-500 text-white font-medium rounded-full">
+                      <%= coupon.isActive ? 'Active' : 'Inactive' %>
+                    </span>
+                  </div>
+                  <div class="space-y-2">
+                    <p>Discount: <%= coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}` %></p>
+                    <p>Minimum Purchase: ₹<%= coupon.minPurchase %></p>
+                    <p>Valid From: <%= coupon.validFrom.toDateString() %></p>
+                    <p>Valid Until: <%= coupon.validUntil.toDateString() %></p>
+                    <p>Max Uses: <%= coupon.maxUses %></p>
+                  </div>
+                  <div class="mt-6 flex justify-end space-x-4">
+                    <button onclick="editCoupon('<%= coupon._id %>')" class="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded-md transition-colors duration-300">
+                      Edit
+                    </button>
+                    <button onclick="deleteCoupon('<%= coupon._id %>')" class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-md transition-colors duration-300">
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              <% }) %>
             <% } else { %>
-                <p>No coupons available at the moment.</p>
+              <p class="col-span-3 text-center text-gray-500 font-medium">No coupons available at the moment.</p>
             <% } %>
-        </div>
+          </div>
     </div>
 
     <script>

@@ -44,8 +44,9 @@ const dateUtils = {
 };
 
 const dashboardService = {
+    // Quick statistics for dashboard overview
     async getQuickStats(dateRange) {
-        const [orderStats, totalUsers, productStats, cancelledOrderStats] = await Promise.all([
+        const [orderStats, activeUsers, productStats, cancelledOrderStats, deliveredOrderStats] = await Promise.all([
             Order.aggregate([
                 {
                     $match: {
@@ -65,7 +66,7 @@ const dashboardService = {
                     }
                 }
             ]),
-            User.countDocuments(),
+            User.countDocuments({ isBlocked: { $ne: true } }),
             Product.aggregate([
                 {
                     $group: {
@@ -94,49 +95,50 @@ const dashboardService = {
                         totalCancelledAmount: { $sum: '$finalAmount' }
                     }
                 }
+            ]),
+            Order.aggregate([
+                {
+                    $match: {
+                        status: 'Delivered',
+                        createdOn: {
+                            $gte: dateRange.start.toDate(),
+                            $lte: dateRange.end.toDate()
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalDeliveredOrders: { $sum: 1 },
+                        totalDeliveredAmount: { $sum: '$finalAmount' }
+                    }
+                }
             ])
         ]);
 
-        const stats = orderStats[0] || {
-            totalOrders: 0,
-            totalRevenue: 0,
-            totalDiscount: 0,
-            avgOrderValue: 0
-        };
-
-        const cancelledStats = cancelledOrderStats[0] || {
-            totalCancelledOrders: 0,
-            totalCancelledAmount: 0
-        };
-
-        // Calculate completed orders (total - cancelled)
-        const totalCompletedOrders = stats.totalOrders - cancelledStats.totalCancelledOrders;
-
         return {
-            totalOrders: stats.totalOrders,
-            totalRevenue: stats.totalRevenue,
-            totalDiscount: stats.totalDiscount,
-            avgOrderValue: stats.avgOrderValue,
-            totalUsers,
+            totalOrders: orderStats[0]?.totalOrders || 0,
+            totalRevenue: orderStats[0]?.totalRevenue || 0,
+            totalDiscount: orderStats[0]?.totalDiscount || 0,
+            avgOrderValue: orderStats[0]?.avgOrderValue || 0,
+            activeUsers,
             totalProducts: productStats[0]?.totalProducts || 0,
             lowStockProducts: productStats[0]?.lowStock || 0,
-            totalCancelledOrders: cancelledStats.totalCancelledOrders,
-            totalCancelledAmount: cancelledStats.totalCancelledAmount,
-            totalCompletedOrders
+            totalCancelledOrders: cancelledOrderStats[0]?.totalCancelledOrders || 0,
+            totalCancelledAmount: cancelledOrderStats[0]?.totalCancelledAmount || 0,
+            totalCompletedOrders: deliveredOrderStats[0]?.totalDeliveredOrders || 0
         };
     },
 
-    // Fixed payment method stats with date range
+    // Payment method statistics
     async getPaymentMethodStats(dateRange) {
-        const stats = await Order.aggregate([
+        return Order.aggregate([
             {
                 $match: {
                     createdOn: {
                         $gte: dateRange.start.toDate(),
                         $lte: dateRange.end.toDate()
-                    },
-                    // Optionally exclude cancelled orders if needed
-                    // status: { $ne: 'Cancelled' }
+                    }
                 }
             },
             {
@@ -147,7 +149,7 @@ const dashboardService = {
                     completedOrders: {
                         $sum: {
                             $cond: [
-                                { $ne: ['$status', 'Cancelled'] },
+                                { $eq: ['$status', 'Delivered'] },
                                 1,
                                 0
                             ]
@@ -156,7 +158,7 @@ const dashboardService = {
                     completedAmount: {
                         $sum: {
                             $cond: [
-                                { $ne: ['$status', 'Cancelled'] },
+                                { $eq: ['$status', 'Delivered'] },
                                 '$finalAmount',
                                 0
                             ]
@@ -171,17 +173,19 @@ const dashboardService = {
                     totalOrders: 1,
                     completedOrders: 1,
                     completedAmount: 1,
-                    cancelledOrders: { $subtract: ['$totalOrders', '$completedOrders'] },
-                    cancelledAmount: { $subtract: ['$totalAmount', '$completedAmount'] }
+                    cancelledOrders: { 
+                        $subtract: ['$totalOrders', '$completedOrders']
+                    },
+                    cancelledAmount: { 
+                        $subtract: ['$totalAmount', '$completedAmount'] 
+                    }
                 }
             },
             { $sort: { completedAmount: -1 } }
         ]);
-
-        return stats;
     },
-  
 
+    // Compare current period with previous period
     async getPeriodComparison(currentRange, previousRange) {
         const [currentStats, previousStats] = await Promise.all([
             Order.aggregate([
@@ -229,6 +233,7 @@ const dashboardService = {
         };
     },
 
+    // Daily sales analytics
     async getSalesAnalytics(dateRange) {
         return Order.aggregate([
             {
@@ -254,6 +259,7 @@ const dashboardService = {
         ]);
     },
 
+    // Top 10 best-selling products
     async getTopProducts(dateRange) {
         return Order.aggregate([
             {
@@ -261,7 +267,8 @@ const dashboardService = {
                     createdOn: {
                         $gte: dateRange.start.toDate(),
                         $lte: dateRange.end.toDate()
-                    }
+                    },
+                    status: 'Delivered'
                 }
             },
             { $unwind: '$orderedItems' },
@@ -269,11 +276,12 @@ const dashboardService = {
                 $group: {
                     _id: '$orderedItems.product',
                     totalQuantity: { $sum: '$orderedItems.quantity' },
-                    totalRevenue: { $sum: { $multiply: ['$orderedItems.price', '$orderedItems.quantity'] } }
+                    totalRevenue: { $sum: { $multiply: ['$orderedItems.price', '$orderedItems.quantity'] } },
+                    totalOrders: { $sum: 1 }
                 }
             },
             { $sort: { totalRevenue: -1 } },
-            { $limit: 5 },
+            { $limit: 10 },
             {
                 $lookup: {
                     from: 'products',
@@ -286,6 +294,98 @@ const dashboardService = {
         ]);
     },
 
+    // Top 10 best-selling categories
+    async getTopCategories(dateRange) {
+        return Order.aggregate([
+            {
+                $match: {
+                    createdOn: {
+                        $gte: dateRange.start.toDate(),
+                        $lte: dateRange.end.toDate()
+                    },
+                    status: 'Delivered'
+                }
+            },
+            { $unwind: '$orderedItems' },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: 'orderedItems.product',
+                    foreignField: '_id',
+                    as: 'productInfo'
+                }
+            },
+            { $unwind: '$productInfo' },
+            {
+                $lookup: {
+                    from: 'categories',  // Assuming your categories collection name
+                    localField: 'productInfo.category',
+                    foreignField: '_id',
+                    as: 'categoryInfo'
+                }
+            },
+            { $unwind: '$categoryInfo' },
+            {
+                $group: {
+                    _id: {
+                        id: '$productInfo.category',
+                        name: '$categoryInfo.name'  // Include category name in grouping
+                    },
+                    totalQuantity: { $sum: '$orderedItems.quantity' },
+                    totalRevenue: { $sum: { $multiply: ['$orderedItems.price', '$orderedItems.quantity'] } },
+                    totalOrders: { $sum: 1 }
+                }
+            },
+            { $sort: { totalRevenue: -1 } },
+            { $limit: 10 },
+            {
+                $project: {
+                    _id: '$_id.id',
+                    categoryName: '$_id.name',
+                    totalQuantity: 1,
+                    totalRevenue: 1,
+                    totalOrders: 1
+                }
+            }
+        ]);
+    },
+
+    // Top 10 best-selling brands
+    async getTopBrands(dateRange) {
+        return Order.aggregate([
+            {
+                $match: {
+                    createdOn: {
+                        $gte: dateRange.start.toDate(),
+                        $lte: dateRange.end.toDate()
+                    },
+                    status: 'Delivered'
+                }
+            },
+            { $unwind: '$orderedItems' },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: 'orderedItems.product',
+                    foreignField: '_id',
+                    as: 'productInfo'
+                }
+            },
+            { $unwind: '$productInfo' },
+            {
+                $group: {
+                    _id: '$productInfo.brand',
+                    totalQuantity: { $sum: '$orderedItems.quantity' },
+                    totalRevenue: { $sum: { $multiply: ['$orderedItems.price', '$orderedItems.quantity'] } },
+                    totalOrders: { $sum: 1 }
+                }
+            },
+            { $sort: { totalRevenue: -1 } },
+            { $limit: 10 }
+        ]);
+    },
+
+    // Recent orders
     async getRecentOrders(dateRange) {
         return Order.find({
             createdOn: {
@@ -299,59 +399,90 @@ const dashboardService = {
         .lean();
     },
 
+    // Generate reports (Excel/PDF)
     async generateReport(dateRange, format) {
         const [salesData, topProducts] = await Promise.all([
             this.getSalesAnalytics(dateRange),
             this.getTopProducts(dateRange)
         ]);
         
-        if (format === 'excel') {
-            return this.generateExcelReport(dateRange, salesData, topProducts);
-        } else {
-            return this.generatePDFReport(dateRange, salesData, topProducts);
-        }
+        return format === 'excel' 
+            ? this.generateExcelReport(dateRange, salesData, topProducts)
+            : this.generatePDFReport(dateRange, salesData);
     },
 
     async generateExcelReport(dateRange, salesData, topProducts) {
         const workbook = new ExcelJS.Workbook();
         
-        // Sales Overview Sheet
         const salesSheet = workbook.addWorksheet('Sales Overview');
         salesSheet.columns = [
             { header: 'Date', key: 'date', width: 15 },
-            { header: 'Orders', key: 'orders', width: 10 },
+            { header: 'Total Orders', key: 'orders', width: 15 },
+            { header: 'Completed Orders', key: 'deliveredOrders', width: 15 },
             { header: 'Revenue', key: 'revenue', width: 15 },
             { header: 'Discount', key: 'discount', width: 15 },
             { header: 'Avg Order Value', key: 'avgOrder', width: 15 },
-            // New columns
             { header: 'Cancelled Orders', key: 'cancelledOrders', width: 15 },
             { header: 'Cancelled Amount', key: 'cancelledAmount', width: 15 }
         ];
         
-        // Fetch cancelled order details for the date range
-        const cancelledOrders = await Order.aggregate([
-            {
-                $match: {
-                    status: 'Cancelled',
-                    createdOn: {
-                        $gte: dateRange.start.toDate(),
-                        $lte: dateRange.end.toDate()
+        // Fetch both cancelled and delivered orders
+        const [cancelledOrders, deliveredOrders] = await Promise.all([
+            Order.aggregate([
+                {
+                    $match: {
+                        status: 'Cancelled',
+                        createdOn: {
+                            $gte: dateRange.start.toDate(),
+                            $lte: dateRange.end.toDate()
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdOn' } },
+                        cancelledOrdersCount: { $sum: 1 },
+                        cancelledAmount: { $sum: '$finalAmount' }
                     }
                 }
-            },
-            {
-                $group: {
-                    _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdOn' } },
-                    cancelledOrdersCount: { $sum: 1 },
-                    cancelledAmount: { $sum: '$finalAmount' }
+            ]),
+            Order.aggregate([
+                {
+                    $match: {
+                        status: 'Delivered',  // Only delivered orders count as completed
+                        createdOn: {
+                            $gte: dateRange.start.toDate(),
+                            $lte: dateRange.end.toDate()
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdOn' } },
+                        deliveredOrdersCount: { $sum: 1 },
+                        deliveredAmount: { $sum: '$finalAmount' }
+                    }
                 }
-            }
+            ])
         ]);
     
-        // Create a map of cancelled orders for easy lookup
         const cancelledOrderMap = new Map(
             cancelledOrders.map(item => [item._id, item])
         );
+    
+        const deliveredOrderMap = new Map(
+            deliveredOrders.map(item => [item._id, item])
+        );
+    
+        // Initialize totals
+        let totalStats = {
+            totalOrders: 0,
+            totalDeliveredOrders: 0,
+            totalRevenue: 0,
+            totalDiscount: 0,
+            totalCancelledOrders: 0,
+            totalCancelledAmount: 0
+        };
     
         salesData.forEach(data => {
             const cancelledData = cancelledOrderMap.get(data._id) || { 
@@ -359,24 +490,76 @@ const dashboardService = {
                 cancelledAmount: 0 
             };
     
-            salesSheet.addRow({
+            const deliveredData = deliveredOrderMap.get(data._id) || {
+                deliveredOrdersCount: 0,
+                deliveredAmount: 0
+            };
+    
+            const rowData = {
                 date: moment(data._id).format('DD-MM-YYYY'),
                 orders: data.totalOrders,
+                deliveredOrders: deliveredData.deliveredOrdersCount,
                 revenue: data.totalRevenue,
                 discount: data.totalDiscount,
                 avgOrder: data.avgOrderValue,
                 cancelledOrders: cancelledData.cancelledOrdersCount,
                 cancelledAmount: cancelledData.cancelledAmount
-            });
+            };
+    
+            // Add row to sheet
+            salesSheet.addRow(rowData);
+    
+            // Update totals
+            totalStats.totalOrders += data.totalOrders;
+            totalStats.totalDeliveredOrders += deliveredData.deliveredOrdersCount;
+            totalStats.totalRevenue += data.totalRevenue;
+            totalStats.totalDiscount += data.totalDiscount;
+            totalStats.totalCancelledOrders += cancelledData.cancelledOrdersCount;
+            totalStats.totalCancelledAmount += cancelledData.cancelledAmount;
+        });
+    
+        // Add a blank row for spacing
+        salesSheet.addRow({});
+    
+        // Add totals row with bold formatting
+        const totalsRow = salesSheet.addRow({
+            date: 'TOTAL',
+            orders: totalStats.totalOrders,
+            deliveredOrders: totalStats.totalDeliveredOrders,
+            revenue: totalStats.totalRevenue,
+            discount: totalStats.totalDiscount,
+            avgOrder: totalStats.totalRevenue / totalStats.totalDeliveredOrders, // Calculate overall average
+            cancelledOrders: totalStats.totalCancelledOrders,
+            cancelledAmount: totalStats.totalCancelledAmount
+        });
+    
+        // Style the totals row
+        totalsRow.eachCell((cell) => {
+            cell.font = { bold: true };
+            cell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'FFE0E0E0' }
+            };
+        });
+    
+        // Format numbers in the entire sheet
+        salesSheet.eachRow((row, rowNumber) => {
+            if (rowNumber > 1) { // Skip header row
+                const cells = ['revenue', 'discount', 'avgOrder', 'cancelledAmount'];
+                cells.forEach(key => {
+                    const cell = row.getCell(salesSheet.getColumn(key).number);
+                    cell.numFmt = '#,##0.00';
+                });
+            }
         });
         
-        // Top Products Sheet
+        // Add top products sheet
         const productsSheet = workbook.addWorksheet('Top Products');
         productsSheet.columns = [
             { header: 'Product', key: 'product', width: 30 },
             { header: 'Quantity', key: 'quantity', width: 15 },
             { header: 'Revenue', key: 'revenue', width: 15 },
-            // New columns
             { header: 'Category', key: 'category', width: 15 },
             { header: 'Current Stock', key: 'stock', width: 15 }
         ];
@@ -395,137 +578,128 @@ const dashboardService = {
     },
     
     async generatePDFReport(dateRange, salesData) {
-        // Validate input parameters
-        if (!dateRange || !salesData ) {
+        if (!dateRange || !salesData) {
             throw new Error('Invalid input: Missing required report data');
         }
-    
+
         const doc = new PDFDocument();
         
-        // Header
-        doc.fontSize(20).text('Sales Report', { align: 'center' });
+        // Website Details Header
+        doc.fontSize(24).text('Sales Report', { align: 'center' });
         doc.moveDown();
         
-        // Date Range - Add null checks
-        const startDate = dateRange.start ? dateRange.start.format('DD-MM-YYYY') : 'N/A'; 
-        const endDate = dateRange.end ? dateRange.end.format('DD-MM-YYYY') : 'N/A'; 
-        doc.fontSize(12).text(`Period: ${startDate} to ${endDate}`);
+        // Add website details
+        doc.fontSize(12)
+           .text('Gerad-Fashion', { align: 'center' })
+           .text('www.geradfashion.shop', { align: 'center' })
+           .text('Contact: geradfashion@gmail.com', { align: 'center' });
         doc.moveDown();
-        
-        // Fetch cancelled order details for the date range
-        const cancelledOrders = await Order.aggregate([
-            {
-                $match: {
-                    status: 'Cancelled',
-                    createdOn: {
-                        $gte: dateRange.start.toDate(),
-                        $lte: dateRange.end.toDate()
-                    }
-                }
-            },
-            {
-                $group: {
-                    _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdOn' } },
-                    cancelledOrdersCount: { $sum: 1 },
-                    cancelledAmount: { $sum: '$finalAmount' }
-                }
-            }
-        ]);
-    
-        // Create a map of cancelled orders for easy lookup
-        const cancelledOrderMap = new Map(
-            cancelledOrders.map(item => [item._id, item])
-        );
-        
-        // Sales Overview
-        doc.fontSize(16).text('Sales Overview');
+
+        // Date Range
+        const startDate = dateRange.start.format('DD-MM-YYYY');
+        const endDate = dateRange.end.format('DD-MM-YYYY');
+        doc.text(`Report Period: ${startDate} to ${endDate}`, { align: 'center' });
+        doc.moveDown().moveDown();
+
+        // Summary Section
+        const summaryStats = await this.getQuickStats(dateRange);
+        doc.fontSize(14).text('Summary Statistics', { underline: true });
+        doc.fontSize(10)
+           .text(`Total Revenue: $${summaryStats.totalRevenue.toFixed(2)}`)
+           .text(`Total Orders: ${summaryStats.totalOrders}`)
+           .text(`Total Discount: $${summaryStats.totalDiscount.toFixed(2)}`)
+           .text(`Average Order Value: $${summaryStats.avgOrderValue.toFixed(2)}`)
+           .text(`Completed Orders: ${summaryStats.totalCompletedOrders}`)
+           .text(`Cancelled Orders: ${summaryStats.totalCancelledOrders}`);
+        doc.moveDown().moveDown();
+
+        // Daily Sales Breakdown
+        doc.fontSize(14).text('Daily Sales Breakdown', { underline: true });
         doc.moveDown();
-        
-        let y = doc.y;
-        const headers = ['Date', 'Orders', 'Revenue', 'Discount', 'Cancelled Orders', 'Cancelled Amount'];
+
+        // Table headers
+        const startY = doc.y;
         doc.fontSize(10);
-        
+        let currentY = startY;
+
+        // Draw table headers
+        const headers = ['Date', 'Orders', 'Revenue', 'Discount', 'Net Revenue'];
+        const columnWidth = 100;
         headers.forEach((header, i) => {
-            doc.text(header, 50 + (i * 100), y);
+            doc.text(header, 50 + (i * columnWidth), currentY);
         });
-        
-        // Safe data processing with fallback values
+
+        currentY += 20;
+
+        // Draw table rows
         salesData.forEach((data) => {
-            // Provide default values to prevent undefined errors
-            const safeData = {
-                _id: data._id || 'N/A',
-                totalOrders: data.totalOrders || 0,
-                totalRevenue: data.totalRevenue || 0,
-                totalDiscount: data.totalDiscount || 0
-            };
-        
-            const cancelledData = cancelledOrderMap.get(safeData._id) || { 
-                cancelledOrdersCount: 0, 
-                cancelledAmount: 0 
-            };
-        
-            y = doc.y + 20;
-            doc.text(moment(safeData._id).format('DD-MM-YYYY'), 50, y); // Change the date format here
-            doc.text(safeData.totalOrders.toString(), 150, y);
-            doc.text(`${safeData.totalRevenue.toFixed(2)}`, 250, y);
-            doc.text(`${safeData.totalDiscount.toFixed(2)}`, 350, y);
-            doc.text(cancelledData.cancelledOrdersCount.toString(), 450, y);
-            doc.text(`${cancelledData.cancelledAmount.toFixed(2)}`, 550, y);
+            if (currentY > 700) { // Check if we need a new page
+                doc.addPage();
+                currentY = 50;
+            }
+
+            const netRevenue = data.totalRevenue - data.totalDiscount;
+            
+            doc.text(moment(data._id).format('DD-MM-YYYY'), 50, currentY)
+               .text(data.totalOrders.toString(), 50 + columnWidth, currentY)
+               .text(`$${data.totalRevenue.toFixed(2)}`, 50 + (columnWidth * 2), currentY)
+               .text(`$${data.totalDiscount.toFixed(2)}`, 50 + (columnWidth * 3), currentY)
+               .text(`$${netRevenue.toFixed(2)}`, 50 + (columnWidth * 4), currentY);
+
+            currentY += 20;
         });
-        
+
         return doc;
     }
 };
 
 
-    const adminDashboardController = {
-        getDashboard: async (req, res, next) => {
-            try {
-                const { reportType = 'weekly', startDate, endDate } = req.query;
-                const dateRange = dateUtils.getDateRange(reportType, startDate, endDate);
-                const previousRange = dateUtils.getPreviousPeriod(dateRange);
-    
-                const [
-                    quickStats,
-                    periodComparison,
-                    salesAnalytics,
-                    topProducts,
-                    recentOrders,
-                    paymentMethodStats
-                ] = await Promise.all([
-                    dashboardService.getQuickStats(dateRange),
-                    dashboardService.getPeriodComparison(dateRange, previousRange),
-                    dashboardService.getSalesAnalytics(dateRange),
-                    dashboardService.getTopProducts(dateRange),
-                    dashboardService.getRecentOrders(dateRange),
-                    dashboardService.getPaymentMethodStats(dateRange)
-                ]);
-                
-                // Calculate totals for payment methods
-                const paymentTotals = paymentMethodStats.reduce((acc, method) => ({
-                    totalAmount: acc.totalAmount + method.totalAmount,
-                    completedAmount: acc.completedAmount + method.completedAmount,
-                    cancelledAmount: acc.cancelledAmount + method.cancelledAmount
-                }), { totalAmount: 0, completedAmount: 0, cancelledAmount: 0 });
-                
-                res.render('dashboard', {
-                    ...quickStats,
-                    periodComparison,
-                    salesAnalytics,
-                    topProducts,
-                    recentOrders,
-                    paymentMethodStats,
-                    paymentTotals,
-                    reportType,
-                    startDate: dateRange.start.format('DD-MM-YYYY'),
-                    endDate: dateRange.end.format('DD-MM-YYYY'),
-                    moment
-                });
-            } catch (error) {
-                console.error('Dashboard Error:', error);
-                next(error);
-            }
-        },
+const adminDashboardController = {
+    getDashboard: async (req, res, next) => {
+        try {
+            const { reportType = 'weekly', startDate, endDate } = req.query;
+            const dateRange = dateUtils.getDateRange(reportType, startDate, endDate);
+            const previousRange = dateUtils.getPreviousPeriod(dateRange);
+
+            const [
+                quickStats,
+                periodComparison,
+                salesAnalytics,
+                topProducts,
+                topCategories,
+                topBrands,
+                recentOrders,
+                paymentMethodStats
+            ] = await Promise.all([
+                dashboardService.getQuickStats(dateRange),
+                dashboardService.getPeriodComparison(dateRange, previousRange),
+                dashboardService.getSalesAnalytics(dateRange),
+                dashboardService.getTopProducts(dateRange),
+                dashboardService.getTopCategories(dateRange),
+                dashboardService.getTopBrands(dateRange),
+                dashboardService.getRecentOrders(dateRange),
+                dashboardService.getPaymentMethodStats(dateRange)
+            ]);
+            
+            res.render('dashboard', {
+                ...quickStats,
+                periodComparison,
+                salesAnalytics,
+                topProducts,
+                topCategories,
+                topBrands,
+                recentOrders,
+                paymentMethodStats,
+                reportType,
+                startDate: dateRange.start.format('DD-MM-YYYY'),
+                endDate: dateRange.end.format('DD-MM-YYYY'),
+                moment
+            });
+        } catch (error) {
+            console.error('Dashboard Error:', error);
+            next(error);
+        }
+    },
 
     getDashboardData: async (req, res, next) => {
         try {

@@ -323,6 +323,8 @@ const loadLogin = async (req, res) => {
 
 const login = async (req, res) => {
     try {
+
+        
         const { email, password } = req.body;
         const findUser = await user.findOne({ isAdmin: 0, email: email });
         if (!findUser) {
@@ -434,9 +436,9 @@ const loadProfile = async (req, res) => {
     try {
         if (!req.session.user) {
             return res.redirect('/login');
-        }
-        
-        const userData = await user.findById(req.session.user.id);
+          }
+          
+          const userData = await user.findById(req.session.user.id);
         if (!userData) {
             return res.status(404).render('page-404', { message: 'User not found' });
         }
@@ -456,22 +458,21 @@ const loadProfile = async (req, res) => {
         const processedOrders = orders.map(order => {
             const orderObj = order.toObject();
             orderObj.orderedItems = order.orderedItems.map(item => {
-                const productImage = item.product.productImage && item.product.productImage.length > 0
-                    ? path.join('/uploads/product-images', item.product.productImage[0])
-                    : '/placeholder-image.jpg';
-                
-                return {
-                    _id: item._id,
-                    product: item.product,
-                    quantity: item.quantity,
-                    price: item.price,
-                    status: item.status || 'Pending',
-                    productImage: productImage,
-                };
+              const productImage = item.product && item.product.productImage && item.product.productImage.length > 0
+                ? path.join('/uploads/product-images', item.product.productImage[0])
+                : '/placeholder-image.jpg';
+          
+              return {
+                _id: item._id,
+                product: item.product,
+                quantity: item.quantity,
+                price: item.price,
+                status: item.status || 'Pending',
+                productImage: productImage,
+              };
             });
             return orderObj;
-        });
-
+          });
         // Extract coupon history only from orders that used coupons
         const couponHistory = orders
             .filter(order => order.coupon && order.coupon.applied)
@@ -546,7 +547,7 @@ const updateProfile = async (req, res) => {
         }
         
         // Redirect to profile page after update with a query parameter
-        res.redirect('/profile?update=success');
+        res.redirect('/profile');
     } catch (error) {
         console.error('Error updating profile:', error);
         res.status(500).json({ error: 'An error occurred while updating the profile' });
@@ -586,7 +587,12 @@ const loadContact = async (req,res)=>{
 
 const loadAbout= async (req,res)=>{
     try {
-        res.render("about")
+        const userId = req.session.user?.id;
+        const userData = await user.findById(userId);
+        res.render("about",{
+            user: userData,
+            userEmail: req.session.user?.email
+        })
     } catch (error) {
         console.log(error);
         

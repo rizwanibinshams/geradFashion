@@ -37,21 +37,21 @@ router.get('/auth/google',passport.authenticate('google',{scope:['profile','emai
 //     res.redirect('/')
 // })
 router.get('/auth/google/callback', 
-    passport.authenticate('google', { failureRedirect: '/login' }),
-    (req, res) => {
-      // Set session data
-      req.session.user = {
-        id: req.user._id,
-        email: req.user.email,
-        name: req.user.name
-      };
-      
-      // Redirect to returnTo URL or default to home
-      const returnTo = req.session.returnTo || '/';
-      delete req.session.returnTo;
-      res.redirect(returnTo);
-    }
-  );
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  (req, res) => {
+    // Set session data
+    req.session.user = {
+      id: req.user._id,
+      email: req.user.email,
+      name: req.user.name
+    };
+    
+    // Redirect to returnTo URL or default to home
+    const returnTo = req.session.returnTo || '/';
+    delete req.session.returnTo;
+    res.redirect(returnTo);
+  }
+);
 
 
  // Login Management
