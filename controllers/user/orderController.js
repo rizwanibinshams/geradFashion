@@ -6,7 +6,9 @@ const Wallet = require("../../models/walletSchema")
 const mongoose = require('mongoose');
 const { format } = require('date-fns');
 const User = require("../../models/userSchema")
-
+const fs = require('fs');
+const path = require('path');
+const PDFDocument = require('pdfkit');
 
 
 const placeOrder = async (req, res) => {
@@ -313,16 +315,24 @@ const cancelOrderItem = async (req, res) => {
             return res.status(400).json({ message: 'Can only cancel items from pending orders' });
         }
 
-        // Update product stock first
+        // Update product stock
         await Product.findByIdAndUpdate(
             orderItem.product,
             { $inc: { quantity: orderItem.quantity } }
         );
 
+        // Calculate refund amount
+        const refundDetails = order.calculateItemRefundAmount(itemId);
+
         // Update order item status
         orderItem.status = 'Cancelled';
+        orderItem.cancelRequest = {
+            requested: true,
+            requestDate: new Date(),
+            status: 'approved'
+        };
 
-        // Check if all items in the order are cancelled
+        // Check if all items are cancelled
         const allItemsCancelled = order.orderedItems.every(item => 
             item.status === 'Cancelled'
         );
@@ -331,22 +341,8 @@ const cancelOrderItem = async (req, res) => {
             order.status = 'Cancelled';
         }
 
-        // Process refund only if payment method is Razorpay
-        let refundAmount = 0;
-        if (order.paymentMethod === 'razorpay') {
-            const finalAmount = order.finalAmount; // Total charged amount
-
-            // Start with the total amount (final amount) charged
-            refundAmount = finalAmount;
-
-            // Check for and deduct discount if present
-            if (order.discount?.discount && order.discount.discount > 0) {
-                refundAmount -= order.discount.discount; // Deduct discount amount
-            }
-
-            // Ensure that the refund amount is not negative
-            refundAmount = Math.max(refundAmount, 0);
-
+        // Process refund if payment method is Razorpay
+        if (order.paymentMethod === 'razorpay' || order.paymentMethod === 'wallet') {
             // Find or create wallet
             let wallet = await Wallet.findOne({ userId });
             if (!wallet) {
@@ -355,14 +351,16 @@ const cancelOrderItem = async (req, res) => {
                     balance: 0,
                     transactionHistory: []
                 });
-                await wallet.save(); // Save the new wallet to the database
             }
 
-            // Add refund to wallet using the schema method
-            await wallet.addMoney(refundAmount, `Refund for cancelled order item #${order.orderId}`);
+            // Add refund to wallet
+            await wallet.addMoney(
+                refundDetails.refundAmount,
+                `Refund for cancelled item from order #${order.orderId}`
+            );
 
-            // Update the final amount in the order to reflect the refund
-            order.finalAmount -= refundAmount;
+            // Update the final amount in the order
+            order.finalAmount -= refundDetails.refundAmount;
 
             // Save the order
             await order.save();
@@ -371,8 +369,8 @@ const cancelOrderItem = async (req, res) => {
                 success: true,
                 message: 'Item cancelled successfully',
                 order,
-                refundAmount,
-                walletMessage: `₹${refundAmount} has been added to your wallet`
+                refundDetails,
+                walletMessage: `₹${refundDetails.refundAmount.toFixed(2)} has been added to your wallet`
             });
         }
 
@@ -383,7 +381,8 @@ const cancelOrderItem = async (req, res) => {
             success: true,
             message: 'Item cancelled successfully',
             order,
-            walletMessage: null // No refund message since it's not Razorpay
+            refundDetails,
+            walletMessage: null
         });
 
     } catch (error) {
@@ -394,7 +393,6 @@ const cancelOrderItem = async (req, res) => {
         });
     }
 };
-
 
 
 
@@ -503,11 +501,93 @@ const trackOrder = async (req, res) => {
     }
 };
 
+const getOrderDetails = async (req, res) => {
+    try {
+        const orderId = req.params.orderId;
+        const order = await Order.findById(orderId)
+            .populate({
+                path: 'orderedItems.product',
+                select: 'productName price productImage images'
+            });
 
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found' });
+        }
+
+        res.json(order);
+    } catch (error) {
+        console.error('Error fetching order details:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Failed to fetch order details' 
+        });
+    }
+};
+
+
+const downloadInvoice = async (req, res) => {
+    try {
+        const orderId = req.params.id;
+        const order = await Order.findById(orderId).populate('orderedItems.product');
+
+        if (!order) {
+            return res.status(404).send('Order not found');
+        }
+
+        const helpers = {
+            formatCurrency: (amount) => `₹${Number(amount).toFixed(2)}`
+        };
+
+        // Generate the invoice PDF and send it as a download
+        const doc = new PDFDocument();
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=order-${orderId}.pdf`);
+
+        doc.pipe(res);
+
+        // Add content to the PDF document
+        doc.fontSize(18).text(`Order #${order._id}`, { align: 'center' });
+        doc.moveDown(1);
+
+        doc.fontSize(12).text(`Ordered on: ${order.createdOn}`);
+        doc.moveDown(1);
+
+        doc.fontSize(12).text(`Payment Method: ${order.paymentMethod}`);
+        doc.moveDown(1);
+
+        doc.fontSize(14).text('Ordered Items:', { underline: true });
+        doc.moveDown(1);
+
+        order.orderedItems.forEach((item) => {
+            doc.fontSize(12).text(`- ${item.product.productName} x ${item.quantity} (${helpers.formatCurrency(item.price)})`);
+        });
+
+        doc.moveDown(2);
+
+        doc.fontSize(14).text('Order Summary:', { underline: true });
+        doc.moveDown(1);
+
+        doc.fontSize(12).text(`Subtotal: ${helpers.formatCurrency(order.totalPrice)}`);
+        doc.fontSize(12).text(`Shipping: ${order.deliveryCharge > 0 ? helpers.formatCurrency(order.deliveryCharge) : 'Free'}`);
+
+        if (order.coupon && order.coupon.applied) {
+            doc.fontSize(12).text(`Discount (${order.coupon.code}): -${helpers.formatCurrency(order.discount)}`);
+        }
+
+        doc.fontSize(12).text(`Total: ${helpers.formatCurrency(order.finalAmount)}`);
+
+        doc.end();
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send('Error downloading invoice');
+    }
+};
 
 module.exports = {
     placeOrder,
     // cancelOrder,
     cancelOrderItem,
-    trackOrder 
+    trackOrder ,
+    getOrderDetails,
+    downloadInvoice
 }

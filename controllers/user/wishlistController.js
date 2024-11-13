@@ -90,74 +90,72 @@ const removeFromWishlist = async (req, res) => {
 
 
 
-const getWishlist = async (req, res) => {
-  try {
-    const user = req.session.user;
-
-    // Check if the user is logged in
-    if (!user) {
-      return res.redirect('/login'); // If user is not logged in, redirect to login
-    }
-
-    const userId = user.id; // Now safely access the user ID
-    const userData = await User.findById(userId); // Fetch user data
-
-    // Check if the user data is found, if not, redirect to login
-    if (!userData) {
-      return res.redirect('/login');
-    }
+  const getWishlist = async (req, res) => {
+    try {
+      const user = req.session.user;
+  
+      if (!user) {
+        return res.redirect('/login');
+      }
+  
+      const userId = user.id;
+      const userData = await User.findById(userId);
+  
+      if (!userData) {
+        return res.redirect('/login');
+      }
+  
+      const wishlist = await Wishlist.findOne({ userId }).populate({
+        path: 'products.productId',
+        model: 'Product'
+      });
+  
+      let wishlistItems = [];
+      if (wishlist && wishlist.products) {
+        wishlistItems = wishlist.products.map(item => {
+          if (item.productId) {
+            const productImage = item.productId.productImage && item.productId.productImage.length > 0
+              ? path.join('/uploads/product-images', item.productId.productImage[0])
+              : '/placeholder-image.jpg';
+  
+            return {
+              _id: item.productId._id,
+              product: {
+                productName: item.productId.productName,
+                price: item.productId.regularPrice,
+                salePrice: item.productId.salePrice,
+                discountedPrice: item.productId.salePrice,
+                productImage: productImage,
+                brand: item.productId.brand,
+                rating: item.productId.rating,
+                reviewCount: 0,
+                discount: calculateDiscount(item.productId.regularPrice, item.productId.salePrice),
+                description: item.productId.description,
+                quantity: item.productId.quantity,
+                sizes: item.productId.size || [], 
+              }
+            };
+          }
+          return null;
+        }).filter(item => item !== null);
+      }
 
     
-
-    const wishlist = await Wishlist.findOne({ userId }).populate({
-      path: 'products.productId',
-      model: 'Product'
-    });
-
-    let wishlistItems = [];
-    if (wishlist && wishlist.products) {
-      wishlistItems = wishlist.products.map(item => {
-        if (item.productId) {
-          const productImage = item.productId.productImage && item.productId.productImage.length > 0
-            ? path.join('/uploads/product-images', item.productId.productImage[0])
-            : '/placeholder-image.jpg';
-
-          return {
-            _id: item.productId._id,
-            product: {
-              productName: item.productId.productName,
-              price: item.productId.regularPrice,
-              salePrice: item.productId.salePrice,
-              discountedPrice: item.productId.salePrice,  // You may want to calculate this
-              productImage: productImage,
-              brand: item.productId.brand,
-              rating: item.productId.rating,
-              reviewCount: 0,  // Add this field to your schema if needed
-              discount: calculateDiscount(item.productId.regularPrice, item.productId.salePrice),
-              description: item.productId.description,
-            }
-          };
-        }
-        return null;
-      }).filter(item => item !== null);
+  
+      res.render('wishlist', { wishlistItems, user: userData });
+      
+    } catch (error) {
+      console.error('Error fetching wishlist:', error);
+      res.status(500).render('page-404', { message: 'An error occurred while fetching your wishlist.' });
     }
-
-    // Render wishlist with items and user data
-    res.render('wishlist', { wishlistItems, user: userData });
-    
-  } catch (error) {
-    console.error('Error fetching wishlist:', error);
-    res.status(500).render('page-404', { message: 'An error occurred while fetching your wishlist.' });
+  };
+  
+  function calculateDiscount(regularPrice, salePrice) {
+    if (regularPrice > salePrice) {
+      return Math.round(((regularPrice - salePrice) / regularPrice) * 100);
+    }
+    return 0;
   }
-};
-
-// Helper function to calculate discount
-function calculateDiscount(regularPrice, salePrice) {
-  if (regularPrice > salePrice) {
-    return Math.round(((regularPrice - salePrice) / regularPrice) * 100);
-  }
-  return 0;
-}
 
 
 module.exports = {

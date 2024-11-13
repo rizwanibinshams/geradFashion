@@ -95,8 +95,7 @@ router.delete('/remove/:itemId', cartController.removeFromCart);
 
 
 
-
-
+router.get('/api/orders/:orderId', orderController.getOrderDetails);
 
 router.get('/profile',userController.loadProfile)
 
@@ -152,7 +151,8 @@ router.post('/wishlist/add', wishlistController.addToWishlist);
 router.delete('/wishlist/remove/:productId', wishlistController.removeFromWishlist);
 router.get('/wishlist', wishlistController.getWishlist);
 
-
+//donwload invoice 
+router.get('/orders/:id/invoice', orderController.downloadInvoice);
 
 //about page
 
@@ -164,9 +164,13 @@ router.post('/wallet/add', walletController.addMoneyToWallet);
 
 // Route to view wallet balance
 router.get('/wallet/:userId/balance', walletController.getWalletBalance);
+router.get('/get-wallet-balance', walletController.getWalletBalance);
+router.post('/process-wallet-payment', walletController.processWalletPayment);
+router.post('/add-money-to-wallet',  walletController.addMoneyToWallet);
+router.get('/wallet-transactions', walletController.getTransactionHistory);
 
 // Route to deduct money from the wallet (if needed)
-router.post('/wallet/deduct', walletController.deductMoneyFromWallet);
+// router.post('/wallet/deduct', walletController.deductMoneyFromWallet);
 
 // User route for applying a coupon
  router.post('/applyCoupon',couponController.applyCoupon)

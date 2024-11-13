@@ -55,6 +55,19 @@ const orderStatusEnum = [
     'Returned',
     'Completed'
 ];
+
+const itemStatusEnum = [
+    'Pending',
+    'Processing',
+    'Shipped',
+    'Delivered',
+    'Cancel Requested',
+    'Cancelled',
+    'Return Requested',
+    'Return Approved',
+    'Returned',
+    'Completed'
+];
 // Order Schema
 const orderSchema = new Schema({
     orderId: {
@@ -75,7 +88,8 @@ const orderSchema = new Schema({
         product: {
             type: Schema.Types.ObjectId,
             ref: 'Product',
-            required: true
+            required: true,
+            
         },
         quantity: {
             type: Number,
@@ -85,11 +99,24 @@ const orderSchema = new Schema({
             type: Number,
             default: 0
         },
-        status: {  
+        status: {
             type: String,
             required: true,
-            enum: orderStatusEnum,
-             default: 'Pending'
+            enum: itemStatusEnum,
+            default: 'Pending'
+        },
+        cancelRequest: {
+            requested: { type: Boolean, default: false },
+            requestDate: { type: Date },
+            reason: { type: String },
+            status: { type: String, enum: ['pending', 'approved', 'rejected'] }
+        },
+        returnRequest: {
+            requested: { type: Boolean, default: false },
+            requestDate: { type: Date },
+            reason: { type: String, enum: returnReasonEnum },
+            status: { type: String, enum: ['pending', 'approved', 'rejected'] },
+            comments: { type: String }
         },
         _id: { type: mongoose.Schema.Types.ObjectId, auto: true }
     }],
@@ -143,10 +170,17 @@ const orderSchema = new Schema({
     return: {
         requested: { type: Boolean, default: false },
         requestDate: { type: Date },
+        items: [{                           // Add this items array
+            itemId: { 
+                type: Schema.Types.ObjectId, 
+                ref: 'orderedItems' 
+            }
+        }],
         reason: { 
             type: String,
             enum: returnReasonEnum
         },
+       
         otherReason: { 
             type: String,
             // Required only if reason is 'other'
@@ -248,6 +282,141 @@ orderSchema.methods.approveReturn = async function() {
     await this.save();
     return this;
 };
+
+orderSchema.methods.cancelItem = async function(itemId, reason) {
+    const item = this.orderedItems.id(itemId);
+    if (!item) throw new Error('Item not found');
+    
+    item.status = 'Cancel Requested';
+    item.cancelRequest = {
+        requested: true,
+        requestDate: new Date(),
+        reason: reason,
+        status: 'pending'
+    };
+    
+    // Check if all items are cancelled/cancel requested
+    const activeItems = this.orderedItems.filter(item => 
+        !['Cancelled', 'Cancel Requested'].includes(item.status)
+    );
+    
+    if (activeItems.length === 0) {
+        this.status = 'Cancelled';
+    }
+    
+    return this.save();
+};
+
+// Add method to return single item
+orderSchema.methods.returnItem = async function(itemId, reason, comments) {
+    const item = this.orderedItems.id(itemId);
+    if (!item) throw new Error('Item not found');
+    
+    if (item.status !== 'Delivered') {
+        throw new Error('Only delivered items can be returned');
+    }
+    
+    item.status = 'Return Requested';
+    item.returnRequest = {
+        requested: true,
+        requestDate: new Date(),
+        reason: reason,
+        status: 'pending',
+        comments: comments
+    };
+    
+    // Update main order status if all items are return requested
+    const activeItems = this.orderedItems.filter(item => 
+        !['Returned', 'Return Requested'].includes(item.status)
+    );
+    
+    if (activeItems.length === 0) {
+        this.status = 'Return Requested';
+    }
+    
+    return this.save();
+};
+
+orderSchema.methods.calculateItemRefundAmount = function(itemId) {
+    // Find the specific item
+    const orderItem = this.orderedItems.id(itemId);
+    if (!orderItem) {
+        throw new Error('Order item not found');
+    }
+
+    // Get the item's subtotal
+    const itemSubtotal = orderItem.price * orderItem.quantity;
+
+    // Calculate item's proportion of the total order
+    const orderSubtotal = this.orderedItems.reduce((sum, item) => 
+        sum + (item.price * item.quantity), 0);
+    const itemProportion = itemSubtotal / orderSubtotal;
+
+    // Calculate proportional coupon discount for this item
+    let itemCouponDiscount = 0;
+    if (this.coupon.applied && this.coupon.discountAmount > 0) {
+        itemCouponDiscount = this.coupon.discountAmount * itemProportion;
+    }
+
+    // Calculate proportional delivery charge for this item (if you want to refund it)
+    const itemDeliveryCharge = this.deliveryCharge * itemProportion;
+
+    // Calculate final refund amount
+    const refundAmount = itemSubtotal - itemCouponDiscount;
+
+    return {
+        itemSubtotal,
+        itemCouponDiscount,
+        itemDeliveryCharge,
+        refundAmount,
+        itemProportion
+    };
+};
+
+orderSchema.methods.calculateReturnRefundAmount = function(returnedItems) {
+    // Calculate total order subtotal (before discount)
+    const orderSubtotal = this.orderedItems.reduce((sum, item) => 
+        sum + (item.price * item.quantity), 0);
+
+    let totalRefundAmount = 0;
+    const refundDetails = [];
+
+    // Calculate refund for each returned item
+    returnedItems.forEach(item => {
+        const itemSubtotal = item.price * item.quantity;
+        const itemProportion = itemSubtotal / orderSubtotal;
+
+        // Calculate proportional coupon discount for this item
+        let itemCouponDiscount = 0;
+        if (this.coupon.applied && this.coupon.discountAmount > 0) {
+            itemCouponDiscount = this.coupon.discountAmount * itemProportion;
+        }
+
+        // Calculate proportional delivery charge (only if all items are being returned)
+        let itemDeliveryCharge = 0;
+        if (returnedItems.length === this.orderedItems.length && this.deliveryCharge > 0) {
+            itemDeliveryCharge = this.deliveryCharge * itemProportion;
+        }
+
+        const itemRefundAmount = itemSubtotal - itemCouponDiscount + itemDeliveryCharge;
+        totalRefundAmount += itemRefundAmount;
+
+        refundDetails.push({
+            itemId: item._id,
+            itemSubtotal,
+            itemCouponDiscount,
+            itemDeliveryCharge,
+            itemRefundAmount,
+            itemProportion
+        });
+    });
+
+    return {
+        totalRefundAmount,
+        refundDetails
+    };
+};
+
 
 // Use mongoose.models to prevent overwriting the model
 const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);

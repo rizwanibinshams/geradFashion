@@ -26,6 +26,38 @@
         .price-tag {
             font-family: 'Playfair Display', serif;
         }
+
+        .quantity-controls {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+        }
+        .quantity-btn {
+            padding: 0.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .quantity-input {
+            width: 3rem;
+            text-align: center;
+            border: none;
+            -moz-appearance: textfield;
+        }
+        .quantity-input::-webkit-outer-spin-button,
+        .quantity-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .size-selector {
+            padding: 0.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+
     </style>
 </head>
 <body class="bg-gray-50">
@@ -80,19 +112,51 @@
                             
                             <p class="text-gray-600 text-sm mb-6"><%= item.product.description %></p>
                             <div class="flex justify-between items-center">
-                                <a href="/productDetails?id=<%= item._id %>">
-                                <button   class="add-to-cart bg-black hover:bg-gray-900 text-white font-medium py-2.5 px-6 rounded-full transition-colors duration-200 flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z"/>
-                                    </svg>
-                                    View Product
-                                </button>
-                            </a>
-                                <button class="remove-item text-gray-400 hover:text-red-500 transition-colors duration-200">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                    </svg>
-                                </button>
+                               
+
+                            <div class="space-y-4 mt-4">
+                                <!-- Size Selector -->
+                                <select class="size-selector" name="size" required>
+                                    <option value="">Select Size</option>
+                                    <% if (item.product.sizes && item.product.sizes.length > 0) { %>
+                                        <% item.product.sizes.forEach(function(size) { %>
+                                            <option value="<%= size %>"><%= size %></option>
+                                        <% }); %>
+                                    <% } %>
+                                </select>
+
+                                <!-- Quantity Controls -->
+                                <div class="quantity-controls">
+                                    <button type="button" class="quantity-btn decrease-quantity">
+                                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                                        </svg>
+                                    </button>
+                                    <input type="number" class="quantity-input" value="1" min="1" max="<%= item.product.quantity %>">
+                                    <button type="button" class="quantity-btn increase-quantity">
+                                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-between items-center">
+                                    <button class="add-to-cart bg-black hover:bg-gray-900 text-white font-medium py-2.5 px-6 rounded-full transition-colors duration-200 flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z"/>
+                                        </svg>
+                                        Add to Cart
+                                    </button>
+                                    <!-- ... existing remove button ... -->
+                                    <button class="remove-item text-gray-400 hover:text-red-500 transition-colors duration-200">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                                
                             </div>
                         </div>
                     </div>
@@ -110,84 +174,163 @@
     </div>
 
     <script>
-       
 
 
-        function removeItem(itemId) {
-    // Show confirmation dialog before removing the item
-    Swal.fire({
-        title: 'Are you sure?',
-        text: "Do you want to remove the product from your wishlist?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Yes, remove it!',
-        cancelButtonText: 'Cancel',
-        backdrop: 'rgba(0,0,0,0.4)'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Proceed with the removal if confirmed
-            fetch(`/wishlist/remove/${itemId}`, {
-                method: 'DELETE',
-                credentials: 'same-origin'
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.message === "Product removed from wishlist successfully") {
-                    const itemElement = document.querySelector(`[data-item-id="${itemId}"]`);
-                    if (itemElement) {
-                        itemElement.remove();
-                        if (document.querySelectorAll('.wishlist-item').length === 0) {
-                            location.reload();
-                        }
 
-                        // Show success alert after removal
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Removed',
-                            text: 'Item removed from your wishlist',
-                            showConfirmButton: false,
-                            timer: 1500,
-                            backdrop: 'rgba(0,0,0,0.1)'
-                        });
-                    }
-                } else {
-                    throw new Error(data.message || 'Unknown error occurred');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                // Show error alert if the removal fails
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Unable to Remove Item',
-                    text: 'Please try again later',
-                    confirmButtonColor: '#000'
-                });
-            });
-        }
-    });
-}
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle quantity controls
+    document.querySelectorAll('.quantity-controls').forEach(control => {
+        const input = control.querySelector('.quantity-input');
+        const decreaseBtn = control.querySelector('.decrease-quantity');
+        const increaseBtn = control.querySelector('.increase-quantity');
 
-
-        document.getElementById('wishlist-items').addEventListener('click', function(event) {
-            const addToCartButton = event.target.closest('.add-to-cart');
-            const removeItemButton = event.target.closest('.remove-item');
-            
-            if (addToCartButton) {
-                const itemId = addToCartButton.closest('.wishlist-item').dataset.itemId;
-                addToCart(itemId);
-            } else if (removeItemButton) {
-                const itemId = removeItemButton.closest('.wishlist-item').dataset.itemId;
-                removeItem(itemId);
+        decreaseBtn.addEventListener('click', () => {
+            const currentValue = parseInt(input.value);
+            if (currentValue > 1) {
+                input.value = currentValue - 1;
             }
         });
+
+        increaseBtn.addEventListener('click', () => {
+            const currentValue = parseInt(input.value);
+            const maxValue = parseInt(input.getAttribute('max'));
+            if (currentValue < maxValue) {
+                input.value = currentValue + 1;
+            }
+        });
+
+        input.addEventListener('change', () => {
+            const value = parseInt(input.value);
+            const max = parseInt(input.getAttribute('max'));
+            if (value < 1) input.value = 1;
+            if (value > max) input.value = max;
+        });
+    });
+
+    // Handle Add to Cart
+    document.querySelectorAll('.add-to-cart').forEach(button => {
+        button.addEventListener('click', async function() {
+            const wishlistItem = this.closest('.wishlist-item');
+            const productId = wishlistItem.dataset.itemId;
+            const sizeSelect = wishlistItem.querySelector('.size-selector');
+            const quantityInput = wishlistItem.querySelector('.quantity-input');
+
+            const size = sizeSelect.value;
+            const quantity = parseInt(quantityInput.value);
+
+            if (!size) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Please select a size',
+                    confirmButtonColor: '#000'
+                });
+                return;
+            }
+
+            try {
+                const response = await fetch('/addToCart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        productId,
+                        size,
+                        quantity
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Added to Cart',
+                        text: 'Product has been added to your cart',
+                        showConfirmButton: false,
+                        timer: 1500,
+                        backdrop: 'rgba(0,0,0,0.1)'
+                    });
+                } else {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                        return;
+                    }
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Unable to add item to cart',
+                    confirmButtonColor: '#000'
+                });
+            }
+        });
+    });
+
+    // Handle Remove Item
+    document.querySelectorAll('.remove-item').forEach(button => {
+        button.addEventListener('click', function() {
+            const wishlistItem = this.closest('.wishlist-item');
+            const itemId = wishlistItem.dataset.itemId;
+            
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you want to remove the product from your wishlist?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, remove it!',
+                cancelButtonText: 'Cancel',
+                backdrop: 'rgba(0,0,0,0.4)'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/wishlist/remove/${itemId}`, {
+                        method: 'DELETE',
+                        credentials: 'same-origin'
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.message === "Product removed from wishlist successfully") {
+                            wishlistItem.remove();
+                            
+                            if (document.querySelectorAll('.wishlist-item').length === 0) {
+                                location.reload();
+                            }
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Removed',
+                                text: 'Item removed from your wishlist',
+                                showConfirmButton: false,
+                                timer: 1500,
+                                backdrop: 'rgba(0,0,0,0.1)'
+                            });
+                        } else {
+                            throw new Error(data.message || 'Unknown error occurred');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Unable to Remove Item',
+                            text: 'Please try again later',
+                            confirmButtonColor: '#000'
+                        });
+                    });
+                }
+            });
+        });
+    });
+});
     </script>
 </body>
 </html>

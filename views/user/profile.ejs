@@ -293,7 +293,7 @@
                 </div>
 
                 <!-- Orders Section -->
-                <div x-show="activeSection === 'orders'" x-cloak class=" shadow-sm rounded-lg overflow-hidden">
+                <div x-show="activeSection === 'orders'" x-cloak class="shadow-sm rounded-lg overflow-hidden">
                     <div class="min-h-screen bg-gray-50 py-8">
                         <div class="max-w-6xl mx-auto px-4">
                             <div class="bg-white shadow-xl rounded-xl overflow-hidden">
@@ -324,7 +324,7 @@
                                                             </span>
                                                         </div>
                                                     </div>
-                    
+                
                                                     <div class="p-6">
                                                         <div class="grid md:grid-cols-2 gap-8">
                                                             <!-- Ordered Items -->
@@ -338,17 +338,48 @@
                                                                             </div>
                                                                             <div class="flex-1 min-w-0">
                                                                                 <div class="flex justify-between items-start">
-                                                                                    <h5 class="font-medium text-gray-800 truncate">
-                                                                                        <%= item.product?.productName || 'Product No Longer Available' %>
-                                                                                    </h5>
-                                                                                    <% if (order.status === 'Pending' && (!item.status || item.status === 'Pending')) { %>
+                                                                                    <div>
+                                                                                        <h5 class="font-medium text-gray-800 truncate">
+                                                                                            <%= item.product?.productName || 'Product No Longer Available' %>
+                                                                                        </h5>
+                                                                                        <!-- Item Status Badge -->
+                                                                                        <span class="inline-block px-2 py-1 text-xs rounded-full mt-1
+                                                                                    <%= order.status === 'Delivered' ? 
+                                                                                        (item.status === 'Return Requested' ? 'bg-purple-50 text-purple-700 border border-purple-200' :
+                                                                                        item.status === 'Return Approved' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                                                                                        item.status === 'Returned' ? 'bg-gray-50 text-gray-700 border border-gray-200' :
+                                                                                        item.status === 'Cancelled' ? 'bg-red-50 text-red-700 border border-red-200' :
+                                                                                        'bg-emerald-50 text-emerald-700 border border-emerald-200') :
+                                                                                        (item.status === 'Pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                                                                                        item.status === 'Cancelled' ? 'bg-red-50 text-red-700 border border-red-200' :
+                                                                                        'bg-gray-50 text-gray-700 border border-gray-200') %>">
+                                                                                    <%= order.status === 'Delivered' ? 
+                                                                                        (item.status === 'Return Requested' ? 'Return Requested' :
+                                                                                        item.status === 'Return Approved' ? 'Return Approved' :
+                                                                                        item.status === 'Returned' ? 'Returned' :
+                                                                                        item.status === 'Cancelled' ? 'Cancelled' :
+                                                                                        'Delivered') :
+                                                                                        item.status %>
+                                                                                </span>
+                                                                                 </div>
+                                                                                    
+                                                                                   
+                                                                                    <!-- Action Buttons -->
+                                                                                <div class="flex space-x-2">
+                                                                                    <% if (item.status === 'Pending' && order.status !== 'Delivered') { %>
                                                                                         <button onclick="showCancelModal('<%= order._id %>', '<%= item._id %>', '<%= item?.product?.productName %>')" 
-                                                                                            class="text-sm text-red-600 hover:text-red-800 ml-4 flex-shrink-0">
+                                                                                                class="text-sm text-red-600 hover:text-red-800">
                                                                                             Cancel Item
                                                                                         </button>
-                                                                                    <% } else if (item.status === 'Cancelled') { %>
-                                                                                        <span class="text-sm text-red-600 ml-4 flex-shrink-0">Cancelled</span>
                                                                                     <% } %>
+                                                                                    <% if (order.status === 'Delivered' && item.status !== 'Return Requested' && item.status !== 'Return Approved' && item.status !== 'Returned' && item.status !== "Cancelled") { %>
+                                                                                        <button onclick="showReturnModal('<%= order._id %>', '<%= item._id %>', '<%= item?.product?.productName %>')" 
+                                                                                                class="text-sm text-blue-600 hover:text-blue-800">
+                                                                                            Return Item
+                                                                                        </button>
+                                                                                    <% } %>
+                                                                                    
+                                                                                </div>
                                                                                 </div>
                                                                                 <div class="mt-2 space-y-1">
                                                                                     <p class="text-sm text-gray-600">Quantity: <%= item.quantity %></p>
@@ -356,10 +387,11 @@
                                                                                 </div>
                                                                             </div>
                                                                         </li>
+                                                                    
                                                                     <% }); %>
                                                                 </ul>
                                                             </div>
-                    
+                
                                                             <!-- Order Details -->
                                                             <div class="space-y-6">
                                                                 <!-- Payment Info -->
@@ -367,7 +399,7 @@
                                                                     <h4 class="text-sm uppercase tracking-wider text-gray-500 mb-2 font-medium">Payment Method</h4>
                                                                     <p class="text-sm text-gray-700"><%= order.paymentMethod %></p>
                                                                 </div>
-                    
+                
                                                                 <!-- Order Summary -->
                                                                 <div class="bg-gray-50 p-6 rounded-lg">
                                                                     <h4 class="text-sm uppercase tracking-wider text-gray-500 mb-4 font-medium">Order Summary</h4>
@@ -385,14 +417,14 @@
                                                                                 <span class="text-emerald-600 font-medium">Free</span>
                                                                             <% } %>
                                                                         </div>
-                    
+                
                                                                         <% if (order.coupon && order.coupon.applied) { %>
                                                                             <div class="flex justify-between text-sm">
                                                                                 <span class="text-emerald-600">Discount (<%= order.coupon.code %>)</span>
                                                                                 <span class="text-emerald-600 font-medium">-<%= helpers.formatCurrency(order.discount) %></span>
                                                                             </div>
                                                                         <% } %>
-                    
+                
                                                                         <div class="pt-3 border-t border-gray-200">
                                                                             <div class="flex justify-between">
                                                                                 <span class="font-semibold">Total</span>
@@ -401,7 +433,7 @@
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                    
+                
                                                                 <!-- Shipping Address -->
                                                                 <div>
                                                                     <h4 class="text-sm uppercase tracking-wider text-gray-500 mb-4 font-medium">Shipping Address</h4>
@@ -417,19 +449,20 @@
                                                                         </address>
                                                                     </div>
                                                                 </div>
-                    
-                                                                <!-- Action Buttons -->
-                                                                <div class="flex gap-4">
-                                                                    <% if (order.status === 'Delivered') { %>
-                                                                        <button onclick="showReturnModal('<%= order._id %>')" 
-                                                                            class="flex-1 bg-white border border-orange-200 text-orange-600 hover:bg-orange-50 px-6 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200">
-                                                                            Return Items
-                                                                        </button>
-                                                                    <% } %>
+                
+                                                                <!-- Track Order Button -->
+                                                                <div>
                                                                     <button onclick="trackOrder('<%= order._id %>')" 
-                                                                        class="flex-1 bg-white border border-blue-200 text-blue-600 hover:bg-blue-50 px-6 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200">
+                                                                        class="w-full bg-white border border-blue-200 text-blue-600 hover:bg-blue-50 px-6 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200">
                                                                         Track Order
                                                                     </button>
+                                                                    <% if ( order.status === 'Delivered') { %>
+                                                                        <div class="mt-4">
+                                                                            <a href="/orders/<%= order._id %>/invoice" class="inline-block bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors duration-200">
+                                                                                Download Invoice
+                                                                            </a>
+                                                                        </div>
+                                                                    <% } %>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -455,7 +488,7 @@
                             </div>
                         </div>
                     </div>
-                    </div>
+                </div>
                 
                
                 
@@ -759,50 +792,69 @@
         <!-- return ordr modal -->
                
 
-        <div id="returnOrderModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
+        <div id="returnOrderModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
             <div class="min-h-screen px-4 text-center">
-                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <div class="sm:flex sm:items-start">
-                            <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
-                                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
-                                    Return Order
-                                </h3>
-                                <form id="returnForm" class="space-y-4">
-                                    <input type="hidden" id="returnOrderId">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Reason for Return
-                                        </label>
-                                        <select id="returnReason" name="reason" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                                            <option value="">Select a reason</option>
-                                            <option value="wrong_size">Wrong Size</option>
-                                            <option value="defective">Defective Product</option>
-                                            <option value="not_as_described">Not as Described</option>
-                                            <option value="changed_mind">Changed Mind</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Additional Comments
-                                        </label>
-                                        <textarea id="returnComments" name="comments" rows="3" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md"></textarea>
-                                    </div>
-                                </form>
+                <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                    <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                </div>
+                
+                <!-- Modal panel -->
+                <div class="inline-block w-full max-w-md p-6 my-8 text-left align-middle transition-all transform bg-white shadow-xl rounded-lg">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">Return Items</h3>
+                        <button onclick="hideReturnModal()" class="text-gray-400 hover:text-gray-500">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+        
+                    <form id="returnForm" onsubmit="event.preventDefault(); submitReturn();">
+                        <input type="hidden" id="returnOrderId" />
+                        <input type="hidden" id="returnItemId" />
+                        
+                        <div class="space-y-4">
+                            <!-- Product Selection -->
+                            <div id="returnItemsList" class="space-y-3">
+                                <!-- Items will be populated dynamically -->
+                            </div>
+        
+                            <!-- Return Reason -->
+                            <div>
+                                <label for="returnReason" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Reason for Return
+                                </label>
+                                <select id="returnReason" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="">Select a reason</option>
+                                    <option value="wrong_size">Wrong Size</option>
+                                    <option value="defective">Defective Product</option>
+                                    <option value="not_as_described">Not as Described</option>
+                                    <option value="changed_mind">Changed Mind</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+        
+                            <!-- Additional Comments -->
+                            <div>
+                                <label for="returnComments" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Additional Comments
+                                </label>
+                                <textarea id="returnComments" rows="3" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
                             </div>
                         </div>
-                    </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                        <button type="button" onclick="submitReturn()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-orange-600 text-base font-medium text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 sm:ml-3 sm:w-auto sm:text-sm">
-                            Submit Return
-                        </button>
-                        <button type="button" onclick="hideReturnModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                            Cancel
-                        </button>
-                    </div>
+        
+                        <div class="mt-6 flex justify-end space-x-3">
+                            <button type="button" onclick="hideReturnModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                                Cancel
+                            </button>
+                            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                                Submit Return
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-        </div>     
+        </div>  
            
 
                <script>
@@ -1260,48 +1312,180 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-
-// Function to close return modal
+//return order 
 function showReturnModal(orderId) {
-        document.getElementById('returnOrderModal').classList.remove('hidden');
-        document.body.classList.add('modal-open');
-        document.getElementById('returnOrderId').value = orderId;
-    }
-
-    function hideReturnModal() {
-        document.getElementById('returnOrderModal').classList.add('hidden');
-        document.body.classList.remove('modal-open');
-        document.getElementById('returnForm').reset();
-    }
-
-    function submitReturn() {
-        const orderId = document.getElementById('returnOrderId').value;
-        const reason = document.getElementById('returnReason').value;
-        const comments = document.getElementById('returnComments').value;
-
-        fetch('/api/orders/return', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ orderId, reason, otherReason: '', comments })
+    const modal = document.getElementById('returnOrderModal');
+    const itemsList = document.getElementById('returnItemsList');
+    
+    // Clear previous items
+    itemsList.innerHTML = '';
+    itemsList.innerHTML = '<div class="text-gray-500">Loading items...</div>';
+    
+    // Get order details with populated product information
+    fetch(`/api/orders/${orderId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch order details');
+            }
+            return response.json();
         })
-        .then(response => response.json())
+        .then(order => {
+            itemsList.innerHTML = '';
+            
+            if (!order.orderedItems || order.orderedItems.length === 0) {
+                itemsList.innerHTML = '<div class="text-gray-500">No items available for return</div>';
+                return;
+            }
+
+            // Filter returnable items
+            const returnableItems = order.orderedItems.filter(item => 
+                item.status !== 'Cancelled' && 
+                item.status !== 'Returned' &&
+                item.status !== 'Return Requested' &&
+                item.product
+            );
+
+            if (returnableItems.length === 0) {
+                itemsList.innerHTML = '<div class="text-gray-500">No items are eligible for return</div>';
+                return;
+            }
+
+            returnableItems.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'flex items-center space-x-3 p-2 hover:bg-gray-50 rounded';
+                
+                // Get product image path
+                const productImage = item.product.productImage && item.product.productImage.length > 0
+                    ? `/uploads/product-images/${item.product.productImage[0]}`
+                    : '/placeholder-image.jpg';
+                
+                itemElement.innerHTML = `
+                    <div class="flex items-center space-x-4 flex-1">
+                        <input type="checkbox" 
+                               id="return_item_${item._id}" 
+                               name="return_items" 
+                               value="${item._id}"
+                               class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                        <img src="${productImage}" 
+                             alt="${item.product.productName}" 
+                             class="h-12 w-12 object-cover rounded">
+                        <label for="return_item_${item._id}" class="flex-1">
+                            <div class="font-medium text-sm text-gray-700">${item.product.productName}</div>
+                            <div class="text-sm text-gray-500">
+                                Qty: ${item.quantity} × ${new Intl.NumberFormat('en-US', {
+                                    style: 'currency',
+                                    currency: 'INR'
+                                }).format(item.price)}
+                            </div>
+                        </label>
+                    </div>
+                `;
+                itemsList.appendChild(itemElement);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching order details:', error);
+            itemsList.innerHTML = `
+                <div class="text-red-500">
+                    Failed to load order items. Please try again later.
+                </div>
+            `;
+        });
+
+    document.getElementById('returnOrderId').value = orderId;
+    modal.classList.remove('hidden');
+    document.body.classList.add('modal-open');
+}
+
+function hideReturnModal() {
+    const modal = document.getElementById('returnOrderModal');
+    modal.classList.add('hidden');
+    document.body.classList.remove('modal-open');
+    
+    // Reset form
+    document.getElementById('returnForm').reset();
+    document.getElementById('returnItemsList').innerHTML = '';
+}
+
+
+function validateReturnForm() {
+    const selectedItems = document.querySelectorAll('input[name="return_items"]:checked');
+    const reason = document.getElementById('returnReason').value;
+    
+    if (selectedItems.length === 0) {
+        alert('Please select at least one item to return');
+        return false;
+    }
+    
+    if (!reason) {
+        alert('Please select a reason for return');
+        return false;
+    }
+    
+    return true;
+}
+
+function submitReturn() {
+    if (!validateReturnForm()) {
+        return;
+    }
+
+    const orderId = document.getElementById('returnOrderId').value;
+    const reason = document.getElementById('returnReason').value;
+    const comments = document.getElementById('returnComments').value;
+    const itemId = document.getElementById('returnItemId').value;
+    
+    // Get selected items
+    const selectedItems = Array.from(document.querySelectorAll('input[name="return_items"]:checked'))
+        .map(checkbox => checkbox.value);
+
+    // Disable submit button to prevent double submission
+    const submitButton = document.querySelector('#returnForm button[type="submit"]');
+    submitButton.disabled = true;
+    submitButton.innerHTML = 'Processing...';
+
+    fetch('/api/orders/return', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            orderId,
+            items: selectedItems,
+            reason,
+            comments,
+            itemId,
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Server returned error response');
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             alert('Return request submitted successfully');
             hideReturnModal();
             window.location.reload();
         } else {
-            alert(`Failed to submit return request: ${data.message}`);
+            throw new Error(data.message || 'Failed to submit return request');
         }
     })
     .catch(error => {
         console.error('Error:', error);
         alert('An unexpected error occurred while processing your return request. Please try again later.');
+    })
+    .finally(() => {
+        // Re-enable submit button
+        submitButton.disabled = false;
+        submitButton.innerHTML = 'Submit Return';
     });
 }
 
+
+
+// track order 
 
 function trackOrder(orderId) {
     // First check if orderId exists

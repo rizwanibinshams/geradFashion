@@ -198,8 +198,9 @@
       showConfirmButton: true
     });
     
-    // Prevent changing the input value if it exceeds available stock
+    // Set the input value and data-original-quantity to the maximum available quantity
     inputElement.value = availableQuantity;
+    inputElement.setAttribute('data-original-quantity', availableQuantity);
     return; // Exit the function to prevent further processing
   } 
 
@@ -212,8 +213,9 @@
       showConfirmButton: true
     });
     
-    // Reset the quantity input to minimum of 1
+    // Reset the quantity input to minimum of 1 and update data-original-quantity
     inputElement.value = 1;
+    inputElement.setAttribute('data-original-quantity', 1);
     return; // Exit the function to prevent further processing
   }
 
@@ -223,7 +225,6 @@
     updateQuantity(productId, quantity);
   }
 }
-
 
 function updateQuantity(productId, quantity) {
   fetch('/update', {

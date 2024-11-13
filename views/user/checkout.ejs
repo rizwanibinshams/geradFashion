@@ -362,14 +362,22 @@
                                     <label class="payment-method-label block cursor-pointer">
                                         <div class="flex items-center">
                                             <input type="radio" name="paymentMethod" id="cashOnDelivery" value="cashOnDelivery" 
-                                                   class="form-radio h-4 w-4 text-black border-gray-300">
+                                                   class="form-radio h-4 w-4 text-black border-gray-300" 
+                                                   <%= total < 1000 ? 'disabled' : '' %>>
                                             <div class="ml-3">
+
                                                 <span class="font-medium">Cash on Delivery</span>
+                                                <% if (total > 1000) { %>
                                                 <p class="text-gray-500 text-sm mt-1">Pay when you receive your order</p>
+                                                <% } %>
+                                                <% if (total < 1000) { %>
+                                                    <p class="text-gray-500 text-sm mt-1" id="cashOnDeliveryMessage">Cash on Delivery is not available for orders below ₹1,000.</p>
+                                                <% } else { %>
+                                                    <p class="text-gray-500 text-sm mt-1" id="cashOnDeliveryMessage"></p>
+                                                <% } %>
                                             </div>
                                         </div>
                                     </label>
-                                    
                                     <label class="payment-method-label block cursor-pointer">
                                         <div class="flex items-center">
                                             <input type="radio" name="paymentMethod" id="razorpay" value="razorpay" 
@@ -380,6 +388,18 @@
                                             </div>
                                         </div>
                                     </label>
+
+                                    <label class="payment-method-label block cursor-pointer">
+                                        <div class="flex items-center">
+                                            <input type="radio" name="paymentMethod" id="wallet" value="wallet" 
+                                                   class="form-radio h-4 w-4 text-black border-gray-300">
+                                            <div class="ml-3">
+                                                <span class="font-medium">Wallet Payment</span>
+                                                <p class="text-gray-500 text-sm mt-1">Pay using your wallet balance: ₹<span id="walletBalance">0.00</span></p>
+                                            </div>
+                                        </div>
+                                    </label>
+                                    
                                 </div>
                             </div>
                             
@@ -660,12 +680,27 @@ async function confirmOrder() {
 
         // Process based on payment method
         if (paymentMethodInput.value === 'cashOnDelivery') {
+        // Check if the total amount is less than ₹1,000
+        if (amount < 1000) {
+            const cashOnDeliveryMessage = document.getElementById('cashOnDeliveryMessage');
+            cashOnDeliveryMessage.textContent = 'Cash on Delivery is not available for orders below ₹1,000.';
+            paymentMethodInput.disabled = true;
+            Swal.fire({
+                icon: 'warning',
+                title: 'Cash on Delivery Unavailable',
+                text: 'Cash on Delivery is not available for orders below ₹1,000.',
+                confirmButtonColor: '#3085d6'
+            });
+            return;
+        } else {
             await processCashOnDelivery(requestBody);
-        } else if (paymentMethodInput.value === 'razorpay') {
-            await processRazorpayPayment(requestBody);
         }
-
-    } catch (error) {
+    } else if (paymentMethodInput.value === 'razorpay') {
+        await processRazorpayPayment(requestBody);
+    } else if (paymentMethodInput.value === 'wallet') {
+        await processWalletPayment(requestBody);
+    }
+} catch (error) {
         console.error('Error in confirmOrder:', error);
         Swal.fire({
             icon: 'error',
@@ -807,18 +842,26 @@ async function processCashOnDelivery(requestBody) {
         });
 
         const orderResult = await response.json();
-        handleOrderResponse(orderResult);
+        
 
+        if (response.ok) {
+            handleOrderResponse(orderResult);
+        } else {
+            throw new Error(orderResult.message || 'Error processing Cash on Delivery order');
+        }
     } catch (error) {
         console.error("Error processing Cash on Delivery order:", error);
         Swal.fire({
             icon: 'error',
             title: 'Order Processing Failed',
-            text: 'There was an error processing your Cash on Delivery order.',
+            text: error.message || 'There was an error processing your Cash on Delivery order.',
             confirmButtonColor: '#3085d6'
         });
     }
 }
+
+
+
 function handleOrderResponse(data) {
     if (data.success) {
         Swal.fire({
@@ -853,6 +896,7 @@ function handleOrderResponse(data) {
         }
     }
 }
+
 
 
     // Helper function to handle errors
@@ -1022,6 +1066,83 @@ function resetCouponDisplay(data) {
 
     alert('Coupon removed successfully!');
 }
+
+
+//wallet payment 
+
+async function processWalletPayment(requestBody, orderId) {  // Added orderId parameter
+    try {
+        
+        const response = await fetch("/process-wallet-payment", {
+            
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            
+        
+        
+            body: JSON.stringify({
+                ...requestBody,
+                orderId: orderId,  // Include orderId in payment request
+                paymentMethod: 'wallet'
+            }),
+        });
+
+        const result = await response.json();
+        
+        
+        if (result.success) {
+            // Create the order after successful wallet payment
+            const orderResponse = await fetch("/place-order", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    ...requestBody,
+                    orderId:  orderId,// Include orderId in order request
+                    paymentMethod: 'wallet',
+                    paymentDetails: {
+                        paymentStatus: 'Completed',
+                        walletTransactionId: result.transactionId
+                    }
+                }),
+            });
+
+            const orderResult = await orderResponse.json();
+            handleOrderResponse(orderResult);
+        } else {
+            throw new Error(result.message || 'Wallet payment failed');
+        }
+    } catch (error) {
+        console.error("Error processing wallet payment:", error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Payment Failed',
+            text: error.message || 'There was an error processing your wallet payment.',
+            confirmButtonColor: '#3085d6'
+        });
+    }
+}
+
+// The fetchWalletBalance function remains unchanged
+async function fetchWalletBalance() {
+    try {
+        const response = await fetch("/get-wallet-balance");
+        const data = await response.json();
+        
+        if (data.success) {
+            document.getElementById('walletBalance').textContent = data.balance.toFixed(2);
+        }
+    } catch (error) {
+        console.error("Error fetching wallet balance:", error);
+    }
+}
+
+// Call this when the page loads
+document.addEventListener('DOMContentLoaded', fetchWalletBalance);
+
 
     </script>
 </body>
