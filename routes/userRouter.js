@@ -9,9 +9,11 @@ const addressController = require('../controllers/user/addressController')
 const  orderController = require('../controllers/user/orderController')
 const wishlistController = require('../controllers/user/wishlistController')
 const couponController = require('../controllers/admin/couponController')
+const couponControllers = require("../controllers/user/couponControllers")
 const walletController = require("../controllers/user/walletController")
 const paymentsController = require("../controllers/admin/payments.controller")
 const returnsController = require("../controllers/user/returnsController")
+const infoController = require("../controllers/admin/infoController")
 const passport = require('passport')
 const auth = require('../middlewares/auth')
 
@@ -67,9 +69,17 @@ router.get('/logout',userController.logout)
 router.get("/forgot-password",profileController.getForgtPassPage)
 router.post("/forgot-email-valid",profileController.forgotEmailValid)
 router.post("/verify-passForgot-otp",profileController.verifyForgotPassOtp)
-router.get("/reset-password",profileController.getResetPassPage)
 router.post("/resend-forgot-otp",profileController.resendOtp)
+router.get("/reset-password",profileController.getResetPassPage)
+
 router.post("/reset-password", profileController.postNewPassword);
+
+// Route to display change password page
+router.get('/change-password', profileController.getChangePasswordPage);
+
+// Route to handle password change
+router.post('/change-password', profileController.changePassword);
+
 
 // Product Details Page Route
 router.get('/productDetails', productController.getProductDetailsPage);
@@ -106,7 +116,11 @@ router.get("/success",userController.success)
 
 
 //adressController
+router.get("/address",addressController.adres)
+//order
 
+router.get("/order",orderController.loadorder)
+router.get('/order/:orderId', orderController.loadOrderDetails);
 
 router.get('/addresses',auth.AdressMiddleware, addressController.getAddresses);
 
@@ -161,7 +175,7 @@ router.get("/about",userController.loadAbout)
 
 // Route to add money to the wallet
 router.post('/wallet/add', walletController.addMoneyToWallet);
-
+router.get('/wallet', walletController.getWallet);
 // Route to view wallet balance
 router.get('/wallet/:userId/balance', walletController.getWalletBalance);
 router.get('/get-wallet-balance', walletController.getWalletBalance);
@@ -173,6 +187,7 @@ router.get('/wallet-transactions', walletController.getTransactionHistory);
 // router.post('/wallet/deduct', walletController.deductMoneyFromWallet);
 
 // User route for applying a coupon
+router.get("/coupon",couponControllers.getCouponsPage)
  router.post('/applyCoupon',couponController.applyCoupon)
  router.post('/removeCoupon', couponController.removeCoupon);
 
@@ -186,5 +201,7 @@ router.post('/verify-payment', paymentsController.verifyPayment);
 
 router.get("/contact",userController.loadContact)
 
+
+router.get('/api/active-info-tag', infoController.getActiveInfoTag);
 
 module.exports = router

@@ -1,0 +1,103 @@
+<div id="editAddressModal" class="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm overflow-auto" style="display:none;">
+    <div class="bg-white p-8 rounded-xl w-full max-w-xl mx-4 shadow-2xl">
+        <!-- Header -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-light tracking-wide text-gray-900 mb-1">Edit Delivery Address</h2>
+            <p class="text-gray-500 text-sm">Please ensure all fields are filled correctly</p>
+        </div>
+
+        <!-- Alert Messages -->
+        <div id="updateSuccessMessage" class="bg-green-50 text-green-700 px-4 py-3 rounded-lg mb-4"></div>
+        <div id="updateErrorMessage" class="bg-red-50 text-red-700 px-4 py-3 rounded-lg mb-4"></div>
+
+        <form id="editAddressForm" class="space-y-6">
+            <input type="hidden" name="id" id="editAddressId" />
+            
+            <!-- Name and Type Section -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label for="editAddressName" class="block text-xs uppercase tracking-wide text-gray-500 mb-2">Full Name</label>
+                    <input type="text" name="name" id="editAddressName" placeholder="Enter your full name" 
+                           class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-all" />
+                    <span id="editNameError" class="text-red-500 text-xs mt-1"></span>
+                </div>
+                <div>
+                    <label for="editAddressType" class="block text-xs uppercase tracking-wide text-gray-500 mb-2">Address Type</label>
+                    <select id="editAddressType" name="addressType" 
+                            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-all appearance-none bg-white">
+                        <option value="Home">Home</option>
+                        <option value="Work">Work</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Street and Landmark -->
+            <div class="space-y-4">
+                <div>
+                    <label for="editAddressStreet" class="block text-xs uppercase tracking-wide text-gray-500 mb-2">Street Address</label>
+                    <input type="text" name="street" id="editAddressStreet" placeholder="Enter street address"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-all" />
+                    <span id="editStreetError" class="text-red-500 text-xs mt-1"></span>
+                </div>
+                <div>
+                    <label for="editAddressLandMark" class="block text-xs uppercase tracking-wide text-gray-500 mb-2">Landmark</label>
+                    <input type="text" name="landMark" id="editAddressLandMark" placeholder="Enter nearby landmark"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-all" />
+                    <span id="editLandMarkError" class="text-red-500 text-xs mt-1"></span>
+                </div>
+            </div>
+
+            <!-- City, State, Pincode Grid -->
+            <div class="grid grid-cols-3 gap-4">
+                <div>
+                    <label for="editAddressCity" class="block text-xs uppercase tracking-wide text-gray-500 mb-2">City</label>
+                    <input type="text" name="city" id="editAddressCity" placeholder="City"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-all" />
+                    <span id="editCityError" class="text-red-500 text-xs mt-1"></span>
+                </div>
+                <div>
+                    <label for="editAddressState" class="block text-xs uppercase tracking-wide text-gray-500 mb-2">State</label>
+                    <input type="text" name="state" id="editAddressState" placeholder="State"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-all" />
+                    <span id="editStateError" class="text-red-500 text-xs mt-1"></span>
+                </div>
+                <div>
+                    <label for="editAddressPincode" class="block text-xs uppercase tracking-wide text-gray-500 mb-2">Pincode</label>
+                    <input type="text" name="pincode" id="editAddressPincode" placeholder="Pincode"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-all" />
+                    <span id="editPincodeError" class="text-red-500 text-xs mt-1"></span>
+                </div>
+            </div>
+
+            <!-- Phone Numbers -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label for="editAddressPhone" class="block text-xs uppercase tracking-wide text-gray-500 mb-2">Phone Number</label>
+                    <input type="text" name="phone" id="editAddressPhone" placeholder="Primary phone number"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-all" />
+                    <span id="editPhoneError" class="text-red-500 text-xs mt-1"></span>
+                </div>
+                <div>
+                    <label for="editAddressAltPhone" class="block text-xs uppercase tracking-wide text-gray-500 mb-2">Alternative Phone</label>
+                    <input type="text" name="altPhone" id="editAddressAltPhone" placeholder="Alternative phone number"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-all" />
+                    <span id="editAltPhoneError" class="text-red-500 text-xs mt-1"></span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end space-x-4 pt-4 border-t border-gray-100">
+                <button type="button" onclick="closeModal()" 
+                        class="px-6 py-3 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors">
+                    Cancel
+                </button>
+                <button type="submit" 
+                        class="px-6 py-3 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+    
+

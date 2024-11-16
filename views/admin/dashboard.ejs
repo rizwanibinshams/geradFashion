@@ -277,8 +277,8 @@
                         <tbody id="topProductsBody">
                             <% topProducts.forEach(product => { %>
                             <tr class="border-b">
-                                <td class="py-2"><%= product.productInfo.productName %></td>
-                                <td class="text-right"><%= product.totalQuantity %></td>
+                                <td class="py-2 text-left max-w-xs truncate"><%= product.productInfo.productName %></td>
+                                <td class="text-right "><%= product.totalQuantity %></td>
                                 <td class="text-right">₹<%= product.totalRevenue.toFixed(2) %></td>
                             </tr>
                             <% }); %>
@@ -634,8 +634,8 @@ function updateTopProducts(products) {
     const tbody = document.getElementById('topProductsBody');
     tbody.innerHTML = products.map(product => `
         <tr class="border-b">
-            <td class="py-2">${product.productInfo.productName}</td>
-            <td class="text-right">${product.totalQuantity}</td>
+            <td class="py-2 text-left max-w-xs truncate ">${product.productInfo.productName}</td>
+            <td class="text-right ">${product.totalQuantity}</td>
             <td class="text-right">₹${product.totalRevenue.toFixed(2)}</td>
         </tr>
     `).join('');

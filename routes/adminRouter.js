@@ -10,10 +10,13 @@ const orderController = require("../controllers/admin/orderController")
 const couponController = require("../controllers/admin/couponController")
 const dashboardController = require("../controllers/admin/dashboardController")
 const returnsController = require("../controllers/user/returnsController")
+const infoController = require("../controllers/admin/infoController")
+const bannerController = require("../controllers/admin/bannerController")
 const multer = require("multer")
-const {storage,brandStore} = require("../helpers/multer")
+const {storage,brandStore, banner} = require("../helpers/multer")
 const uploads = multer({storage:storage})
 const brandimg = multer({storage:brandStore})
+const bannerimg = multer({storage:banner})
 
 
 router.get('/pageerror',adminController.pageerror)
@@ -90,8 +93,21 @@ router.get('/coupons/:id', auth.adminAuth, couponController.getCouponById);
 router.put('/coupons/:id', auth.adminAuth, couponController.updateCoupon);
 router.delete('/coupons/:id', auth.adminAuth, couponController.deleteCoupon);
 
-// User route for applying a coupon
-// router.post('/applyCoupon',couponController.applyCoupon)
+//info 
+
+router.get('/info-tags', infoController.getinfoPage);
+router.post('/info-tags', infoController.createInfoTag);
+router.delete('/info-tags/:id', infoController.deleteInfoTag);
+
+// router.get('/api/active-info-tag', infoController.getActiveInfoTag);
+
+//banner 
+
+router.get('/banners/add', bannerController.getAddBanner);
+router.post('/banners/add', bannerimg.single('image'), bannerController.addBanner);
+router.get('/banners', bannerController.getAllBanners);
+router.delete('/banners/:id', bannerController.deleteBanner);
+
 
 
 module.exports = router           

@@ -99,6 +99,11 @@ const orderSchema = new Schema({
             type: Number,
             default: 0
         },
+        category: {
+            type: Schema.Types.ObjectId,
+            ref: 'Category',
+            required: true
+        },
         status: {
             type: String,
             required: true,
@@ -153,7 +158,7 @@ const orderSchema = new Schema({
     status: {
         type: String,
         required: true,
-        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Return Requested', 'Return Approved', 'Returned']
+        enum: ['Pending', 'Psrocessing', 'Shipped', 'Delivered', 'Cancelled', 'Return Requested', 'Return Approved', 'Returned']
     },
     createdOn: {
         type: Date,

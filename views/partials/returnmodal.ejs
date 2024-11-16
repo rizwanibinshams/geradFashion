@@ -1,0 +1,63 @@
+<div id="returnOrderModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+    <div class="min-h-screen px-4 text-center">
+        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+        </div>
+        
+        <!-- Modal panel -->
+        <div class="inline-block w-full max-w-md p-6 my-8 text-left align-middle transition-all transform bg-white shadow-xl rounded-lg">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Return Items</h3>
+                <button onclick="hideReturnModal()" class="text-gray-400 hover:text-gray-500">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <form id="returnForm" onsubmit="event.preventDefault(); submitReturn();">
+                <input type="hidden" id="returnOrderId" />
+                <input type="hidden" id="returnItemId" />
+                
+                <div class="space-y-4">
+                    <!-- Product Selection -->
+                    <div id="returnItemsList" class="space-y-3">
+                        <!-- Items will be populated dynamically -->
+                    </div>
+
+                    <!-- Return Reason -->
+                    <div>
+                        <label for="returnReason" class="block text-sm font-medium text-gray-700 mb-1">
+                            Reason for Return
+                        </label>
+                        <select id="returnReason" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="">Select a reason</option>
+                            <option value="wrong_size">Wrong Size</option>
+                            <option value="defective">Defective Product</option>
+                            <option value="not_as_described">Not as Described</option>
+                            <option value="changed_mind">Changed Mind</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <!-- Additional Comments -->
+                    <div>
+                        <label for="returnComments" class="block text-sm font-medium text-gray-700 mb-1">
+                            Additional Comments
+                        </label>
+                        <textarea id="returnComments" rows="3" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" onclick="hideReturnModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                        Submit Return
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>  

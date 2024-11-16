@@ -115,10 +115,14 @@
     </style>
 </head>
 
-<body class="bg-gray-50 relative">
+<body class="bg-white relative  ">
+   
     <!-- Desktop Header -->
     <header class="bg-white shadow-lg w-full transition-all duration-300 desktop-nav">
-        <div class="container mx-auto px-4 py-4">
+        <div class="container mx-auto px-4 py-2">
+            <marquee behavior="scroll" direction="left" >
+                <div id="info-tag-container" style="display: none; color: orange;"></div>
+            </marquee>
             <div class="flex items-center justify-between">
                 <!-- Logo -->
                 <a href="/" class="text-3xl font-extrabold logo-text">
@@ -660,6 +664,21 @@ document.addEventListener('click', function(event) {
     const accountButton = event.target.closest('.mobile-nav-item');
     if (!accountButton && !menu.classList.contains('hidden')) {
         menu.classList.add('hidden');
+    }
+});
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const response = await fetch('/api/active-info-tag');
+        const infoTag = await response.json();
+        
+        if (infoTag) {
+            const container = document.getElementById('info-tag-container');
+            container.textContent = infoTag.message;
+            container.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Error fetching info tag:', error);
     }
 });
 

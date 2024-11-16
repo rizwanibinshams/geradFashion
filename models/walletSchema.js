@@ -59,6 +59,7 @@ walletSchema.methods.deductMoney = async function (amount, description = 'Money 
     throw new Error('Insufficient balance');
   }
   this.balance -= amount;
+  // Store as negative amount for deductions
   this.transactionHistory.push({ amount: -amount, description });
   await this.save();
 };

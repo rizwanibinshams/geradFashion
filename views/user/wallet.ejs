@@ -1,0 +1,427 @@
+<%- include("../partials/user/header") %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Wallet - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #F8F7F4;
+        }
+
+        .balance-card {
+            width: 380px;
+            height: 240px;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='rgba(255,255,255,0.05)' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.5;
+            z-index: 0;
+        }
+
+        .balance-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+            z-index: 1;
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .chip {
+            width: 50px;
+            height: 40px;
+            background: linear-gradient(135deg, #FFD700 0%, #DAA520 100%);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chip::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent 50%, rgba(255,255,255,0.1) 60%, transparent 70%);
+            animation: chipShine 3s infinite;
+        }
+
+        .balance-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .balance-amount {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            margin: 0;
+            letter-spacing: 1px;
+        }
+
+        .card-holder {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            margin-top: auto;
+        }
+
+        @keyframes chipShine {
+            0% {
+                transform: translateX(-100%);
+            }
+            50%, 100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .balance-card:hover {
+            transform: translateY(-8px) rotate(1deg);
+            box-shadow: 0 20px 30px -10px rgba(79, 70, 229, 0.4);
+        }
+
+        .balance-card:hover::after {
+            opacity: 0.7;
+        }
+
+        @keyframes floatingNumbers {
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .balance-amount span {
+            display: inline-block;
+            animation: floatingNumbers 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .balance-amount span:nth-child(1) { animation-delay: 0.1s; }
+        .balance-amount span:nth-child(2) { animation-delay: 0.2s; }
+        .balance-amount span:nth-child(3) { animation-delay: 0.3s; }
+        .balance-amount span:nth-child(4) { animation-delay: 0.4s; }
+
+        .sidebar-link {
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-link:hover {
+            background-color: #f3f4f6;
+        }
+
+        .sidebar-link.active {
+            background-color: #f3f4f6;
+            color: #000;
+            font-weight: 500;
+        }
+
+        .quick-amount-btn {
+            transition: all 0.2s ease;
+        }
+
+        .quick-amount-btn:hover {
+            background-color: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto px-4 py-8">
+        <!-- Breadcrumb -->
+        <nav class="mb-8">
+            <ol class="flex items-center space-x-2 text-sm text-gray-600">
+                <li><a href="/" class="hover:text-black transition-colors">Home</a></li>
+                <li><span class="mx-2">/</span></li>
+                <li><a href="/wallet" class="hover:text-black transition-colors">Wallet</a></li>
+            </ol>
+        </nav>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Sidebar -->
+            <aside class="lg:w-1/4">
+                <div class="bg-white rounded-xl p-6 shadow-sm">
+                    <h2 class="text-2xl font-semibold mb-6">Account</h2>
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="/profile" class="sidebar-link block py-2 px-4 rounded-lg">
+                                <i class="fas fa-user mr-3"></i> Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/address" class="sidebar-link block py-2 px-4 rounded-lg">
+                                <i class="fas fa-map-marker-alt mr-3"></i> Addresses
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/order" class="sidebar-link block py-2 px-4 rounded-lg">
+                                <i class="fas fa-shopping-bag mr-3"></i> Orders
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/wallet" class="sidebar-link block py-2 px-4 rounded-lg active">
+                                <i class="fas fa-wallet mr-3"></i> Wallet
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/coupon" class="sidebar-link block py-2 px-4 rounded-lg">
+                                <i class="fas fa-ticket-alt mr-3"></i> Coupons
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="lg:w-3/4">
+                <div class="bg-white rounded-xl shadow-sm">
+                    <!-- Header -->
+                    <div class="p-6 border-b">
+                        <h1 class="text-3xl font-bold text-gray-800">My Wallet</h1>
+                        <p class="text-gray-600 mt-1">Manage your funds and track transactions</p>
+                    </div>
+
+                    <!-- Balance Card -->
+                    <div class="p-6">
+                        <div class="balance-card">
+                            <div class="card-content">
+                                <div class="chip"></div>
+                                <div>
+                                    <div class="balance-label">Available Balance</div>
+                                    <h2 class="balance-amount">
+                                        ₹<%= wallet.balance.toFixed(2) %>
+                                    </h2>
+                                </div>
+                                <div class="card-holder"><%= user.name %></div>
+                            </div>
+                        </div>
+
+                        <!-- Add Money Section -->
+                        <div class="mt-8 bg-gray-50 rounded-xl p-6">
+                            <h3 class="text-xl font-semibold mb-4">Add Money to Wallet</h3>
+                            <form id="addMoneyForm" class="space-y-4">
+                                <% if (typeof user !== 'undefined' && user) { %>
+                                    <input type="hidden" id="userId" name="userId" value="<%= user._id %>">
+                                <% } %>
+                                <div class="flex flex-col sm:flex-row gap-4">
+                                    <input type="number" 
+                                           id="addAmount" 
+                                           name="amount" 
+                                           min="1" 
+                                           step="0.01" 
+                                           required 
+                                           class="flex-1 px-4 py-3 rounded-lg border focus:ring-2 focus:ring-indigo-500"
+                                           placeholder="Enter amount (₹)">
+                                    <button type="submit" 
+                                            class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all">
+                                        Add Money
+                                    </button>
+                                </div>
+                                <!-- Quick Amount Buttons -->
+                                <div class="flex flex-wrap gap-3">
+                                    <button type="button" onclick="setAmount(100)" class="quick-amount-btn px-4 py-2 border rounded-lg">₹100</button>
+                                    <button type="button" onclick="setAmount(500)" class="quick-amount-btn px-4 py-2 border rounded-lg">₹500</button>
+                                    <button type="button" onclick="setAmount(1000)" class="quick-amount-btn px-4 py-2 border rounded-lg">₹1000</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Transaction History -->
+                       <!-- Replace the Transaction History section in your template with this: -->
+<div class="mt-8">
+    <h3 class="text-xl font-semibold mb-4">Transaction History</h3>
+    <div class="overflow-x-auto border rounded-xl">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead>
+                <tr class="bg-gray-50">
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Date & Time</th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Description</th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Amount</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                <% if (wallet.transactionHistory && wallet.transactionHistory.length > 0) { %>
+                    <% wallet.transactionHistory.forEach(function(transaction) { %>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 text-sm text-gray-600">
+                                <%= helpers.formatDate(transaction.date) %>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <% if (transaction.amount > 0) { %>
+                                        <span class="bg-green-100 p-2 rounded-full mr-3">
+                                            <i class="fas fa-arrow-up text-green-600"></i>
+                                        </span>
+                                    <% } else { %>
+                                        <span class="bg-red-100 p-2 rounded-full mr-3">
+                                            <i class="fas fa-arrow-down text-red-600"></i>
+                                        </span>
+                                    <% } %>
+                                    <span class="text-sm"><%= transaction.description %></span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-sm font-semibold <%= transaction.amount > 0 ? 'text-green-600' : 'text-red-600' %>">
+                                <%= transaction.amount > 0 ? '+' : '-' %>₹<%= Math.abs(transaction.amount).toFixed(2) %>
+                            </td>
+                        </tr>
+                    <% }); %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="3" class="px-6 py-8 text-center text-gray-500">
+                            <i class="fas fa-receipt text-4xl mb-3"></i>
+                            <p>No transactions yet</p>
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <% if (pagination.totalPages > 1) { %>
+        <div class="flex items-center justify-between px-4 py-3 sm:px-6 mt-4">
+            <div class="flex flex-1 justify-between sm:hidden">
+                <% if (pagination.hasPrevPage) { %>
+                    <a href="?page=<%= pagination.currentPage - 1 %>" 
+                       class="relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-gray-700 bg-white border hover:bg-gray-50">
+                        Previous
+                    </a>
+                <% } %>
+                <% if (pagination.hasNextPage) { %>
+                    <a href="?page=<%= pagination.currentPage + 1 %>" 
+                       class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium rounded-md text-gray-700 bg-white border hover:bg-gray-50">
+                        Next
+                    </a>
+                <% } %>
+            </div>
+            <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        Showing page <span class="font-medium"><%= pagination.currentPage %></span> of
+                        <span class="font-medium"><%= pagination.totalPages %></span>
+                    </p>
+                </div>
+                <div>
+                    <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                        <% if (pagination.hasPrevPage) { %>
+                            <a href="?page=<%= pagination.currentPage - 1 %>" 
+                               class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
+                                <span class="sr-only">Previous</span>
+                                <i class="fas fa-chevron-left h-5 w-5"></i>
+                            </a>
+                        <% } %>
+                        
+                        <% pagination.pages.forEach(function(page) { %>
+                            <a href="?page=<%= page %>" 
+                               class="relative inline-flex items-center px-4 py-2 text-sm font-semibold <%= page === pagination.currentPage ? 'bg-indigo-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600' : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0' %>">
+                                <%= page %>
+                            </a>
+                        <% }); %>
+
+                        <% if (pagination.hasNextPage) { %>
+                            <a href="?page=<%= pagination.currentPage + 1 %>" 
+                               class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
+                                <span class="sr-only">Next</span>
+                                <i class="fas fa-chevron-right h-5 w-5"></i>
+                            </a>
+                        <% } %>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    <% } %>
+</div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        function setAmount(amount) {
+            document.getElementById('addAmount').value = amount;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const addMoneyForm = document.getElementById('addMoneyForm');
+            if (addMoneyForm) {
+                addMoneyForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const amount = document.getElementById('addAmount').value;
+                    const userIdInput = document.getElementById('userId');
+
+                    if (!userIdInput) {
+                        alert('Please login to add money to your wallet');
+                        return;
+                    }
+
+                    const userId = userIdInput.value;
+
+                    fetch('/wallet/add', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ 
+                            userId: userId,
+                            amount: parseFloat(amount) 
+                        }),
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => { throw err; });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        alert('Money added successfully! New balance: ₹' + data.balance.toFixed(2));
+                        location.reload();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error adding money: ' + (error.message || 'Unknown error'));
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+<%- include("../partials/user/footer") %>

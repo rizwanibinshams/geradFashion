@@ -2,6 +2,7 @@
 
 <%- include("../partials/user/header") %>
 
+
 <body class="bg-gray-100 ">
    
 
@@ -11,21 +12,50 @@
             
                
                 <!-- Add more hero items here if needed -->
-                <div class="relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-50 before:z-10 z-20"> <!-- Updated z-index -->
-                    <img src="/img/banner2.avif" alt="Banner Image" class="absolute inset-0 w-full h-full object-cover z-0" />
-              
-                    <div class="min-h-[350px] relative z-50 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6 ">
-                      <h2 class="sm:text-4xl text-2xl font-bold mb-6">Fall - Winter Collections 2030</h2>
-                      <p class="sm:text-lg text-base text-center text-gray-200">A specialist label creating luxury essentials. Ethically created</p>
-              
-                      <a href="/products"
-                        type="button"
-                        class="mt-12 bg-transparent text-white text-base py-3 px-6 border border-white rounded-lg hover:bg-white hover:text-black transition duration-300">
-                        Shop Now
-                      </a>
-                     
+                <% if (currentBanner) { %>
+                    <div class="relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-50 before:z-10 z-20">
+                        <img 
+                            src="/uploads/banners/<%= currentBanner.image %>" 
+                            alt="<%= currentBanner.title %>" 
+                            class="absolute inset-0 w-full h-full object-cover z-0" 
+                        />
+                        
+                        <div class="min-h-[350px] relative z-50 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
+                            <h2 class="sm:text-4xl text-2xl font-bold mb-6"><%= currentBanner.title %></h2>
+                            <p class="sm:text-lg text-base text-center text-gray-200"><%= currentBanner.description %></p>
+                            
+                            <a 
+                                href="<%= currentBanner.link %>"
+                                type="button"
+                                class="mt-12 bg-transparent text-white text-base py-3 px-6 border border-white rounded-lg hover:bg-white hover:text-black transition duration-300"
+                            >
+                                Shop Now
+                            </a>
+                        </div>
                     </div>
-                  </div>
+                <% } else { %>
+                    <!-- Fallback banner when no active banners are available -->
+                    <div class="relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-50 before:z-10 z-20">
+                        <img 
+                            src="/img/banner2.avif" 
+                            alt="Default Banner" 
+                            class="absolute inset-0 w-full h-full object-cover z-0" 
+                        />
+                        
+                        <div class="min-h-[350px] relative z-50 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
+                            <h2 class="sm:text-4xl text-2xl font-bold mb-6">Fall - Winter Collections 2030</h2>
+                            <p class="sm:text-lg text-base text-center text-gray-200">A specialist label creating luxury essentials. Ethically created</p>
+                            
+                            <a 
+                                href="/products"
+                                type="button"
+                                class="mt-12 bg-transparent text-white text-base py-3 px-6 border border-white rounded-lg hover:bg-white hover:text-black transition duration-300"
+                            >
+                                Shop Now
+                            </a>
+                        </div>
+                    </div>
+                <% } %>
                  
             
         </section>
@@ -72,7 +102,7 @@
                     <% products.forEach(product => { %>
                         <div class="product-card relative m-5 w-full max-w-xs overflow-hidden rounded-lg bg-white shadow-md">
                             <a href="/productDetails?id=<%= product._id %>">
-                                <img class="h-60 rounded-t-lg object-cover" src="/uploads/product-images/<%= product.productImage[0] %>" alt="<%= product.productName %>" />
+                                <img class=" rounded-t-lg object-cover" src="/uploads/product-images/<%= product.productImage[0] %>" alt="<%= product.productName %>" />
                             </a>
                             <% const discount = Math.abs(((product.regularPrice - product.salePrice) / product.regularPrice) * 100); %>
                             <% if (discount > 0) { %>
@@ -120,7 +150,7 @@
                     <% bestSellers.forEach(product => { %>
                         <div class="product-card relative m-10 w-full max-w-xs overflow-hidden rounded-lg bg-white shadow-md">
                             <a href="/productDetails?id=<%= product._id %>">
-                                <img class="h-60 rounded-t-lg object-cover" src="/uploads/product-images/<%= product.productImage[0] %>" alt="<%= product.productName %>" />
+                                <img class=" rounded-t-lg object-cover" src="/uploads/product-images/<%= product.productImage[0] %>" alt="<%= product.productName %>" />
                             </a>
                             <% const discount = Math.abs(((product.regularPrice - product.salePrice) / product.regularPrice) * 100); %>
                             <% if (discount > 0) { %>

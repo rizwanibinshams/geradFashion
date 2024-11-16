@@ -1,0 +1,382 @@
+<%- include("../partials/user/header") %>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Coupons - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .coupon-card {
+            transition: all 0.3s ease;
+        }
+
+        .coupon-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%);
+            transition: all 0.3s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar-link {
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-link:hover {
+            background-color: #f3f4f6;
+            color: black;
+        }
+
+        .sidebar-link.active {
+            background-color: #e0e7ff;
+            color: black;
+        }
+
+        .main-content {
+            min-height: calc(100vh - 4rem);
+        }
+
+        table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+tr:last-child td:first-child {
+    border-bottom-left-radius: 0.75rem;
+}
+
+tr:last-child td:last-child {
+    border-bottom-right-radius: 0.75rem;
+}
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <div class="container mx-auto px-4 py-8">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-8">
+                <ol class="flex items-center space-x-2 text-sm text-gray-600">
+                    <li><a href="/" class="hover:text-black transition-colors">Home</a></li>
+                    <li><span class="mx-2">/</span></li>
+                    <li><a href="/addresses" class="hover:text-black transition-colors">Addresses</a></li>
+                </ol>
+            </nav>
+
+            <!-- Main Layout -->
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Sidebar -->
+                <aside class="lg:w-1/4">
+                    <div class="bg-white rounded-xl p-8 shadow-sm static top-8">
+                        <h2 class="text-2xl font-light mb-6 tracking-wide text-gray-800">ACCOUNT</h2>
+                        <ul class="space-y-2">
+                            <li>
+                                <a href="/profile" class="sidebar-link block py-3 px-4 rounded-lg">
+                                    <i class="fas fa-user mr-3"></i> Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/address" class="sidebar-link block py-3 px-4 rounded-lg ">
+                                    <i class="fas fa-map-marker-alt mr-3"></i> Addresses
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/order" class="sidebar-link block py-3 px-4 rounded-lg">
+                                    <i class="fas fa-shopping-bag mr-3"></i> Orders
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/wallet" class="sidebar-link block py-3 px-4 rounded-lg">
+                                    <i class="fas fa-wallet mr-3"></i> Wallet
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/coupon" class="sidebar-link block py-3 px-4 rounded-lg active">
+                                    <i class="fas fa-ticket-alt mr-3"></i> Coupons
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="lg:w-3/4">
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <!-- Header Section -->
+                        <div class="p-8 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-blue-50">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                <div>
+                                    <h1 class="text-3xl font-light text-gray-800 mb-2">My Coupons</h1>
+                                    <p class="text-gray-600">Track your savings and coupon usage history</p>
+                                </div>
+                                <div class="bg-white p-6 rounded-lg shadow-sm">
+                                    <p class="text-sm text-gray-500 mb-1">Total Savings</p>
+                                    <p class="text-2xl font-semibold text-indigo-600">
+                                        <%= helpers.formatCurrency(totalSavings || 0) %>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stats Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-8">
+                            <div class="stats-card rounded-lg p-6 border border-gray-200">
+                                <div class="flex items-center space-x-4">
+                                    <div class="p-3 bg-green-100 rounded-full">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-500">Coupons Used</p>
+                                        <p class="text-xl font-semibold text-gray-800">
+                                            <%= totalCouponsUsed %>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stats-card rounded-lg p-6 border border-gray-200">
+                                <div class="flex items-center space-x-4">
+                                    <div class="p-3 bg-blue-100 rounded-full">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-500">Average Discount</p>
+                                        <p class="text-xl font-semibold text-gray-800">
+                                            <%= averageDiscount ? averageDiscount.toFixed(1) + '%' : '0%' %>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stats-card rounded-lg p-6 border border-gray-200">
+                                <div class="flex items-center space-x-4">
+                                    <div class="p-3 bg-purple-100 rounded-full">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-500">Last Used</p>
+                                        <p class="text-xl font-semibold text-gray-800">
+                                            <%= lastUsedDate ? helpers.formatDate(lastUsedDate) : 'Never' %>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- History Section -->
+                        <!-- History Section -->
+<div class="p-8 bg-gray-50">
+    <h3 class="text-xl font-medium text-gray-900 mb-6">Coupon Usage History</h3>
+    <div class="bg-white rounded-xl shadow-sm">
+        <% if (couponHistory && couponHistory.length > 0) { %>
+            <table class="w-full divide-y divide-gray-200">
+                <thead>
+                    <tr class="bg-gray-50">
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Coupon Code</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Original Amount</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Final Amount</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Used On</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    <% couponHistory.forEach(usage => { %>
+                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                                #<%= usage.orderId %>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-3 py-1 inline-flex text-sm leading-5 font-medium rounded-full bg-indigo-100 text-indigo-800">
+                                    <%= usage.couponCode %>
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-600">
+                                <%= helpers.formatCurrency(usage.orderTotal) %>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="text-sm text-green-600 font-medium">
+                                    -<%= helpers.formatCurrency(usage.discountAmount) %>
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-900 font-medium">
+                                <%= helpers.formatCurrency(usage.finalAmount) %>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-500">
+                                <%= helpers.formatDate(usage.usedOn) %>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    Applied
+                                </span>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="px-6 py-4 border-t border-gray-200">
+                <div class="flex items-center justify-between">
+                    <!-- Mobile pagination -->
+                    <div class="flex-1 flex justify-between sm:hidden">
+                        <% if (pagination.hasPrev) { %>
+                            <a href="?page=<%= pagination.page - 1 %>" class="relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">
+                                Previous
+                            </a>
+                        <% } %>
+                        <% if (pagination.hasNext) { %>
+                            <a href="?page=<%= pagination.page + 1 %>" class="ml-3 relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">
+                                Next
+                            </a>
+                        <% } %>
+                    </div>
+                    <!-- Desktop pagination -->
+                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm text-gray-700">
+                                Showing page <span class="font-medium"><%= pagination.page %></span> of
+                                <span class="font-medium"><%= pagination.totalPages %></span>
+                            </p>
+                        </div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            <% if (pagination.hasPrev) { %>
+                                <a href="?page=<%= pagination.page - 1 %>" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <span class="sr-only">Previous</span>
+                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </a>
+                            <% } %>
+                            
+                            <% for(let i = 1; i <= pagination.totalPages; i++) { %>
+                                <a href="?page=<%= i %>" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium <%= pagination.page === i ? 'text-indigo-600 border-indigo-500 z-10' : 'text-gray-500 hover:bg-gray-50' %>">
+                                    <%= i %>
+                                </a>
+                            <% } %>
+
+                            <% if (pagination.hasNext) { %>
+                                <a href="?page=<%= pagination.page + 1 %>" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <span class="sr-only">Next</span>
+                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </a>
+                            <% } %>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        <% } else { %>
+            <div class="px-6 py-12 text-center">
+                <div class="flex flex-col items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    <p class="text-gray-500 text-lg mb-2">No coupon usage history found</p>
+                    <p class="text-gray-400 text-sm">Start shopping and use coupons to save money!</p>
+                </div>
+            </div>
+        <% } %>
+    </div>
+</div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Handle mobile menu toggle if needed
+                const menuButton = document.querySelector('[data-mobile-menu]');
+                const sidebar = document.querySelector('[data-sidebar]');
+                
+                if (menuButton && sidebar) {
+                    menuButton.addEventListener('click', () => {
+                        sidebar.classList.toggle('hidden');
+                    });
+                }
+    
+                // Add fade-in animation to stats cards
+                const statsCards = document.querySelectorAll('.stats-card');
+                statsCards.forEach((card, index) => {
+                    card.style.animationDelay = `${index * 0.1}s`;
+                    card.classList.add('fade-in');
+                });
+    
+              
+                // Add smooth scrolling to links
+                document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                    anchor.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const href = this.getAttribute('href');
+                        if (href !== "#") {
+                            document.querySelector(href).scrollIntoView({
+                                behavior: 'smooth'
+                            });
+                        }
+                    });
+                });
+    
+                // Add table row hover effect
+                const tableRows = document.querySelectorAll('tbody tr');
+                tableRows.forEach(row => {
+                    row.addEventListener('mouseenter', () => {
+                        row.classList.add('bg-gray-50');
+                    });
+                    row.addEventListener('mouseleave', () => {
+                        row.classList.remove('bg-gray-50');
+                    });
+                });
+    
+                // Add responsive table handling
+                const tables = document.querySelectorAll('table');
+                tables.forEach(table => {
+                    const wrapper = document.createElement('div');
+                    wrapper.classList.add('overflow-x-auto');
+                    table.parentNode.insertBefore(wrapper, table);
+                    wrapper.appendChild(table);
+                });
+    
+                // Add error handling for images
+                document.querySelectorAll('img').forEach(img => {
+                    img.addEventListener('error', function() {
+                        this.src = '/path/to/fallback-image.jpg';
+                        this.alt = 'Image not available';
+                    });
+                });
+            });
+        </script>
+    </body>
+    </html>
+
+    <%- include("../partials/user/footer") %>

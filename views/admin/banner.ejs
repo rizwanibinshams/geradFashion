@@ -1,0 +1,61 @@
+<%- include("../partials/admin/header") %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Banners</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold">Manage Banners</h1>
+            <a href="/admin/banners/add" 
+               class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Add New Banner
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <% banners.forEach(banner => { %>
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <img src="/uploads/banners/<%= banner.image %>" 
+                         alt="<%= banner.title %>"
+                         class="w-full h-48 object-cover">
+                    
+                    <div class="p-4">
+                        <h2 class="font-bold text-xl mb-2"><%= banner.title %></h2>
+                        <p class="text-gray-700 text-base mb-4"><%= banner.description %></p>
+                        
+                        <div class="text-sm text-gray-600 mb-4">
+                            <p>Category: <%= banner.categoryName %></p>
+                            <p>Start: <%= new Date(banner.startDate).toLocaleDateString() %></p>
+                            <p>End: <%= new Date(banner.endDate).toLocaleDateString() %></p>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <a href="<%= banner.link %>" 
+                               class="text-blue-500 hover:text-blue-800">
+                                View Products
+                            </a>
+                            
+                            <form action="/admin/banners/<%= banner._id %>?_method=DELETE" 
+                                  method="POST"
+                                  onsubmit="return confirm('Are you sure you want to delete this banner?')">
+                                <button type="submit" 
+                                        class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+</body>
+</html>
+
+<%- include("../partials/admin/footer") %>

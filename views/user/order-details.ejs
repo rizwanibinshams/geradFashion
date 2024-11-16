@@ -1,0 +1,503 @@
+<%- include("../partials/user/header") %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details - Fashion E-commerce</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #F8F7F4;
+        }
+        
+        .fashion-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto px-4 py-12 max-w-7xl">
+        <!-- Breadcrumb -->
+        <nav class="mb-8">
+            <ol class="flex items-center space-x-2 text-sm text-gray-600">
+                <li><a href="/" class="hover:text-black">Home</a></li>
+                <li><span class="mx-2">/</span></li>
+                <li><a href="/order" class="hover:text-black">Orders</a></li>
+                <li><span class="mx-2">/</span></li>
+                <li class="text-black">Order #<%= order._id %></li>
+            </ol>
+        </nav>
+
+        <div class="space-y-8">
+            <!-- Order Summary -->
+            <div class="fashion-card rounded-xl p-8">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h2 class="text-3xl font-light mb-2">Order Details</h2>
+                        <p class="text-gray-600">Placed on <%= helpers.formatDate(order.createdOn) %></p>
+                    </div>
+                    <span class="px-4 py-2 text-sm font-medium rounded-full 
+                        <%= order.status === 'Pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 
+                           order.status === 'Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 
+                           order.status === 'Delivered' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                           'bg-gray-50 text-gray-700 border border-gray-200' %>">
+                        <%= order.status %>
+                    </span>
+                </div>
+
+                <!-- Order Items -->
+                <div class="space-y-6">
+                    <% order.orderedItems.forEach(function(item) { %>
+                        <% if (item && item.product) { %>
+                            <div class="flex items-start border-b pb-6">
+                                <img src="<%= item.productImage %>" 
+                                     alt="<%= item.product.productName %>"
+                                     class="w-24 h-24 object-cover rounded">
+                                <div class="ml-6 flex-1">
+                                    <h3 class="font-medium"><%= item.product.productName %></h3>
+                                    <p class="text-gray-600 text-sm mt-1">Quantity: <%= item.quantity %></p>
+                                    <p class="text-gray-900 font-medium mt-2"><%= helpers.formatCurrency(item.price) %></p>
+                                    <div class="mt-4">
+                                        <span class="px-3 py-1 text-xs font-medium rounded-full
+                                            <%= item.status === 'Pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                                               item.status === 'Cancelled' ? 'bg-red-50 text-red-700 border border-red-200' :
+                                               item.status === 'Delivered' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                                               'bg-gray-50 text-gray-700 border border-gray-200' %>">
+                                            <%= item.status %>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="ml-6">
+                                    <% if (item.status === 'Pending' || item.status === 'Processing') { %>
+                                        <button onclick="showCancelModal('<%= order._id %>', '<%= item._id %>', '<%= item.product.productName %>')"
+                                            class="text-red-600 hover:text-red-800 text-sm font-medium">
+                                        Cancel Item
+                                    </button>
+                                    <% } %>
+                                </div>
+                            </div>
+                        <% } %>
+                    <% }); %>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="mt-8 border-t pt-6">
+                    <div class="space-y-3">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Subtotal</span>
+                            <span class="font-medium"><%= helpers.formatCurrency(order.totalPrice) %></span>
+                        </div>
+                        <% if (order.coupon && order.coupon.applied) { %>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Discount (<%= order.coupon.code %>)</span>
+                                <span class="text-green-600">-<%= helpers.formatCurrency(order.coupon.discountAmount) %></span>
+                            </div>
+                        <% } %>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Shipping</span>
+                            <span class="font-medium">Free</span>
+                        </div>
+                        <div class="flex justify-between text-lg font-medium border-t pt-3">
+                            <span>Total</span>
+                            <span><%= helpers.formatCurrency(order.finalAmount) %></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Details -->
+            <% if (order.shippingAddress) { %>
+            <div class="fashion-card rounded-xl p-8">
+                <h3 class="text-xl font-medium mb-4">Shipping Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-600 mb-2">Delivery Address</h4>
+                        <p class="text-sm">
+                            <%= order.shippingAddress.fullName %><br>
+                            <%= order.shippingAddress.addressLine1 %><br>
+                            <% if (order.shippingAddress.addressLine2) { %>
+                                <%= order.shippingAddress.addressLine2 %><br>
+                            <% } %>
+                            <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %><br>
+                            <%= order.shippingAddress.pincode %><br>
+                            Phone: <%= order.shippingAddress.mobile %>
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-600 mb-2">Payment Information</h4>
+                        <p class="text-sm">
+                            Payment Method: <%= order.paymentMethod %><br>
+                            Payment Status: 
+                            <span class="<%= order.paymentStatus === 'Paid' ? 'text-green-600' : 'text-amber-600' %>">
+                                <%= order.paymentStatus %>
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <% } %>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end space-x-4">
+                <% if (order.status === 'Delivered') { %>
+                    <button onclick="showReturnModal('<%= order._id %>')"
+                            class="px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50">
+                        Return Order
+                    </button>
+                    <a href="/orders/<%= order._id %>/invoice"
+                       class="px-6 py-2.5 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800">
+                        Download Invoice
+                    </a>
+                <% } %>
+                <button onclick="trackOrder('<%= order._id %>')"
+                        class="px-6 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+                    Track Order
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Item Modal -->
+    <%- include('../partials/cancelmodal') %>
+    
+    <!-- Return Order Modal -->
+    <%- include('../partials/returnmodal') %>
+
+
+<script>
+
+function showCancelModal(orderId, itemId, productName) {
+    const modal = document.getElementById('cancelItemModal');
+    modal.classList.remove('hidden');
+    
+    // Verify we have both orderId and itemId
+    if (!orderId || !itemId) {
+        console.error('Missing orderId or itemId:', { orderId, itemId });
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Invalid order or item information',
+            confirmButtonColor: '#3085d6'
+        });
+        return;
+    }
+    
+    // Set data attributes for the confirm button
+    const confirmButton = document.getElementById('confirmCancelItem');
+    confirmButton.setAttribute('data-order-id', orderId);
+    confirmButton.setAttribute('data-item-id', itemId);
+    
+    // Update modal text
+    document.getElementById('cancelItemName').textContent = productName;
+}
+  async function cancelOrderItem() {
+    const confirmButton = document.getElementById('confirmCancelItem');
+    const orderId = confirmButton.getAttribute('data-order-id');
+    const itemId = confirmButton.getAttribute('data-item-id');
+    
+    // Add validation
+    if (!orderId || !itemId) {
+        console.error('Missing order ID or item ID:', { orderId, itemId });
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Required information is missing. Please try again.',
+            confirmButtonColor: '#3085d6'
+        });
+        return;
+    }
+
+    try {
+        const response = await fetch(`/orders/${orderId}/items/${itemId}/cancel`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        Swal.fire({
+            icon: 'success',
+            title: 'Item Cancelled Successfully',
+            text: data.walletMessage || 'Your item has been cancelled.',
+            confirmButtonColor: '#3085d6'
+        }).then(() => {
+            location.reload();
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Cancellation Failed',
+            text: 'Failed to cancel item. Please try again later.',
+            confirmButtonColor: '#3085d6'
+        });
+    } finally {
+        hideCancelModal();
+    }
+}
+
+function hideCancelModal() {
+    document.getElementById('cancelItemModal').classList.add('hidden');
+}
+
+//return order 
+function showReturnModal(orderId) {
+    const modal = document.getElementById('returnOrderModal');
+    const itemsList = document.getElementById('returnItemsList');
+    
+    // Clear previous items
+    itemsList.innerHTML = '';
+    itemsList.innerHTML = '<div class="text-gray-500">Loading items...</div>';
+    
+    // Get order details with populated product information
+    fetch(`/api/orders/${orderId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch order details');
+            }
+            return response.json();
+        })
+        .then(order => {
+            itemsList.innerHTML = '';
+            
+            if (!order.orderedItems || order.orderedItems.length === 0) {
+                itemsList.innerHTML = '<div class="text-gray-500">No items available for return</div>';
+                return;
+            }
+
+            // Filter returnable items
+            const returnableItems = order.orderedItems.filter(item => 
+                item.status !== 'Cancelled' && 
+                item.status !== 'Returned' &&
+                item.status !== 'Return Requested' &&
+                item.product
+            );
+
+            if (returnableItems.length === 0) {
+                itemsList.innerHTML = '<div class="text-gray-500">No items are eligible for return</div>';
+                return;
+            }
+
+            returnableItems.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'flex items-center space-x-3 p-2 hover:bg-gray-50 rounded';
+                
+                // Get product image path
+                const productImage = item.product.productImage && item.product.productImage.length > 0
+                    ? `/uploads/product-images/${item.product.productImage[0]}`
+                    : '/placeholder-image.jpg';
+                
+                itemElement.innerHTML = `
+                    <div class="flex items-center space-x-4 flex-1">
+                        <input type="checkbox" 
+                               id="return_item_${item._id}" 
+                               name="return_items" 
+                               value="${item._id}"
+                               class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                        <img src="${productImage}" 
+                             alt="${item.product.productName}" 
+                             class="h-12 w-12 object-cover rounded">
+                        <label for="return_item_${item._id}" class="flex-1">
+                            <div class="font-medium text-sm text-gray-700">${item.product.productName}</div>
+                            <div class="text-sm text-gray-500">
+                                Qty: ${item.quantity} × ${new Intl.NumberFormat('en-US', {
+                                    style: 'currency',
+                                    currency: 'INR'
+                                }).format(item.price)}
+                            </div>
+                        </label>
+                    </div>
+                `;
+                itemsList.appendChild(itemElement);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching order details:', error);
+            itemsList.innerHTML = `
+                <div class="text-red-500">
+                    Failed to load order items. Please try again later.
+                </div>
+            `;
+        });
+
+    document.getElementById('returnOrderId').value = orderId;
+    modal.classList.remove('hidden');
+    document.body.classList.add('modal-open');
+}
+
+function hideReturnModal() {
+    const modal = document.getElementById('returnOrderModal');
+    modal.classList.add('hidden');
+    document.body.classList.remove('modal-open');
+    
+    // Reset form
+    document.getElementById('returnForm').reset();
+    document.getElementById('returnItemsList').innerHTML = '';
+}
+
+
+function validateReturnForm() {
+    const selectedItems = document.querySelectorAll('input[name="return_items"]:checked');
+    const reason = document.getElementById('returnReason').value;
+    
+    if (selectedItems.length === 0) {
+        alert('Please select at least one item to return');
+        return false;
+    }
+    
+    if (!reason) {
+        alert('Please select a reason for return');
+        return false;
+    }
+    
+    return true;
+}
+
+function submitReturn() {
+    if (!validateReturnForm()) {
+        return;
+    }
+
+    const orderId = document.getElementById('returnOrderId').value;
+    const reason = document.getElementById('returnReason').value;
+    const comments = document.getElementById('returnComments').value;
+    const itemId = document.getElementById('returnItemId').value;
+    
+    // Get selected items
+    const selectedItems = Array.from(document.querySelectorAll('input[name="return_items"]:checked'))
+        .map(checkbox => checkbox.value);
+
+    // Disable submit button to prevent double submission
+    const submitButton = document.querySelector('#returnForm button[type="submit"]');
+    submitButton.disabled = true;
+    submitButton.innerHTML = 'Processing...';
+
+    fetch('/api/orders/return', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            orderId,
+            items: selectedItems,
+            reason,
+            comments,
+            itemId,
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Server returned error response');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            alert('Return request submitted successfully');
+            hideReturnModal();
+            window.location.reload();
+        } else {
+            throw new Error(data.message || 'Failed to submit return request');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An unexpected error occurred while processing your return request. Please try again later.');
+    })
+    .finally(() => {
+        // Re-enable submit button
+        submitButton.disabled = false;
+        submitButton.innerHTML = 'Submit Return';
+    });
+}
+
+
+
+// track order 
+
+function trackOrder(orderId) {
+    // First check if orderId exists
+    if (!orderId) {
+        alert('Order ID is required');
+        return;
+    }
+
+    // Show loading indicator (optional)
+    const button = event.currentTarget;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<span class="inline-block">Loading...</span>';
+    button.disabled = true;
+
+    // Make the AJAX request
+    fetch(`/track-order/${orderId}`, {
+        method: 'GET',
+        headers: {
+            'Accept': 'text/html',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        // Since your backend renders a full page, we'll handle the navigation here
+        window.location.href = `/track-order/${orderId}`;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Unable to track order. Please try again.');
+    })
+    .finally(() => {
+        // Restore button state
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+
+function setDefaultAddress(addressId) {
+    fetch(`/setDefaultAddress/${addressId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload(); // Refresh to update the default address visually
+        } else {
+            alert('Failed to set default address');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+
+
+// Add event listener to prevent default form submission if the button is within a form
+document.addEventListener('DOMContentLoaded', function() {
+    const trackButtons = document.querySelectorAll('[onclick^="trackOrder"]');
+    trackButtons.forEach(button => {
+        button.closest('form')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+        });
+    });
+});
+</script>
+
+</body>
+</html>

@@ -363,15 +363,15 @@
                                         <div class="flex items-center">
                                             <input type="radio" name="paymentMethod" id="cashOnDelivery" value="cashOnDelivery" 
                                                    class="form-radio h-4 w-4 text-black border-gray-300" 
-                                                   <%= total < 1000 ? 'disabled' : '' %>>
+                                                   <%= total > 1000 ? 'disabled' : '' %>>
                                             <div class="ml-3">
 
                                                 <span class="font-medium">Cash on Delivery</span>
-                                                <% if (total > 1000) { %>
+                                                <% if (total < 1000) { %>
                                                 <p class="text-gray-500 text-sm mt-1">Pay when you receive your order</p>
                                                 <% } %>
-                                                <% if (total < 1000) { %>
-                                                    <p class="text-gray-500 text-sm mt-1" id="cashOnDeliveryMessage">Cash on Delivery is not available for orders below ₹1,000.</p>
+                                                <% if (total > 1000) { %>
+                                                    <p class="text-gray-500 text-sm mt-1" id="cashOnDeliveryMessage">Cash on Delivery is not available for orders above ₹1,000.</p>
                                                 <% } else { %>
                                                     <p class="text-gray-500 text-sm mt-1" id="cashOnDeliveryMessage"></p>
                                                 <% } %>
@@ -624,16 +624,32 @@
 //payment 
 
 async function confirmOrder() {
+
+
+    const orderButton = document.getElementById('placeOrderBtn');
+    
+    // Reset button styling if it was in retry state
+    if (orderButton.classList.contains('bg-red-600')) {
+        orderButton.classList.remove('bg-red-600', 'hover:bg-red-700');
+        orderButton.classList.add('bg-black', 'hover:bg-gray-900');
+        orderButton.innerHTML = `
+            <span>Place Order</span>
+            <i class="fas fa-arrow-right"></i>
+        `;
+    }
     try {
         // Get form elements with null checks
         const addressInput = document.querySelector('input[name="address"]:checked');
         const paymentMethodInput = document.querySelector('input[name="paymentMethod"]:checked');
         const couponCodeInput = document.querySelector('input[name="couponCode"]');
         
+        
         // Get total amount from the table's last row
         const totalRow = document.querySelector('table tfoot tr:last-child td:last-child');
         const amount = totalRow ? parseFloat(totalRow.textContent.replace('₹', '').trim()) : 0;
         
+       
+
         // Validate required fields
         if (!addressInput) {
             Swal.fire({
@@ -681,14 +697,14 @@ async function confirmOrder() {
         // Process based on payment method
         if (paymentMethodInput.value === 'cashOnDelivery') {
         // Check if the total amount is less than ₹1,000
-        if (amount < 1000) {
+        if (amount > 1000) {
             const cashOnDeliveryMessage = document.getElementById('cashOnDeliveryMessage');
-            cashOnDeliveryMessage.textContent = 'Cash on Delivery is not available for orders below ₹1,000.';
+            cashOnDeliveryMessage.textContent = 'Cash on Delivery is not available for orders above ₹1,000.';
             paymentMethodInput.disabled = true;
             Swal.fire({
                 icon: 'warning',
                 title: 'Cash on Delivery Unavailable',
-                text: 'Cash on Delivery is not available for orders below ₹1,000.',
+                text: 'Cash on Delivery is not available for orders above ₹1,000.',
                 confirmButtonColor: '#3085d6'
             });
             return;
@@ -701,6 +717,7 @@ async function confirmOrder() {
         await processWalletPayment(requestBody);
     }
 } catch (error) {
+      handlePaymentFailure();
         console.error('Error in confirmOrder:', error);
         Swal.fire({
             icon: 'error',
@@ -716,6 +733,12 @@ async function processRazorpayPayment(requestBody) {
         // Get user details with null checks
         const nameInput = document.querySelector('input[name="name"]');
         const phoneInput = document.querySelector('input[name="phone"]');
+        
+        // Update button state
+        const orderButton = document.getElementById('placeOrderBtn');
+        const originalButtonText = orderButton.innerHTML;
+        orderButton.innerHTML = '<span>Processing...</span>';
+        orderButton.disabled = true;
 
         // First create the Razorpay order
         const response = await fetch("/create-razorpay-order", {
@@ -741,7 +764,6 @@ async function processRazorpayPayment(requestBody) {
             order_id: orderData.orderId,
             handler: async function (response) {
                 try {
-                    // After successful payment, verify and create the order
                     const verifyResponse = await fetch("/verify-payment", {
                         method: "POST",
                         headers: {
@@ -758,7 +780,6 @@ async function processRazorpayPayment(requestBody) {
                     const verificationData = await verifyResponse.json();
                     
                     if (verificationData.success) {
-                        // Create the actual order in your database
                         const createOrderResponse = await fetch("/place-order", {
                             method: "POST",
                             headers: {
@@ -777,16 +798,10 @@ async function processRazorpayPayment(requestBody) {
                         const orderResult = await createOrderResponse.json();
                         handleOrderResponse(orderResult);
                     } else {
-                        throw new Error(verificationData.message || 'Payment verification failed');
+                        handlePaymentFailure();
                     }
                 } catch (error) {
-                    console.error("Payment verification failed:", error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Payment Verification Failed',
-                        text: 'There was an error verifying your payment.',
-                        confirmButtonColor: '#3085d6'
-                    });
+                    handlePaymentFailure();
                 }
             },
             prefill: {
@@ -795,33 +810,53 @@ async function processRazorpayPayment(requestBody) {
             },
             theme: {
                 color: "#3b82f6"
+            },
+            modal: {
+                ondismiss: function() {
+                    // Reset button state when modal is closed
+                    orderButton.innerHTML = originalButtonText;
+                    orderButton.disabled = false;
+                }
             }
         };
 
         const rzp = new Razorpay(options);
 
         rzp.on('payment.failed', function (response) {
-            console.error("Payment failed:", response.error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Payment Failed',
-                text: 'Your payment was unsuccessful. Please try again.',
-                confirmButtonColor: '#3085d6'
-            });
+            handlePaymentFailure();
         });
 
         rzp.open();
 
     } catch (error) {
-        console.error("Error initiating payment:", error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Payment Initiation Failed',
-            text: 'There was an error starting the payment process.',
-            confirmButtonColor: '#3085d6'
-        });
+        handlePaymentFailure();
     }
 }
+
+function handlePaymentFailure() {
+    const orderButton = document.getElementById('placeOrderBtn');
+    
+    // Update button to show retry state
+    orderButton.innerHTML = `
+        <span>Retry Payment</span>
+        <i class="fas fa-redo-alt ml-2"></i>
+    `;
+    orderButton.disabled = false;
+    orderButton.classList.remove('bg-black');
+    orderButton.classList.add('bg-red-600', 'hover:bg-red-700');
+
+    // Show error message
+    Swal.fire({
+        icon: 'error',
+        title: 'Payment Failed',
+        text: 'Your payment was unsuccessful. Click "Retry Payment" to try again.',
+        confirmButtonColor: '#3085d6'
+    }).then(() => {
+        // Redirect to checkout page
+        window.location.href = '/checkout';
+    });
+}
+
 
 
 async function processCashOnDelivery(requestBody) {
@@ -1147,3 +1182,5 @@ document.addEventListener('DOMContentLoaded', fetchWalletBalance);
     </script>
 </body>
 </html>
+
+   <%- include("../partials/user/footer") %>

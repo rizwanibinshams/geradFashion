@@ -1,5 +1,6 @@
 const Wallet = require('../../models/walletSchema');
-const Order = require("../../models/orderSchema")
+const Order = require("../../models/orderSchema");
+const User = require("../../models/userSchema")
 // Add money to wallet
 const addMoneyToWallet = async (req, res) => {
     try {
@@ -79,58 +80,6 @@ const getWalletBalance = async (req, res) => {
     }
 };
 
-// Process wallet payment
-// const processWalletPayment = async (req, res) => {
-//     try {
-//         const userId = req.session.user_id || req.session.user?.id;;
-//         const { amount, orderId } = req.body;
-
-//         // Find wallet and check balance
-//         const wallet = await Wallet.findOne({ userId });
-        
-//         if (!wallet) {
-//             return res.status(404).json({
-//                 success: false,
-//                 message: 'Wallet not found'
-//             });
-//         }
-
-//         if (wallet.balance < amount) {
-//             return res.status(400).json({
-//                 success: false,
-//                 message: 'Insufficient balance'
-//             });
-//         }
-
-//         // Update balance and add transaction
-//         const newBalance = wallet.balance - parseFloat(amount);
-//         const transaction = {
-//             type: 'debit',
-//             amount: parseFloat(amount),
-//             description: `Payment for order ${orderId}`,
-//             date: new Date(),
-//             balance: newBalance
-//         };
-
-//         wallet.balance = newBalance;
-//         wallet.transactionHistory.push(transaction);
-//         await wallet.save();
-
-//         return res.json({
-//             success: true,
-//             message: 'Payment processed successfully',
-//             transactionId: transaction._id,
-//             remainingBalance: newBalance
-//         });
-//     } catch (error) {
-//         console.error('Error processing wallet payment:', error);
-//         return res.status(400).json({
-//             success: false,
-//             message: error.message || 'Payment processing failed'
-//         });
-//     }
-// };
-
 
 
 const processWalletPayment = async (req, res) => {
@@ -138,16 +87,16 @@ const processWalletPayment = async (req, res) => {
         const userId = req.session.user_id || req.session.user?.id;
         const { amount, orderId, description: customDescription } = req.body;
 
-
+        // Validate order if orderId is provided
         if (orderId) {
-          const orderExists = await Order.exists({ orderId });
-          if (!orderExists) {
-              return res.status(404).json({
-                  success: false,
-                  message: 'Order not found'
-              });
-          }
-      }
+            const orderExists = await Order.exists({ orderId });
+            if (!orderExists) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Order not found'
+                });
+            }
+        }
 
         // Find wallet and check balance
         const wallet = await Wallet.findOne({ userId });
@@ -179,11 +128,11 @@ const processWalletPayment = async (req, res) => {
 
         const transaction = {
             type: 'debit',
-            amount: parseFloat(amount),
+            amount: -parseFloat(amount),  // Store as negative for debits
             description: transactionDescription,
             date: new Date(),
             balance: newBalance,
-            orderId: orderId || null  // Store orderId if available
+            orderId: orderId || null
         };
 
         wallet.balance = newBalance;
@@ -253,10 +202,10 @@ const deductOrderAmount = async (userId, amount, orderId) => {
         // Calculate new balance
         const newBalance = wallet.balance - parseFloat(amount);
         
-        // Create transaction record
+        // Create transaction record with negative amount for debits
         const transaction = {
             type: 'debit',
-            amount: parseFloat(amount),
+            amount: -parseFloat(amount),  // Store as negative for debits
             description: `Payment deducted for order #${orderId}`,
             date: new Date(),
             balance: newBalance,
@@ -281,10 +230,82 @@ const deductOrderAmount = async (userId, amount, orderId) => {
 }
 
 
+const getWallet = async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.redirect('/login');
+        }
+
+        const page = parseInt(req.query.page) || 1;
+        const limit = 10; // Number of transactions per page
+        
+        const userData = await User.findById(req.session.user.id);
+        if (!userData) {
+            return res.status(404).render('page-404', { message: 'User not found' });
+        }
+
+        let wallet = await Wallet.findOne({ userId: userData._id });
+        if (!wallet) {
+            wallet = new Wallet({
+                userId: userData._id,
+                balance: 0,
+                transactionHistory: []
+            });
+            await wallet.save();
+        }
+
+        // Calculate pagination values
+        const totalTransactions = wallet.transactionHistory.length;
+        const totalPages = Math.ceil(totalTransactions / limit);
+        const skip = (page - 1) * limit;
+
+        // Get paginated transactions
+        const paginatedTransactions = wallet.transactionHistory
+            .slice()
+            .reverse()
+            .slice(skip, skip + limit);
+
+        res.render('wallet', { 
+            user: userData, 
+            wallet: {
+                ...wallet.toObject(),
+                transactionHistory: paginatedTransactions
+            },
+            pagination: {
+                currentPage: page,
+                totalPages,
+                hasPrevPage: page > 1,
+                hasNextPage: page < totalPages,
+                pages: Array.from({ length: totalPages }, (_, i) => i + 1)
+            },
+            helpers: {
+                formatDate: function(date) {
+                    return new Date(date).toLocaleDateString('en-US', {
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric'
+                    });
+                },
+                formatCurrency: function(amount) {
+                    if (amount === undefined || amount === null) {
+                        console.log('Undefined/null amount detected');
+                        return '₹0.00';
+                    }
+                    return '₹' + Number(amount).toFixed(2);
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error loading profile:', error);
+        res.status(500).render('page-404', { message: 'Server error occurred' });
+    }
+};
+
 module.exports = {
     addMoneyToWallet,
     getWalletBalance,
     processWalletPayment,
     getTransactionHistory,
-    deductOrderAmount
+    deductOrderAmount,
+    getWallet
 };

@@ -22,8 +22,17 @@ const brandStore = multer.diskStorage({
     }
 })
 
+const banner = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/uploads/banners')
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '-' + file.originalname)
+    }
+});
 
 module.exports = {
     storage,
-    brandStore
+    brandStore,
+    banner
 }

@@ -7,6 +7,7 @@ const Address = require("../../models/addressSchema")
 const {Order} = require("../../models/orderSchema"); 
 const Wallet = require("../../models/walletSchema")
 const Coupon = require("../../models/couponSchema")
+const Banner = require('../../models/bannerSchema');
 const env = require('dotenv').config()
 const nodemailer = require('nodemailer')
 const otpgenerator = require('otp-generator')
@@ -116,6 +117,20 @@ const loadHomepage = async (req, res) => {
 
         const bestSellerData = await Product.aggregate(bestSellerPipeline);
 
+
+
+        // Get current date
+        const currentDate = new Date();
+            
+        // Fetch active banners (within start and end date)
+        const activeBanners = await Banner.find({
+            startDate: { $lte: currentDate },
+            endDate: { $gte: currentDate }
+        }).sort('-createdAt'); // Get the most recent banner first
+        
+        // Get the most recent active banner or null if none exists
+        const currentBanner = activeBanners[0] || null;
+
         // Render home page with user data, latest products, and best sellers
         return res.render('home', {
             user: userData || null,
@@ -123,7 +138,8 @@ const loadHomepage = async (req, res) => {
             bestSellers: bestSellerData,
             categories, // Pass categories to the view for rendering
             currentSearch: search || '',
-            currentCategory: category || ''
+            currentCategory: category || '',
+            currentBanner:currentBanner
         });
     } catch (error) {
         console.error('Home page loading error:', error);

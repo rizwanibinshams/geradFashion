@@ -179,6 +179,98 @@ const postNewPassword = async (req, res) => {
     }
 };
 
+ const getChangePasswordPage = async (req, res) => {
+    try {
+        res.render('change-password', { 
+            message: '',
+            success: false 
+        });
+    } catch (error) {
+        console.error('Error rendering change password page:', error);
+        res.status(500).render('change-password', { 
+            message: 'An error occurred. Please try again.',
+            success: false
+        });
+    }
+};
+
+
+ const changePassword = async (req, res) => {
+    try {
+        const { currentPassword, newPass1, newPass2 } = req.body;
+        const userId = req.session.userId || req.session.user?.id;
+
+        // Validate input
+        if (!currentPassword || !newPass1 || !newPass2) {
+            return res.render('change-password', { 
+                message: 'All fields are required.',
+                success: false
+            });
+        }
+
+        if (newPass1 !== newPass2) {
+            return res.render('change-password', { 
+                message: 'New passwords do not match.',
+                success: false
+            });
+        }
+
+        if (newPass1.length < 6) {
+            return res.render('change-password', { 
+                message: 'New password must be at least 6 characters long.',
+                success: false
+            });
+        }
+
+        // Get user from database
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.render('change-password', { 
+                message: 'User not found.',
+                success: false
+            });
+        }
+
+        // Verify current password
+        const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+        if (!isPasswordValid) {
+            return res.render('change-password', { 
+                message: 'Current password is incorrect.',
+                success: false
+            });
+        }
+
+        // Check if new password is same as current
+        if (currentPassword === newPass1) {
+            return res.render('change-password', { 
+                message: 'New password must be different from current password.',
+                success: false
+            });
+        }
+
+        // Hash new password
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(newPass1, saltRounds);
+
+        // Update password in database
+        await User.findByIdAndUpdate(userId, { password: hashedPassword });
+
+        // Render success message and include redirect script
+        res.render('change-password', { 
+            message: 'Password changed successfully! Redirecting to home...',
+            success: true
+        });
+
+    } catch (error) {
+        console.error('Error changing password:', error);
+        res.status(500).render('change-password', { 
+            message: 'An error occurred while changing password. Please try again.',
+            success: false
+        });
+    }
+};
+
+
 
 module.exports = {
     getForgtPassPage,
@@ -186,5 +278,7 @@ module.exports = {
     verifyForgotPassOtp,
     getResetPassPage,
     resendOtp,
-    postNewPassword
+    postNewPassword,
+    getChangePasswordPage,
+    changePassword
 };

@@ -1,4 +1,5 @@
 const Address = require('../../models/addressSchema');
+const user = require('../../models/userSchema');
 
 // Add a new address
 const addAddress = async (req, res) => {
@@ -78,7 +79,7 @@ const addAddress = async (req, res) => {
         //res.redirect('/profile'); // Adjust the route to your actual profile page route
 
         // Instead of redirecting on success, return JSON response
-res.redirect("/profile") // Send the newly added address back to the client
+res.redirect("/address") // Send the newly added address back to the client
 
     } catch (error) {
         console.error("Error adding address:", error.message); // Log specific error message
@@ -325,7 +326,7 @@ const getAddresses = async (req, res) => {
 
 
 const setDefaultAddress = async (req, res) => {
-    const userId = req.user?._id || req.session.user?.id;;  // Assuming user is authenticated and user ID is accessible
+    const userId = req.user?._id || req.session.user?.id; // Assuming user is authenticated and user ID is accessible
     const addressId = req.params.addressId;
 
     try {
@@ -354,6 +355,23 @@ const setDefaultAddress = async (req, res) => {
     }
 };
 
+
+const adres = async (req, res) => {
+    try {
+        // Fetch addresses data
+        const userId = req.session.user?.id;
+        const userData = await user.findById(userId);
+        const addresses = await Address.find({ userId });
+        res.render('addresses', { addresses,
+            user:userData,
+            user: userData,
+            userEmail: req.session.user?.email
+         });
+    } catch (error) {
+        res.status(500).send('Error loading addresses');
+    }
+}
+
 module.exports ={
     addAddress,
     editAddress,
@@ -361,5 +379,6 @@ module.exports ={
     getAddresses,
     getAddressById,
     setDefaultAddress,
-    CheckoutaddAddress
+    CheckoutaddAddress,
+    adres
 }

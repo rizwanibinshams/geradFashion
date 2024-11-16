@@ -23,7 +23,8 @@ const placeOrder = async (req, res) => {
         }
 
         // Fetch cart and validate items
-        const cart = await Cart.findOne({ userId }).populate('items.productId');
+        const cart = await Cart.findOne({ userId }).populate('items.productId', 'category');
+
         if (!cart || cart.items.length === 0) {
             return res.status(400).json({ success: false, message: 'Cart is empty.' });
         }
@@ -115,8 +116,9 @@ const placeOrder = async (req, res) => {
     orderedItems: cart.items.map(item => ({
         product: item.productId._id,
         quantity: item.quantity,
+        category: item.category || item.productId.category, // Use product's category as fallback
         price: item.totalPrice,
-        status: 'Pending'  // Add this line to set the initial status
+        status: 'Pending'
     })),
             totalPrice: subtotal,
             discount: discountAmount,
@@ -528,53 +530,239 @@ const getOrderDetails = async (req, res) => {
 const downloadInvoice = async (req, res) => {
     try {
         const orderId = req.params.id;
-        const order = await Order.findById(orderId).populate('orderedItems.product');
+        const order = await Order.findById(orderId)
+            .populate('orderedItems.product')
+            .populate({
+                path: 'orderedItems.category',
+                select: 'name'
+            });
 
         if (!order) {
             return res.status(404).send('Order not found');
         }
 
-        const helpers = {
-            formatCurrency: (amount) => `₹${Number(amount).toFixed(2)}`
-        };
-
-        // Generate the invoice PDF and send it as a download
-        const doc = new PDFDocument();
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename=order-${orderId}.pdf`);
-
-        doc.pipe(res);
-
-        // Add content to the PDF document
-        doc.fontSize(18).text(`Order #${order._id}`, { align: 'center' });
-        doc.moveDown(1);
-
-        doc.fontSize(12).text(`Ordered on: ${order.createdOn}`);
-        doc.moveDown(1);
-
-        doc.fontSize(12).text(`Payment Method: ${order.paymentMethod}`);
-        doc.moveDown(1);
-
-        doc.fontSize(14).text('Ordered Items:', { underline: true });
-        doc.moveDown(1);
-
-        order.orderedItems.forEach((item) => {
-            doc.fontSize(12).text(`- ${item.product.productName} x ${item.quantity} (${helpers.formatCurrency(item.price)})`);
+        // Helper functions
+        const formatCurrency = amount => `₹${Number(amount).toFixed(2)}`;
+        const formatDate = date => new Date(date).toLocaleDateString('en-IN', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
         });
 
-        doc.moveDown(2);
+        // Create PDF document
+        const doc = new PDFDocument({
+            size: 'A4',
+            margin: 50,
+            bufferPages: true
+        });
 
-        doc.fontSize(14).text('Order Summary:', { underline: true });
-        doc.moveDown(1);
+        // Set response headers
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=GeradFashion-invoice-${orderId}.pdf`);
+        doc.pipe(res);
 
-        doc.fontSize(12).text(`Subtotal: ${helpers.formatCurrency(order.totalPrice)}`);
-        doc.fontSize(12).text(`Shipping: ${order.deliveryCharge > 0 ? helpers.formatCurrency(order.deliveryCharge) : 'Free'}`);
+        // Brand colors
+        const colors = {
+            primary: '#000000',
+            secondary: '#666666',
+            accent: '#D4AF37',
+            light: '#F5F5F5',
+            white: '#FFFFFF'
+        };
 
-        if (order.coupon && order.coupon.applied) {
-            doc.fontSize(12).text(`Discount (${order.coupon.code}): -${helpers.formatCurrency(order.discount)}`);
-        }
+        // Header section
+        const drawHeader = () => {
+            doc.save()
+               .moveTo(0, 0)
+               .lineTo(595.28, 0)
+               .lineTo(595.28, 140)
+               .lineTo(0, 100)
+               .fill(colors.primary);
 
-        doc.fontSize(12).text(`Total: ${helpers.formatCurrency(order.finalAmount)}`);
+            doc.fillColor(colors.white)
+               .font('Helvetica-Bold')
+               .fontSize(36)
+               .text('GERAD', 50, 25)
+               .fontSize(30)
+               .text('FASHION', 50, 60)
+               .fontSize(12)
+               .font('Helvetica')
+               .text('Premium Fashion & Lifestyle', 50, 90);
+        };
+
+        // Invoice details section
+        const drawInvoiceDetails = () => {
+            const startY = 160;
+            
+            // Left side - Invoice title and billing details
+            doc.fontSize(24)
+               .fillColor(colors.primary)
+               .text('INVOICE', 50, startY)
+               .moveDown(1);
+
+            doc.fontSize(12)
+               .font('Helvetica-Bold')
+               .text('BILLING DETAILS', 50, doc.y)
+               .moveDown(0.5)
+               .fontSize(10)
+               .font('Helvetica')
+               .fillColor(colors.secondary);
+
+            const billingDetails = [
+                order.address.name,
+                order.address.street || '',
+                `${order.address.city}, ${order.address.state} ${order.address.pincode}`,
+                `Phone: ${order.address.phone || 'N/A'}`
+            ];
+
+            billingDetails.forEach(line => {
+                doc.text(line, 50, doc.y + 5);
+            });
+
+            // Right side - Invoice metadata
+            const detailsX = 360;
+            const detailsY = startY + 40;
+            const invoiceDetails = [
+                { label: 'Invoice No:', value: `#${order.orderId || orderId}` },
+                { label: 'Date:', value: formatDate(order.createdOn) },
+                { label: 'Order Status:', value: order.status },
+                { label: 'Payment Method:', value: order.paymentMethod }
+            ];
+
+            invoiceDetails.forEach((detail, idx) => {
+                doc.font('Helvetica-Bold')
+                   .fillColor(colors.primary)
+                   .text(detail.label, detailsX, detailsY + (idx * 28))
+                   .font('Helvetica')
+                   .fillColor(colors.secondary)
+                   .text(detail.value, detailsX + 100, detailsY + (idx * 25));
+            });
+        };
+
+        // Order items table
+        const drawOrderItems = () => {
+            const startY = 340;
+            const pageHeight = doc.page.height - 150; // Leave space for footer
+            let currentY = startY;
+
+            // Table headers
+            const drawTableHeader = (y) => {
+                doc.rect(50, y, 495, 30).fill(colors.primary);
+                
+                const headers = ['Item Details', 'Qty', 'Unit Price', 'Total'];
+                const widths = [280, 65, 75, 75];
+                let x = 60;
+
+                headers.forEach((header, i) => {
+                    doc.fillColor(colors.white)
+                       .font('Helvetica-Bold')
+                       .fontSize(10)
+                       .text(header, x, y + 10, { width: widths[i] });
+                    x += widths[i];
+                });
+
+                return y + 30;
+            };
+
+            currentY = drawTableHeader(currentY);
+
+            // Table rows
+            order.orderedItems.forEach((item, index) => {
+                const rowHeight = 70;
+
+                // Check if we need a new page
+                if (currentY + rowHeight > pageHeight) {
+                    doc.addPage();
+                    currentY = 60;
+                    currentY = drawTableHeader(currentY);
+                }
+
+                // Row background
+                doc.rect(50, currentY, 495, rowHeight)
+                   .fill(index % 2 === 0 ? colors.light : colors.white);
+
+                // Item details
+                doc.fillColor(colors.primary)
+                   .font('Helvetica-Bold')
+                   .fontSize(10)
+                   .text(item.product.productName, 60, currentY + 10, { width: 270 })
+                   .font('Helvetica')
+                   .fontSize(9)
+                   .fillColor(colors.secondary)
+                //    .text(`SKU: ${item.product.sku || 'N/A'}`, 60, currentY + 30)
+                   .text(`Category: ${item.category.name || 'N/A'}`, 60, currentY + 45);
+
+                // Quantity
+                doc.fontSize(10)
+                   .text(item.quantity, 340, currentY + 25);
+
+                // Unit price
+                doc.text(formatCurrency(item.price), 415, currentY + 25);
+
+                // Total
+                doc.font('Helvetica-Bold')
+                   .fillColor(colors.primary)
+                   .text(formatCurrency(item.price * item.quantity), 490, currentY + 25);
+
+                currentY += rowHeight;
+            });
+
+            return currentY;
+        };
+
+        // Summary section
+        const drawSummary = (startY) => {
+            const summaryX = 300;
+            const summaryWidth = 260;
+
+            doc.rect(summaryX, startY, summaryWidth, 165)
+               .fill(colors.primary);
+
+            const summaryItems = [
+                ['Subtotal:', formatCurrency(order.totalPrice)],
+                ['Shipping:', order.deliveryCharge > 0 ? formatCurrency(order.deliveryCharge) : 'FREE'],
+                order.coupon?.applied ? 
+                    [`Discount (${order.coupon.code}):`, `-${formatCurrency(order.discount)}`] : null,
+                ['Total:', formatCurrency(order.finalAmount)]
+            ].filter(Boolean);
+
+            summaryItems.forEach((item, i) => {
+                const isLast = i === summaryItems.length - 1;
+                const itemY = startY + 20 + (i * 25);
+                
+                doc.fillColor(colors.white)
+                   .font(isLast ? 'Helvetica-Bold' : 'Helvetica')
+                   .fontSize(isLast ? 12 : 10)
+                   .text(item[0], summaryX + 20, itemY)
+                   .text(item[1], summaryX + 180, itemY, { align: 'right' });
+            });
+
+            return startY + 140;
+        };
+
+        // Footer
+        const drawFooter = () => {
+            const footerHeight = 80;
+            const footerY = doc.page.height - footerHeight;
+
+            doc.rect(0, footerY, 595.28, footerHeight)
+               .fill(colors.primary);
+
+            doc.fillColor(colors.white)
+               .fontSize(10)
+               .text('Thank you for shopping with GeradFashion!', 50, footerY + 20, { align: 'center' })
+               .moveDown(0.5)
+               .fontSize(8)
+               .text('For support, contact us at support@geradfashion.com', { align: 'center' })
+               .text('Follow us @GeradFashion', { align: 'center' });
+        };
+
+        // Draw all sections
+        drawHeader();
+        drawInvoiceDetails();
+        const itemsEndY = drawOrderItems();
+        const summaryEndY = drawSummary(itemsEndY + 20);
+        drawFooter();
 
         doc.end();
     } catch (err) {
@@ -583,11 +771,270 @@ const downloadInvoice = async (req, res) => {
     }
 };
 
+
+const loadorder = async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.redirect('/login');
+          }
+          
+          const userData = await User.findById(req.session.user.id);
+        if (!userData) {
+            return res.status(404).render('page-404', { message: 'User not found' });
+        }
+
+        const addresses = await Address.find({ userId: userData.id });
+        
+        // Fetch ALL orders for the user without coupon filter
+        const orders = await Order.find({ 
+            user: userData._id
+        })
+        .populate({
+            path: 'orderedItems.product',
+            select: 'productName price productImage images' 
+        })
+        .sort({ createdOn: -1 });
+
+        const processedOrders = orders.map(order => {
+            const orderObj = order.toObject();
+            orderObj.orderedItems = order.orderedItems.map(item => {
+              const productImage = item.product && item.product.productImage && item.product.productImage.length > 0
+                ? path.join('/uploads/product-images', item.product.productImage[0])
+                : '/placeholder-image.jpg';
+          
+              return {
+                _id: item._id,
+                product: item.product,
+                quantity: item.quantity,
+                price: item.price,
+                status: item.status || 'Pending',
+                productImage: productImage,
+              };
+            });
+            return orderObj;
+          });
+        // Extract coupon history only from orders that used coupons
+        const couponHistory = orders
+            .filter(order => order.coupon && order.coupon.applied)
+            .map(order => ({
+                orderId: order.orderId,
+                couponCode: order.coupon.code,
+                discountAmount: order.coupon.discountAmount,
+                orderTotal: order.totalPrice,
+                finalAmount: order.finalAmount,
+                usedOn: order.createdOn
+            }));
+
+        let wallet = await Wallet.findOne({ userId: userData._id });
+        if (!wallet) {
+            wallet = new Wallet({
+                userId: userData._id,
+                balance: 0,
+                transactionHistory: []
+            });
+            await wallet.save();
+        }
+
+        res.render('orders', { 
+            user: userData, 
+            addresses: addresses, 
+            orders: processedOrders,
+            wallet: wallet,
+            couponHistory: couponHistory,
+            helpers: {
+                formatDate: function(date) {
+                    return new Date(date).toLocaleDateString('en-US', {
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric'
+                    });
+                },
+                formatCurrency: function(amount) {
+                    if (amount === undefined || amount === null) {
+                        console.log('Undefined/null amount detected');
+                        return '₹0.00';
+                    }
+                    return '₹' + Number(amount).toFixed(2);
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error loading profile:', error);
+        res.status(500).render('page-404', { message: 'Server error occurred' });
+    }
+};
+const loadOrderDetails = async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.redirect('/login');
+        }
+
+        const orderId = req.params.orderId;
+        const userData = await User.findById(req.session.user.id);
+
+        if (!userData) {
+            return res.status(404).render('page-404', { message: 'User not found' });
+        }
+
+        // Fetch the order with populated product and category details
+        const order = await Order.findOne({
+            _id: orderId,
+            user: userData._id
+        }).populate({
+            path: 'orderedItems.product',
+            select: 'productName price productImage images'
+        }).populate('orderedItems.category');
+
+        if (!order) {
+            return res.status(404).render('page-404', { message: 'Order not found' });
+        }
+
+        // Process order details
+        const processedOrder = order.toObject();
+
+        // Process ordered items
+        processedOrder.orderedItems = order.orderedItems.map(item => {
+            const productData = item.product || {
+                productName: 'Product Unavailable',
+                price: item.price || 0,
+                productImage: []
+            };
+
+            // Calculate item total
+            const itemTotal = item.price * item.quantity;
+
+            // Process product image
+            const productImage = productData.productImage && productData.productImage.length > 0
+                ? `/uploads/product-images/${productData.productImage[0]}`
+                : '/placeholder-image.jpg';
+
+            return {
+                _id: item._id, // Ensure item ID is available
+                product: productData,
+                productImage: productImage,
+                quantity: item.quantity,
+                price: item.price,
+                itemTotal: itemTotal,
+                status: item.status || 'Pending',
+                cancelRequest: item.cancelRequest || {},
+                returnRequest: item.returnRequest || {}
+            };
+        });
+
+        // Map shipping address from schema format to template format
+        processedOrder.shippingAddress = {
+            fullName: order.address?.name || userData.fullName,
+            addressLine1: order.address?.street || '',
+            addressLine2: '',  // If you want to split street into two lines
+            city: order.address?.city || '',
+            state: order.address?.state || '',
+            pincode: order.address?.pincode || '',
+            mobile: order.address?.phone || userData.mobile,
+            addressType: order.address?.addressType || 'Home'
+        };
+
+        // Process payment and price details
+        processedOrder.paymentMethod = order.paymentMethod;
+        processedOrder.paymentStatus = order.paymentStatus || 'Pending';
+        processedOrder.totalPrice = order.totalPrice;
+        processedOrder.finalAmount = order.finalAmount;
+        processedOrder.deliveryCharge = order.deliveryCharge || 0;
+        
+        // Process coupon details if exists
+        if (order.coupon && order.coupon.applied) {
+            processedOrder.coupon = {
+                applied: true,
+                code: order.coupon.code,
+                discountAmount: order.coupon.discountAmount || order.discount || 0
+            };
+        }
+
+        // Add return request details if exists
+        if (order.return && order.return.requested) {
+            processedOrder.return = {
+                ...order.return,
+                timeline: order.return.timeline || []
+            };
+        }
+
+        // Helper functions for the template
+        const helpers = {
+            formatDate: function(date) {
+                if (!date) return 'Date not available';
+                return new Date(date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            },
+            formatCurrency: function(amount) {
+                if (typeof amount !== 'number') return '₹0.00';
+                return new Intl.NumberFormat('en-IN', {
+                    style: 'currency',
+                    currency: 'INR',
+                    minimumFractionDigits: 2
+                }).format(amount);
+            },
+            getStatusClass: function(status) {
+                const statusClasses = {
+                    'Pending': 'bg-amber-50 text-amber-700 border border-amber-200',
+                    'Processing': 'bg-blue-50 text-blue-700 border border-blue-200',
+                    'Shipped': 'bg-indigo-50 text-indigo-700 border border-indigo-200',
+                    'Delivered': 'bg-green-50 text-green-700 border border-green-200',
+                    'Cancelled': 'bg-red-50 text-red-700 border border-red-200',
+                    'Return Requested': 'bg-purple-50 text-purple-700 border border-purple-200',
+                    'Returned': 'bg-gray-50 text-gray-700 border border-gray-200'
+                };
+                return statusClasses[status] || 'bg-gray-50 text-gray-700 border border-gray-200';
+            },
+            getReturnReasonDisplay: function(reason) {
+                const reasonMap = {
+                    'size_too_small': 'Size Too Small',
+                    'size_too_large': 'Size Too Large',
+                    'different_from_picture': 'Different From Picture',
+                    'quality_issues': 'Quality Issues',
+                    'wrong_item': 'Wrong Item Received',
+                    'damage': 'Item Damaged',
+                    'style_fit': 'Style/Fit Issue',
+                    'fabric_issues': 'Fabric Issues',
+                    'color_difference': 'Color Different',
+                    'wrong_size': 'Wrong Size',
+                    'defective': 'Defective Item',
+                    'not_as_described': 'Not As Described',
+                    'changed_mind': 'Changed Mind',
+                    'other': 'Other'
+                };
+                return reasonMap[reason] || reason;
+            }
+        };
+
+        res.render('order-details', {
+            user: userData,
+            order: {
+                ...processedOrder,
+                _id: orderId, // Ensure order ID is available at the top level
+            },
+            helpers: helpers
+        });
+
+    } catch (error) {
+        console.error('Error loading order details:', error);
+        res.status(500).render('page-404', { 
+            message: 'An error occurred while loading order details. Please try again later.'
+        });
+    }
+};
+
+
+
 module.exports = {
     placeOrder,
     // cancelOrder,
     cancelOrderItem,
     trackOrder ,
     getOrderDetails,
-    downloadInvoice
+    downloadInvoice,
+    loadorder,
+    loadOrderDetails
+  
 }
