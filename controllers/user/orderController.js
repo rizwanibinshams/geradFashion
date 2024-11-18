@@ -527,6 +527,9 @@ const getOrderDetails = async (req, res) => {
 };
 
 
+
+
+
 const downloadInvoice = async (req, res) => {
     try {
         const orderId = req.params.id;
@@ -539,6 +542,14 @@ const downloadInvoice = async (req, res) => {
 
         if (!order) {
             return res.status(404).send('Order not found');
+        }
+
+        // Check if the entire order is cancelled
+        if (order.status === 'Cancelled') {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Cannot generate invoice for cancelled orders'
+            });
         }
 
         // Helper functions
@@ -558,7 +569,7 @@ const downloadInvoice = async (req, res) => {
 
         // Set response headers
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename=GeradFashion-invoice-${orderId}.pdf`);
+        res.setHeader('Content-Disposition', `attachment; filename=GeradFashion-invoice-${order.orderId}.pdf`);
         doc.pipe(res);
 
         // Brand colors
@@ -567,10 +578,26 @@ const downloadInvoice = async (req, res) => {
             secondary: '#666666',
             accent: '#D4AF37',
             light: '#F5F5F5',
-            white: '#FFFFFF'
+            white: '#FFFFFF',
+            red: '#FF0000'
         };
 
-        // Header section
+        // Draw watermark based on order status
+        const drawWatermark = () => {
+            if (['Returned', 'Return Requested', 'Return Approved'].includes(order.status)) {
+                doc.save();
+                doc.rotate(45, { origin: [doc.page.width / 2, doc.page.height / 2] });
+                doc.fontSize(60);
+                doc.fillColor('rgba(255, 0, 0, 0.2)');
+                doc.text('RETURNED', 0, 0, {
+                    align: 'center',
+                    valign: 'center'
+                });
+                doc.restore();
+            }
+        };
+
+        // Header section (same as before)
         const drawHeader = () => {
             doc.save()
                .moveTo(0, 0)
@@ -590,11 +617,10 @@ const downloadInvoice = async (req, res) => {
                .text('Premium Fashion & Lifestyle', 50, 90);
         };
 
-        // Invoice details section
+        // Modified Invoice details section
         const drawInvoiceDetails = () => {
             const startY = 160;
             
-            // Left side - Invoice title and billing details
             doc.fontSize(24)
                .fillColor(colors.primary)
                .text('INVOICE', 50, startY)
@@ -619,11 +645,10 @@ const downloadInvoice = async (req, res) => {
                 doc.text(line, 50, doc.y + 5);
             });
 
-            // Right side - Invoice metadata
             const detailsX = 360;
             const detailsY = startY + 40;
             const invoiceDetails = [
-                { label: 'Invoice No:', value: `#${order.orderId || orderId}` },
+                { label: 'Invoice No:', value: order.orderId },
                 { label: 'Date:', value: formatDate(order.createdOn) },
                 { label: 'Order Status:', value: order.status },
                 { label: 'Payment Method:', value: order.paymentMethod }
@@ -639,18 +664,17 @@ const downloadInvoice = async (req, res) => {
             });
         };
 
-        // Order items table
+        // Modified Order items table
         const drawOrderItems = () => {
             const startY = 340;
-            const pageHeight = doc.page.height - 150; // Leave space for footer
+            const pageHeight = doc.page.height - 150;
             let currentY = startY;
 
-            // Table headers
             const drawTableHeader = (y) => {
                 doc.rect(50, y, 495, 30).fill(colors.primary);
                 
-                const headers = ['Item Details', 'Qty', 'Unit Price', 'Total'];
-                const widths = [280, 65, 75, 75];
+                const headers = ['Item Details', 'Qty', 'Unit Price', 'Status', 'Total'];
+                const widths = [220, 55, 75, 70, 75];
                 let x = 60;
 
                 headers.forEach((header, i) => {
@@ -666,43 +690,49 @@ const downloadInvoice = async (req, res) => {
 
             currentY = drawTableHeader(currentY);
 
-            // Table rows
-            order.orderedItems.forEach((item, index) => {
+            // Filter out cancelled items if needed
+            const itemsToShow = order.orderedItems.filter(item => 
+                item.status !== 'Cancelled' && item.status !== 'Cancel Requested'
+            );
+
+            itemsToShow.forEach((item, index) => {
                 const rowHeight = 70;
 
-                // Check if we need a new page
                 if (currentY + rowHeight > pageHeight) {
                     doc.addPage();
                     currentY = 60;
                     currentY = drawTableHeader(currentY);
                 }
 
-                // Row background
                 doc.rect(50, currentY, 495, rowHeight)
                    .fill(index % 2 === 0 ? colors.light : colors.white);
 
-                // Item details
+                // Item details with status indicator
                 doc.fillColor(colors.primary)
                    .font('Helvetica-Bold')
                    .fontSize(10)
-                   .text(item.product.productName, 60, currentY + 10, { width: 270 })
+                   .text(item.product.productName, 60, currentY + 10, { width: 210 })
                    .font('Helvetica')
                    .fontSize(9)
                    .fillColor(colors.secondary)
-                //    .text(`SKU: ${item.product.sku || 'N/A'}`, 60, currentY + 30)
                    .text(`Category: ${item.category.name || 'N/A'}`, 60, currentY + 45);
 
                 // Quantity
                 doc.fontSize(10)
-                   .text(item.quantity, 340, currentY + 25);
+                   .text(item.quantity, 280, currentY + 25);
 
                 // Unit price
-                doc.text(formatCurrency(item.price), 415, currentY + 25);
+                doc.text(formatCurrency(item.price / item.quantity), 335, currentY + 25);
+
+                // Status
+                const statusColor = item.status === 'Returned' ? colors.red : colors.secondary;
+                doc.fillColor(statusColor)
+                   .text(item.status, 410, currentY + 25);
 
                 // Total
                 doc.font('Helvetica-Bold')
                    .fillColor(colors.primary)
-                   .text(formatCurrency(item.price * item.quantity), 490, currentY + 25);
+                   .text(formatCurrency(item.price), 485, currentY + 25);
 
                 currentY += rowHeight;
             });
@@ -710,7 +740,7 @@ const downloadInvoice = async (req, res) => {
             return currentY;
         };
 
-        // Summary section
+        // Modified Summary section
         const drawSummary = (startY) => {
             const summaryX = 300;
             const summaryWidth = 260;
@@ -722,9 +752,15 @@ const downloadInvoice = async (req, res) => {
                 ['Subtotal:', formatCurrency(order.totalPrice)],
                 ['Shipping:', order.deliveryCharge > 0 ? formatCurrency(order.deliveryCharge) : 'FREE'],
                 order.coupon?.applied ? 
-                    [`Discount (${order.coupon.code}):`, `-${formatCurrency(order.discount)}`] : null,
+                    [`Discount (${order.coupon.code}):`, `-${formatCurrency(order.coupon.discountAmount)}`] : null,
                 ['Total:', formatCurrency(order.finalAmount)]
             ].filter(Boolean);
+
+            // Add refund information if order is returned
+            if (order.return && order.return.refundAmount) {
+                summaryItems.push(['Refund Amount:', `-${formatCurrency(order.return.refundAmount)}`]);
+                summaryItems.push(['Final Amount:', formatCurrency(order.finalAmount - order.return.refundAmount)]);
+            }
 
             summaryItems.forEach((item, i) => {
                 const isLast = i === summaryItems.length - 1;
@@ -740,7 +776,7 @@ const downloadInvoice = async (req, res) => {
             return startY + 140;
         };
 
-        // Footer
+        // Footer section (same as before)
         const drawFooter = () => {
             const footerHeight = 80;
             const footerY = doc.page.height - footerHeight;
@@ -758,6 +794,7 @@ const downloadInvoice = async (req, res) => {
         };
 
         // Draw all sections
+        drawWatermark();
         drawHeader();
         drawInvoiceDetails();
         const itemsEndY = drawOrderItems();
@@ -766,8 +803,12 @@ const downloadInvoice = async (req, res) => {
 
         doc.end();
     } catch (err) {
-        console.error(err);
-        return res.status(500).send('Error downloading invoice');
+        console.error('Error generating invoice:', err);
+        return res.status(500).json({
+            status: 'error',
+            message: 'Error downloading invoice',
+            error: err.message
+        });
     }
 };
 

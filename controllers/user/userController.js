@@ -17,7 +17,6 @@ const path = require("path");
 
 
 
-
 const loadHomepage = async (req, res) => {
     try {
         const { search, category } = req.query;
@@ -117,21 +116,16 @@ const loadHomepage = async (req, res) => {
 
         const bestSellerData = await Product.aggregate(bestSellerPipeline);
 
-
-
         // Get current date
         const currentDate = new Date();
             
-        // Fetch active banners (within start and end date)
+        // Fetch all active banners (within start and end date)
         const activeBanners = await Banner.find({
             startDate: { $lte: currentDate },
             endDate: { $gte: currentDate }
-        }).sort('-createdAt'); // Get the most recent banner first
-        
-        // Get the most recent active banner or null if none exists
-        const currentBanner = activeBanners[0] || null;
+        }).sort({ createdAt: -1 }); // Get the most recent banners first
 
-        // Render home page with user data, latest products, and best sellers
+        // Render home page with all data including multiple banners
         return res.render('home', {
             user: userData || null,
             products: productData,
@@ -139,7 +133,7 @@ const loadHomepage = async (req, res) => {
             categories, // Pass categories to the view for rendering
             currentSearch: search || '',
             currentCategory: category || '',
-            currentBanner:currentBanner
+            banners: activeBanners // Pass all active banners instead of just one
         });
     } catch (error) {
         console.error('Home page loading error:', error);

@@ -61,64 +61,146 @@ const getAllOrders = async (req, res) => {
 };
 
 const updateOrderStatus = async (req, res) => {
-    const { orderId, status } = req.body;
+    const { orderId, status, itemId } = req.body;
 
     console.log('Received orderId:', orderId);
     console.log('Received status:', status);
+    console.log('Received itemId:', itemId);
 
     if (!orderId || !status) {
         return res.status(400).json({ message: 'OrderId and status are required.' });
     }
 
     try {
-        // First, fetch the current order
+        // Fetch the current order
         const currentOrder = await Order.findById(orderId).populate('orderedItems.product');
 
         if (!currentOrder) {
             return res.status(404).json({ message: 'Order not found.' });
         }
 
-        // Check if the current status is already 'cancelled'
-        if (currentOrder.status.toLowerCase() === 'cancelled') {
-            return res.status(400).json({ message: 'Order is already cancelled.' });
-        }
+        // If itemId is provided, update individual item status
+        if (itemId) {
+            const orderItem = currentOrder.orderedItems.id(itemId);
+            
+            if (!orderItem) {
+                return res.status(404).json({ message: 'Order item not found.' });
+            }
 
-        // If the new status is 'cancelled', we need to return the products to inventory
-        if (status.toLowerCase() === 'cancelled') {
-            for (const item of currentOrder.orderedItems) {
-                if (item.product) {
-                    await Product.findByIdAndUpdate(
-                        item.product._id,
-                        { $inc: { quantity: item.quantity } }
-                    );
+            // Check if the current item status is already 'Cancelled'
+            if (orderItem.status === 'Cancelled') {
+                return res.status(400).json({ message: 'Item is already cancelled.' });
+            }
+
+            // Handle inventory for cancelled items
+            if (status === 'Cancelled' && orderItem.product) {
+                await Product.findByIdAndUpdate(
+                    orderItem.product._id,
+                    { $inc: { quantity: orderItem.quantity } }
+                );
+            }
+
+            // Update the specific item's status
+            orderItem.status = status;
+
+            // Update overall order status based on items' statuses
+            const itemStatuses = currentOrder.orderedItems.map(item => 
+                item._id.equals(itemId) ? status : item.status
+            );
+
+            // Logic to determine overall order status
+            let overallStatus = determineOverallStatus(itemStatuses);
+            currentOrder.status = overallStatus;
+
+            await currentOrder.save();
+
+            return res.status(200).json({ 
+                message: 'Item status updated successfully.',
+                order: currentOrder 
+            });
+        } else {
+            // Update status for all items and overall order
+            if (currentOrder.status.toLowerCase() === 'cancelled') {
+                return res.status(400).json({ message: 'Order is already cancelled.' });
+            }
+
+            // Handle inventory for cancelled orders
+            if (status === 'Cancelled') {
+                for (const item of currentOrder.orderedItems) {
+                    if (item.product && item.status !== 'Cancelled') {
+                        await Product.findByIdAndUpdate(
+                            item.product._id,
+                            { $inc: { quantity: item.quantity } }
+                        );
+                    }
                 }
             }
-        }
 
-        // Update the order status
-        const updatedOrder = await Order.findByIdAndUpdate(
-            orderId,
-            { status },
-            { new: true, runValidators: true }
-        );
-        
-        return res.status(200).json({ message: 'Order status updated successfully.', order: updatedOrder });
+            // Update all items' status
+            currentOrder.orderedItems.forEach(item => {
+                if (item.status !== 'Cancelled') {
+                    item.status = status;
+                }
+            });
+
+            currentOrder.status = status;
+            await currentOrder.save();
+
+            return res.status(200).json({ 
+                message: 'Order status updated successfully.',
+                order: currentOrder 
+            });
+        }
     } catch (error) {
         console.error('Error updating order status:', error);
-        return res.status(500).json({ message: 'Error updating order status. Please try again.' });
+        return res.status(500).json({ 
+            message: 'Error updating order status. Please try again.',
+            error: error.message 
+        });
     }
 };
 
-function getStatusColor(status) {
-    switch(status.toLowerCase()) {
-      case 'pending': return 'yellow';
-      case 'processing': return 'blue';
-      case 'shipped': return 'indigo';
-      case 'delivered': return 'green';
-      case 'cancelled': return 'red';
-      default: return 'gray';
+// Helper function to determine overall order status
+const determineOverallStatus = (itemStatuses) => {
+    // If all items are cancelled
+    if (itemStatuses.every(status => status === 'Cancelled')) {
+        return 'Cancelled';
     }
-  }
+
+    // If all items are delivered
+    if (itemStatuses.every(status => status === 'Delivered')) {
+        return 'Delivered';
+    }
+
+    // If any item is shipped
+    if (itemStatuses.some(status => status === 'Shipped')) {
+        return 'Shipped';
+    }
+
+    // If any item is processing
+    if (itemStatuses.some(status => status === 'Processing')) {
+        return 'Processing';
+    }
+
+    // Default to pending if no other conditions met
+    return 'Pending';
+};
+
+// Enhanced status color function with more statuses
+const getStatusColor = (status) => {
+    switch(status.toLowerCase()) {
+        case 'pending': return 'yellow';
+        case 'processing': return 'blue';
+        case 'shipped': return 'indigo';
+        case 'delivered': return 'green';
+        case 'cancelled': return 'red';
+        case 'return requested': return 'orange';
+        case 'return approved': return 'purple';
+        case 'returned': return 'pink';
+        case 'completed': return 'emerald';
+        default: return 'gray';
+    }
+};
 // Export the functions
 module.exports = { getAllOrders,
      updateOrderStatus,

@@ -1,7 +1,51 @@
 
 
 <%- include("../partials/user/header") %>
+<style>
+       .banner-wrapper {
+        overflow: hidden;
+    }
 
+    .banner-container {
+        display: flex;
+        width: 100%;
+    }
+
+    .banner-slide {
+        min-width: 100%;
+    }
+
+    .slide-up {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: slideUp 0.6s forwards;
+    }
+
+    .delay-100 {
+        animation-delay: 0.1s;
+    }
+
+    .delay-200 {
+        animation-delay: 0.2s;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Add touch support */
+    .banner-wrapper {
+        touch-action: pan-y pinch-zoom;
+    }
+
+</style>
 
 <body class="bg-gray-100 ">
    
@@ -9,55 +53,101 @@
     <main class="container mx-auto px-4 py-8 mt-16 ">
         <!-- Hero Banner Section -->
         <section class="mb-12 relative overflow-hidden rounded-lg shadow-lg">
-            
-               
-                <!-- Add more hero items here if needed -->
-                <% if (currentBanner) { %>
-                    <div class="relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-50 before:z-10 z-20">
-                        <img 
-                            src="/uploads/banners/<%= currentBanner.image %>" 
-                            alt="<%= currentBanner.title %>" 
-                            class="absolute inset-0 w-full h-full object-cover z-0" 
-                        />
-                        
-                        <div class="min-h-[350px] relative z-50 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
-                            <h2 class="sm:text-4xl text-2xl font-bold mb-6"><%= currentBanner.title %></h2>
-                            <p class="sm:text-lg text-base text-center text-gray-200"><%= currentBanner.description %></p>
+            <!-- Banner Container -->
+            <div class="banner-wrapper relative">
+                <div class="banner-container flex transition-transform duration-500 ease-out">
+                    <% if (banners && banners.length > 0) { %>
+                        <% banners.forEach((banner, index) => { %>
+                            <div class="banner-slide w-full flex-shrink-0 relative font-sans">
+                                <!-- Dark Overlay -->
+                                <div class="absolute inset-0 bg-black/50 z-10"></div>
+                                
+                                <!-- Banner Image -->
+                                <img 
+                                    src="/uploads/banners/<%= banner.image %>" 
+                                    alt="<%= banner.title %>" 
+                                    class="absolute inset-0 w-full h-full object-cover z-0" 
+                                />
+                                
+                                <!-- Content -->
+                                <div class="min-h-[350px] relative z-20 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
+                                    <h2 class="sm:text-4xl text-2xl font-bold mb-6 slide-up"><%= banner.title %></h2>
+                                    <p class="sm:text-lg text-base text-center text-gray-200 slide-up delay-100">
+                                        <%= banner.description %>
+                                    </p>
+                                    
+                                    <a 
+                                        href="<%= banner.link %>"
+                                        class="mt-12 bg-transparent text-white text-base py-3 px-6 border border-white rounded-lg hover:bg-white hover:text-black transition duration-300 slide-up delay-200"
+                                    >
+                                        Shop Now
+                                    </a>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <!-- Fallback Banner -->
+                        <div class="banner-slide w-full flex-shrink-0 relative font-sans">
+                            <div class="absolute inset-0 bg-black/50 z-10"></div>
                             
-                            <a 
-                                href="<%= currentBanner.link %>"
-                                type="button"
-                                class="mt-12 bg-transparent text-white text-base py-3 px-6 border border-white rounded-lg hover:bg-white hover:text-black transition duration-300"
-                            >
-                                Shop Now
-                            </a>
+                            <img 
+                                src="/img/banner2.avif" 
+                                alt="Default Banner" 
+                                class="absolute inset-0 w-full h-full object-cover z-0" 
+                            />
+                            
+                            <div class="min-h-[350px] relative z-20 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
+                                <h2 class="sm:text-4xl text-2xl font-bold mb-6 slide-up">Fall - Winter Collections 2030</h2>
+                                <p class="sm:text-lg text-base text-center text-gray-200 slide-up delay-100">
+                                    A specialist label creating luxury essentials. Ethically created
+                                </p>
+                                
+                                <a 
+                                    href="/products"
+                                    class="mt-12 bg-transparent text-white text-base py-3 px-6 border border-white rounded-lg hover:bg-white hover:text-black transition duration-300 slide-up delay-200"
+                                >
+                                    Shop Now
+                                </a>
+                            </div>
                         </div>
+                    <% } %>
+                </div>
+        
+                <% if (banners && banners.length > 1) { %>
+                    <!-- Navigation Arrows with new design -->
+                    <button 
+                        class="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white transition-all group"
+                        onclick="moveSlide(-1)"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 group-hover:-translate-x-0.5 transition-transform">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                        </svg>
+                    </button>
+                    <button 
+                        class="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white transition-all group"
+                        onclick="moveSlide(1)"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 group-hover:translate-x-0.5 transition-transform">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                        </svg>
+                    </button>
+        
+                    <!-- Progress Bar -->
+                    <div class="absolute bottom-0 left-0 w-full h-1 bg-white/20 z-30">
+                        <div class="progress-bar h-full bg-white/80 transition-all duration-[5000ms] w-0"></div>
                     </div>
-                <% } else { %>
-                    <!-- Fallback banner when no active banners are available -->
-                    <div class="relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-50 before:z-10 z-20">
-                        <img 
-                            src="/img/banner2.avif" 
-                            alt="Default Banner" 
-                            class="absolute inset-0 w-full h-full object-cover z-0" 
-                        />
-                        
-                        <div class="min-h-[350px] relative z-50 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
-                            <h2 class="sm:text-4xl text-2xl font-bold mb-6">Fall - Winter Collections 2030</h2>
-                            <p class="sm:text-lg text-base text-center text-gray-200">A specialist label creating luxury essentials. Ethically created</p>
-                            
-                            <a 
-                                href="/products"
-                                type="button"
-                                class="mt-12 bg-transparent text-white text-base py-3 px-6 border border-white rounded-lg hover:bg-white hover:text-black transition duration-300"
-                            >
-                                Shop Now
-                            </a>
-                        </div>
+        
+                    <!-- Navigation Dots with new design -->
+                    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center space-x-3">
+                        <% banners.forEach((_, index) => { %>
+                            <button 
+                                onclick="currentSlide(<%= index + 1 %>)"
+                                class="w-2 h-2 rounded-full bg-white/40 hover:bg-white/90 transition-all dot"
+                            ></button>
+                        <% }); %>
                     </div>
                 <% } %>
-                 
-            
+            </div>
         </section>
         <section class="mb-12 py-10 bg-gray-50">
             <h2 class="text-4xl font-bold text-center mb-10 tracking-wide text-gray-900">
@@ -347,7 +437,126 @@ document.querySelectorAll('.wishlist-btn').forEach(button => {
     });
 });
 
+let slideIndex = 1;
+    let slideInterval;
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const bannerContainer = document.querySelector('.banner-container');
+    const progressBar = document.querySelector('.progress-bar');
 
+    // Initialize the slideshow
+    document.addEventListener('DOMContentLoaded', function() {
+        showSlides(slideIndex);
+        startAutoSlide();
+
+        // Add touch events
+        if (bannerContainer) {
+            bannerContainer.addEventListener('touchstart', handleTouchStart);
+            bannerContainer.addEventListener('touchend', handleTouchEnd);
+        }
+    });
+
+    // Touch handlers
+    function handleTouchStart(e) {
+        touchStartX = e.touches[0].clientX;
+        clearInterval(slideInterval);
+    }
+
+    function handleTouchEnd(e) {
+        touchEndX = e.changedTouches[0].clientX;
+        handleSwipe();
+        startAutoSlide();
+    }
+
+    function handleSwipe() {
+        const swipeThreshold = 50; // minimum distance for swipe
+        const difference = touchStartX - touchEndX;
+
+        if (Math.abs(difference) > swipeThreshold) {
+            if (difference > 0) {
+                // Swiped left
+                moveSlide(1);
+            } else {
+                // Swiped right
+                moveSlide(-1);
+            }
+        }
+    }
+
+    // Auto slide function with progress bar
+    function startAutoSlide() {
+        if (progressBar) {
+            progressBar.style.width = '0';
+            // Trigger reflow to restart the animation
+            progressBar.offsetHeight;
+            progressBar.style.width = '100%';
+        }
+
+        slideInterval = setInterval(() => {
+            moveSlide(1);
+        }, 5000);
+    }
+
+    // Reset timer when manually changing slides
+    function resetTimer() {
+        clearInterval(slideInterval);
+        startAutoSlide();
+    }
+
+    // Next/previous controls
+    function moveSlide(n) {
+        showSlides(slideIndex += n);
+        resetTimer();
+    }
+
+    // Thumbnail/dot controls
+    function currentSlide(n) {
+        showSlides(slideIndex = n);
+        resetTimer();
+    }
+
+    function showSlides(n) {
+        const slides = document.getElementsByClassName("banner-slide");
+        const dots = document.getElementsByClassName("dot");
+        
+        if (!slides.length) return;
+
+        // Loop back to first slide
+        if (n > slides.length) {
+            slideIndex = 1;
+        }
+        
+        // Loop forward to last slide
+        if (n < 1) {
+            slideIndex = slides.length;
+        }
+
+        // Move the banner container
+        if (bannerContainer) {
+            const offset = -(slideIndex - 1) * 100;
+            bannerContainer.style.transform = `translateX(${offset}%)`;
+        }
+
+        // Update dots
+        for (let i = 0; i < dots.length; i++) {
+            dots[i].classList.remove('bg-white/90', 'w-6');
+            dots[i].classList.add('bg-white/40', 'w-2');
+        }
+
+        if (dots.length > 0) {
+            dots[slideIndex - 1].classList.remove('bg-white/40', 'w-2');
+            dots[slideIndex - 1].classList.add('bg-white/90', 'w-6');
+        }
+
+        // Trigger slide-up animations for content
+        const currentSlide = slides[slideIndex - 1];
+        const animatedElements = currentSlide.querySelectorAll('.slide-up');
+        animatedElements.forEach(element => {
+            element.style.animation = 'none';
+            element.offsetHeight; // Trigger reflow
+            element.style.animation = '';
+        });
+    }
 
     </script>
 </body>

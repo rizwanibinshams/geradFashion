@@ -341,7 +341,6 @@ orderSchema.methods.returnItem = async function(itemId, reason, comments) {
     
     return this.save();
 };
-
 orderSchema.methods.calculateItemRefundAmount = function(itemId) {
     // Find the specific item
     const orderItem = this.orderedItems.id(itemId);
@@ -349,12 +348,12 @@ orderSchema.methods.calculateItemRefundAmount = function(itemId) {
         throw new Error('Order item not found');
     }
 
-    // Get the item's subtotal
-    const itemSubtotal = orderItem.price * orderItem.quantity;
-
+    // Get the item's price and quantity
+    const itemSubtotal = orderItem.price; // Remove multiplication with quantity here since price already includes it
+    
     // Calculate item's proportion of the total order
     const orderSubtotal = this.orderedItems.reduce((sum, item) => 
-        sum + (item.price * item.quantity), 0);
+        sum + item.price, 0); // Remove multiplication with quantity here
     const itemProportion = itemSubtotal / orderSubtotal;
 
     // Calculate proportional coupon discount for this item
@@ -381,14 +380,14 @@ orderSchema.methods.calculateItemRefundAmount = function(itemId) {
 orderSchema.methods.calculateReturnRefundAmount = function(returnedItems) {
     // Calculate total order subtotal (before discount)
     const orderSubtotal = this.orderedItems.reduce((sum, item) => 
-        sum + (item.price * item.quantity), 0);
+        sum + item.price, 0); // Remove quantity multiplication since price includes it
 
     let totalRefundAmount = 0;
     const refundDetails = [];
 
     // Calculate refund for each returned item
     returnedItems.forEach(item => {
-        const itemSubtotal = item.price * item.quantity;
+        const itemSubtotal = item.price; // Remove quantity multiplication
         const itemProportion = itemSubtotal / orderSubtotal;
 
         // Calculate proportional coupon discount for this item
@@ -421,7 +420,6 @@ orderSchema.methods.calculateReturnRefundAmount = function(returnedItems) {
         refundDetails
     };
 };
-
 
 // Use mongoose.models to prevent overwriting the model
 const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
