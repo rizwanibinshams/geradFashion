@@ -195,13 +195,13 @@ const getAllProducts = async (req, res) => {
             }
         }
 
-        // Apply search filter if provided
+       
         if (search) {
             query.productName = { $regex: new RegExp(search, 'i') };
         }
 
         // Determine sort option
-        let sortOption = { createdAt: -1 }; // Default sort (most recent)
+        let sortOption = { createdAt: -1 }; 
         if (sort === 'low-high') {
             sortOption = { salePrice: 1 }; // Sort by price low to high
         } else if (sort === 'high-low') {
@@ -226,7 +226,7 @@ const getAllProducts = async (req, res) => {
             products: products,
             user: userData,
             categories: categories,
-            currentCategory: category || 'All', // Ensure currentCategory is passed
+            currentCategory: category || 'All', 
             currentSort: sort || 'default',
             currentSearch: search || ''
         });
@@ -239,9 +239,9 @@ const getAllProducts = async (req, res) => {
 
 const searchProducts = async (req, res) => {
     try {
-        const { query, page = 1, limit = 20, category, sort } = req.query; // Changed from 'search' to 'query'
+        const { query, page = 1, limit = 20, category, sort } = req.query; 
         
-        console.log('Search Query:', query); // Log the actual query parameter
+        console.log('Search Query:', query); 
         
         let searchQuery = {};
 
@@ -333,10 +333,10 @@ const getSearchSuggestions = async (req, res) => {
         const { query } = req.query;
         
         if (!query) {
-            return res.json([]); // Return an empty array if no query is provided
+            return res.json([]); 
         }
 
-        // Modified search query to only look for products that start with the search term
+        
         const searchQuery = {
             $and: [
                 { isBlocked: false },

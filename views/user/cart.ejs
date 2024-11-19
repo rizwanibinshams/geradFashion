@@ -42,14 +42,18 @@
                                         </td>
                                         <td class="px-4 sm:px-6 py-3 sm:py-4">
                                             <input 
-                                                type="number" 
-                                                name="quantity" 
-                                                value="<%= item.quantity %>" 
-                                                min="1" 
-                                                max="10"
-                                                class="w-16 sm:w-20 px-2 sm:px-3 py-1 sm:py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-black focus:border-transparent transition-all"
-                                                onchange="updateQuantity('<%= item.productId._id %>', this.value)"
-                                            >
+    type="number" 
+    name="quantity" 
+    value="<%= item.quantity %>" 
+    min="1" 
+    max="10"
+    data-product-id="<%= item.productId._id %>"
+    data-available-quantity="<%= item.productId.quantity %>"
+    data-original-quantity="<%= item.quantity %>"
+    class="w-16 sm:w-20 px-2 sm:px-3 py-1 sm:py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+    onchange="validateAndUpdateQuantity(this)"
+    oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value > 10) this.value = 10;"
+>
                                         </td>
                                         <td class="px-4 sm:px-6 py-3 sm:py-4 text-gray-900">₹<%= item.productId.salePrice.toFixed(2) %></td>
                                         <td class="px-4 sm:px-6 py-3 sm:py-4 font-medium text-gray-900">₹<%= (item.productId.salePrice * item.quantity).toFixed(2) %></td>
@@ -90,17 +94,19 @@
                                     <!-- Quantity -->
                                     <div class="flex justify-between items-center">
                                         <span class="text-sm text-gray-500">Quantity:</span>
-                                        <input 
-                                          type="number" 
-                                          name="quantity" 
-                                          value="<%= item.quantity %>" 
-                                          min="1" 
-                                          data-product-id="<%= item.productId._id %>"
-                                          data-available-quantity="<%= item.productId.quantity %>"
-                                          data-original-quantity="<%= item.quantity %>"
-                                          class="w-20 px-3 py-1 border border-gray-200 rounded-md focus:ring-2 focus:ring-black focus:border-transparent transition-all"
-                                          onchange="validateAndUpdateQuantity(this)"
-                                        >
+                                      <input 
+                                        type="number" 
+                                        name="quantity" 
+                                        value="<%= item.quantity %>" 
+                                        min="1" 
+                                        max="<%= item.productId.quantity %>"
+                                        data-product-id="<%= item.productId._id %>"
+                                        data-available-quantity="<%= item.productId.quantity %>"
+                                        data-original-quantity="<%= item.quantity %>"
+                                        class="w-20 px-3 py-1 border border-gray-200 rounded-md focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                                        onchange="validateAndUpdateQuantity(this)"
+                                        oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value > parseInt(this.max)) this.value = this.max;"
+                                    >
                                         <span class="text-xs text-gray-400">(Available: <%= item.productId.quantity %>)</span>
                                       </div>
                                       
@@ -160,9 +166,9 @@
     </section>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Your existing JavaScript remains unchanged -->
+   
     <script>
-        function handleAuthError(error) {
+         function handleAuthError(error) {
             if (error.redirect) {
                 Swal.fire({
                     icon: 'warning',
@@ -183,77 +189,76 @@
             }
         }
 
-
         function validateAndUpdateQuantity(inputElement) {
-  const productId = inputElement.getAttribute('data-product-id');
-  const quantity = parseInt(inputElement.value);
-  const availableQuantity = parseInt(inputElement.getAttribute('data-available-quantity'));
+            const productId = inputElement.getAttribute('data-product-id');
+            const availableQuantity = parseInt(inputElement.getAttribute('data-available-quantity'));
+            let quantity = parseInt(inputElement.value);
 
-  // Check if the entered quantity exceeds available stock
-  if (quantity > availableQuantity) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Stock Limit Reached',
-      text: `Only ${availableQuantity} items available in stock.`,
-      showConfirmButton: true
-    });
-    
-    // Set the input value and data-original-quantity to the maximum available quantity
-    inputElement.value = availableQuantity;
-    inputElement.setAttribute('data-original-quantity', availableQuantity);
-    return; // Exit the function to prevent further processing
-  } 
+            // Ensure quantity is a valid number
+            if (isNaN(quantity)) {
+                quantity = 1;
+            }
 
-  // Check if quantity is less than 1
-  if (quantity < 1) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Invalid Quantity',
-      text: `Quantity cannot be less than 1.`,
-      showConfirmButton: true
-    });
-    
-    // Reset the quantity input to minimum of 1 and update data-original-quantity
-    inputElement.value = 1;
-    inputElement.setAttribute('data-original-quantity', 1);
-    return; // Exit the function to prevent further processing
-  }
+            // Enforce minimum quantity
+            if (quantity < 1) {
+                quantity = 1;
+                inputElement.value = quantity;
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Invalid Quantity',
+                    text: 'Quantity cannot be less than 1',
+                    showConfirmButton: true
+                });
+                return;
+            }
 
-  // If quantity is valid and different from the original quantity, update
-  const originalQuantity = parseInt(inputElement.getAttribute('data-original-quantity'));
-  if (quantity !== originalQuantity) {
-    updateQuantity(productId, quantity);
-  }
-}
+            // Enforce maximum quantity
+            if (quantity > availableQuantity) {
+                quantity = availableQuantity;
+                inputElement.value = quantity;
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Stock Limit Reached',
+                    text: `Only ${availableQuantity} items available in stock.`,
+                    showConfirmButton: true
+                });
+                return;
+            }
 
-function updateQuantity(productId, quantity) {
-  fetch('/update', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ productId, quantity }),
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.message === 'Cart updated successfully') {
-      // Update original quantity on success
-      const quantityInput = document.querySelector(`input[data-product-id="${productId}"]`);
-      if (quantityInput) {
-        quantityInput.setAttribute('data-original-quantity', quantity);
-      }
-      window.location.reload();
-    } else if (data.redirect) {
-      handleAuthError(data);
-    } else {
-      throw new Error(data.message || 'Failed to update cart');
-    }
-  })
-  .catch(error => {
-    handleAuthError(error);
-  });
-}
+            // Only update if quantity has changed
+            const originalQuantity = parseInt(inputElement.getAttribute('data-original-quantity'));
+            if (quantity !== originalQuantity) {
+                updateQuantity(productId, quantity);
+            }
+        }
 
+        function updateQuantity(productId, quantity) {
+            fetch('/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ productId, quantity }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === 'Cart updated successfully') {
+                    // Update original quantity and reload page
+                    const quantityInput = document.querySelector(`input[data-product-id="${productId}"]`);
+                    if (quantityInput) {
+                        quantityInput.setAttribute('data-original-quantity', quantity.toString());
+                    }
+                    window.location.reload();
+                } else if (data.redirect) {
+                    handleAuthError(data);
+                } else {
+                    throw new Error(data.message || 'Failed to update cart');
+                }
+            })
+            .catch(error => {
+                handleAuthError(error);
+            });
+        }
 
 
         function removeFromCart(productId) {

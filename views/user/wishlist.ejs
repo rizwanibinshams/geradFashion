@@ -434,37 +434,50 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Quantity Control Handler
             function setupQuantityControls() {
-                document.querySelectorAll('.quantity-controls').forEach(control => {
-                    const input = control.querySelector('.quantity-input');
-                    const decreaseBtn = control.querySelector('.decrease-quantity');
-                    const increaseBtn = control.querySelector('.increase-quantity');
+    document.querySelectorAll('.quantity-controls').forEach(control => {
+        const input = control.querySelector('.quantity-input');
+        const decreaseBtn = control.querySelector('.decrease-quantity');
+        const increaseBtn = control.querySelector('.increase-quantity');
 
-                    function updateQuantity(newValue) {
-                        const maxValue = parseInt(input.getAttribute('max'));
-                        newValue = Math.max(1, Math.min(maxValue, newValue));
-                        input.value = newValue;
-                    }
+        function updateQuantity(newValue) {
+            // Set maximum value to 10
+            const maxValue = 10;
+            // Ensure value is between 1 and 10
+            newValue = Math.max(1, Math.min(maxValue, newValue));
+            input.value = newValue;
+        }
 
-                    decreaseBtn.addEventListener('click', () => {
-                        updateQuantity(parseInt(input.value) - 1);
-                    });
+        decreaseBtn.addEventListener('click', () => {
+            updateQuantity(parseInt(input.value) - 1);
+        });
 
-                    increaseBtn.addEventListener('click', () => {
-                        updateQuantity(parseInt(input.value) + 1);
-                    });
+        increaseBtn.addEventListener('click', () => {
+            updateQuantity(parseInt(input.value) + 1);
+        });
 
-                    input.addEventListener('change', () => {
-                        updateQuantity(parseInt(input.value));
-                    });
+        input.addEventListener('change', () => {
+            updateQuantity(parseInt(input.value));
+        });
 
-                    // Prevent manual input of invalid values
-                    input.addEventListener('keypress', (e) => {
-                        if (!/[0-9]/.test(e.key)) {
-                            e.preventDefault();
-                        }
-                    });
-                });
+        // Prevent manual input of invalid values
+        input.addEventListener('keypress', (e) => {
+            if (!/[0-9]/.test(e.key)) {
+                e.preventDefault();
             }
+        });
+
+        // Additional input validation
+        input.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            if (parseInt(this.value) > 10) {
+                this.value = 10;
+            }
+            if (this.value === '' || parseInt(this.value) < 1) {
+                this.value = 1;
+            }
+        });
+    });
+}
 
             // Add to Cart Handler
             function setupAddToCart() {
