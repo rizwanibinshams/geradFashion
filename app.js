@@ -65,10 +65,10 @@ app.use(express.static(path.join(__dirname,'public')))
 app.use('/',userRouter)
 app.use('/admin',adminRouter)
 
-
+const PORT = process.env.PORT
 
 app.listen(3008,()=>{
-    console.log('server running : http://localhost:3008');
+    console.log(`server running : http://localhost:${PORT}`);
 })
 
 
