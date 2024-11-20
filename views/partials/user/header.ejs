@@ -191,19 +191,23 @@
     </header>
 
     <!-- Mobile Header -->
-    <div class="mobile-search-bar md:hidden">
-        <div class="flex items-center justify-between px-4 py-2">
-            <a href="/" class="text-2xl font-bold logo-text">Gerad-Fashion</a>
-            <div class="relative flex-1 mx-4">
-                <input type="text" id="mobile-search-input"
-                    class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
-                    placeholder="Search...">
-                <button id="mobile-search-button" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                    <i class="fas fa-search"></i>
-                </button>
-            </div>
+   <!-- Mobile Header -->
+   <div class="mobile-search-bar md:hidden">
+    <marquee behavior="scroll" direction="left" class="mb-2">
+        <div id="mobile-info-tag-container" style="display: none; color: orange;"></div>
+    </marquee>
+    <div class="flex items-center justify-between px-4 py-2">
+        <a href="/" class="text-2xl font-bold logo-text">Gerad-Fashion</a>
+        <div class="relative flex-1 mx-4">
+            <input type="text" id="mobile-search-input"
+                class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                placeholder="Search...">
+            <button id="mobile-search-button" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                <i class="fas fa-search"></i>
+            </button>
         </div>
     </div>
+</div>
 
     <!-- Mobile Bottom Navigation -->
    <!-- Updated Mobile Bottom Navigation -->
@@ -369,32 +373,77 @@ document.addEventListener('click', function(event) {
 
 
 
-
     class ProductSearch {
-    constructor() {
-        this.searchInput = document.getElementById('search-input');
-        this.searchButton = document.getElementById('search-button');
-        this.searchResults = document.createElement('div');
-        this.searchResults.className = 'search-results absolute w-full bg-white mt-1 rounded-lg shadow-lg z-50 hidden';
+    constructor(options = {}) {
+        const { isMobile = false } = options;
+        this.isMobile = isMobile;
         
-        if (this.searchInput) {
-            this.searchInput.parentNode.appendChild(this.searchResults);
-            this.setupEventListeners();
+        // Get correct elements based on mobile/desktop
+        const inputId = isMobile ? 'mobile-search-input' : 'search-input';
+        const buttonId = isMobile ? 'mobile-search-button' : 'search-button';
+        
+        this.searchInput = document.getElementById(inputId);
+        this.searchButton = document.getElementById(buttonId);
+        
+        // Only initialize if elements exist
+        if (!this.searchInput || !this.searchButton) {
+            console.warn(`Search elements not found for ${isMobile ? 'mobile' : 'desktop'} view`);
+            return;
+        }
+
+        // Create results container
+        this.searchResults = document.createElement('div');
+        this.searchResults.className = `search-results absolute w-full bg-white mt-1 rounded-lg shadow-lg z-50 hidden ${
+            isMobile ? 'mobile-search-results' : ''
+        }`;
+        
+        // Append results container after the search input
+        this.searchInput.parentNode.appendChild(this.searchResults);
+        
+        // Initialize events
+        this.setupEventListeners();
+        
+        // For mobile: Initialize position adjustment
+        if (this.isMobile) {
+            this.initializeMobilePosition();
         }
     }
 
+    initializeMobilePosition() {
+        // Ensure mobile results are properly positioned initially
+        this.searchResults.style.position = 'fixed';
+        this.adjustMobileResultsPosition();
+
+        // Add scroll listener for mobile
+        window.addEventListener('scroll', this.debounce(() => {
+            this.adjustMobileResultsPosition();
+        }, 100));
+    }
+
+    adjustMobileResultsPosition() {
+        if (!this.isMobile || !this.searchInput) return;
+        
+        const inputRect = this.searchInput.getBoundingClientRect();
+        const safeAreaBottom = 10; // Padding from bottom of viewport
+
+        this.searchResults.style.top = `${inputRect.bottom}px`;
+        this.searchResults.style.left = `${inputRect.left}px`;
+        this.searchResults.style.width = `${inputRect.width}px`;
+        this.searchResults.style.maxHeight = `${window.innerHeight - inputRect.bottom - safeAreaBottom}px`;
+    }
+
     setupEventListeners() {
-        // Debounced search as user types
+        // Search on input with debounce
         this.searchInput.addEventListener('input', this.debounce(() => {
             const query = this.searchInput.value.trim();
             if (query.length >= 2) {
                 this.handleSearch(query);
             } else {
-                this.searchResults.classList.add('hidden');
+                this.hideResults();
             }
         }, 300));
 
-        // Handle enter key
+        // Search on enter
         this.searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -402,22 +451,22 @@ document.addEventListener('click', function(event) {
             }
         });
 
-        // Handle search button click
+        // Search on button click
         this.searchButton.addEventListener('click', () => {
             this.performSearch(this.searchInput.value.trim());
         });
 
-        // Close search results when clicking outside
+        // Close results when clicking outside
         document.addEventListener('click', (e) => {
             if (!this.searchInput.contains(e.target) && !this.searchResults.contains(e.target)) {
-                this.searchResults.classList.add('hidden');
+                this.hideResults();
             }
         });
     }
 
     async handleSearch(query) {
         if (!query) {
-            this.searchResults.classList.add('hidden');
+            this.hideResults();
             return;
         }
 
@@ -429,20 +478,14 @@ document.addEventListener('click', function(event) {
                 }
             });
             
-            if (!response.ok) {
-                throw new Error(`Search failed: ${response.statusText}`);
-            }
+            if (!response.ok) throw new Error(`Search failed: ${response.statusText}`);
 
             const data = await response.json();
             
-            // Log the response for debugging
-            console.log('Search results:', data);
-            
-            // Check if the response has the expected structure
             if (data && data.success && Array.isArray(data.products)) {
                 this.displayResults(data.products, query);
+                if (this.isMobile) this.adjustMobileResultsPosition();
             } else {
-                console.error('Unexpected response format:', data);
                 this.displayError('Invalid response format');
             }
         } catch (error) {
@@ -454,14 +497,28 @@ document.addEventListener('click', function(event) {
     }
 
     displayResults(results, query) {
-        this.searchResults.classList.remove('hidden');
-
         if (!results || results.length === 0) {
-            this.searchResults.innerHTML = this.getNoResultsTemplate(query);
+            this.displayNoResults(query);
             return;
         }
 
-        this.searchResults.innerHTML = results.map(item => this.getResultItemTemplate(item, query)).join('');
+        this.searchResults.classList.remove('hidden');
+        this.searchResults.innerHTML = results
+            .map(item => this.getResultItemTemplate(item, query))
+            .join('');
+
+        if (this.isMobile) {
+            this.adjustMobileResultsPosition();
+        }
+    }
+
+    displayNoResults(query) {
+        this.searchResults.classList.remove('hidden');
+        this.searchResults.innerHTML = this.getNoResultsTemplate(query);
+        
+        if (this.isMobile) {
+            this.adjustMobileResultsPosition();
+        }
     }
 
     getResultItemTemplate(item, query) {
@@ -484,10 +541,6 @@ document.addEventListener('click', function(event) {
                 </div>
             </div>`;
     }
-    performSearch(query) {
-        if (!query) return;
-        window.location.href = `/products?search=${encodeURIComponent(query)}`;
-    }
 
     getNoResultsTemplate(query) {
         return `
@@ -503,27 +556,6 @@ document.addEventListener('click', function(event) {
             </div>`;
     }
 
-    // getResultItemTemplate(item, query) {
-    //     return `
-    //         <div class="p-2 hover:bg-gray-100 cursor-pointer flex items-center gap-3" 
-    //              onclick="window.location.href='/products/${item._id}'">
-    //             <img src="${this.escapeHtml(item.productImage)}" 
-    //                  alt="${this.escapeHtml(item.productName)}" 
-    //                  class="w-12 h-12 object-cover rounded">
-    //             <div>
-    //                 <div class="font-medium">
-    //                     ${this.highlightMatch(item.productName, query)}
-    //                 </div>
-    //                 <div class="text-sm text-gray-600">
-    //                     ${this.escapeHtml(item.brand)} | ${this.escapeHtml(item.category.name)}
-    //                 </div>
-    //                 <div class="text-sm font-semibold text-orange-500">
-    //                     ₹${item.salePrice}
-    //                 </div>
-    //             </div>
-    //         </div>`;
-    // }
-
     displayError(message) {
         this.searchResults.classList.remove('hidden');
         this.searchResults.innerHTML = `
@@ -531,33 +563,39 @@ document.addEventListener('click', function(event) {
                 <i class="fas fa-exclamation-circle mr-2"></i>
                 ${this.escapeHtml(message)}
             </div>`;
+        
+        if (this.isMobile) {
+            this.adjustMobileResultsPosition();
+        }
     }
 
     setLoadingState(isLoading) {
-        if (isLoading) {
-            this.searchButton.innerHTML = `
-                <i class="fas fa-spinner fa-spin"></i>`;
-        } else {
-            this.searchButton.innerHTML = `
-                <i class="fas fa-search"></i>`;
-        }
+        const icon = isLoading ? 
+            '<i class="fas fa-spinner fa-spin"></i>' : 
+            '<i class="fas fa-search"></i>';
+        this.searchButton.innerHTML = icon;
     }
 
     async performSearch(query) {
         if (!query) return;
 
         try {
-            
             window.location.href = `/products?search=${encodeURIComponent(query)}`;
         } catch (error) {
             console.error('Search error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Search Failed',
-                text: 'Please try again later',
-                timer: 2000
-            });
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Search Failed',
+                    text: 'Please try again later',
+                    timer: 2000
+                });
+            }
         }
+    }
+
+    hideResults() {
+        this.searchResults.classList.add('hidden');
     }
 
     highlightMatch(text, query) {
@@ -567,6 +605,7 @@ document.addEventListener('click', function(event) {
     }
 
     escapeHtml(str) {
+        if (str === undefined || str === null) return '';
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
@@ -583,74 +622,44 @@ document.addEventListener('click', function(event) {
             timeout = setTimeout(() => func.apply(this, args), wait);
         };
     }
+
+    static init() {
+        // Remove any existing instances
+        const existingResults = document.querySelectorAll('.search-results');
+        existingResults.forEach(result => result.remove());
+
+        // Initialize desktop search if elements exist
+        if (document.getElementById('search-input')) {
+            new ProductSearch({ isMobile: false });
+        }
+
+        // Initialize mobile search if elements exist
+        if (document.getElementById('mobile-search-input')) {
+            new ProductSearch({ isMobile: true });
+        }
+    }
 }
 
 // Initialize when document is ready
 document.addEventListener('DOMContentLoaded', () => {
-    new ProductSearch();
-});
+    ProductSearch.init();
+    
+    // Mobile-specific scroll handling
+    let lastScroll = 0;
+    const mobileSearchBar = document.querySelector('.mobile-search-bar');
 
-
-const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
-        const currentPath = window.location.pathname;
-
-        mobileNavItems.forEach(item => {
-            const link = item.getAttribute('href');
-            if (link === currentPath) {
-                item.classList.add('active');
-            }
-        });
-
-        // Search functionality for mobile
-        class MobileSearch extends ProductSearch {
-            constructor() {
-                super();
-                this.mobileSearchInput = document.getElementById('mobile-search-input');
-                this.mobileSearchButton = document.getElementById('mobile-search-button');
-                
-                if (this.mobileSearchInput && this.mobileSearchButton) {
-                    this.setupMobileEventListeners();
-                }
-            }
-
-            setupMobileEventListeners() {
-                this.mobileSearchInput.addEventListener('input', this.debounce(() => {
-                    this.handleSearch(this.mobileSearchInput.value);
-                }, 300));
-
-                this.mobileSearchButton.addEventListener('click', () => {
-                    this.performSearch(this.mobileSearchInput.value);
-                });
-
-                this.mobileSearchInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        this.performSearch(this.mobileSearchInput.value);
-                    }
-                });
-            }
+    window.addEventListener('scroll', () => {
+        const currentScroll = window.pageYOffset;
+        
+        if (currentScroll > lastScroll && currentScroll > 100) {
+            mobileSearchBar?.classList.add('-translate-y-full');
+        } else {
+            mobileSearchBar?.classList.remove('-translate-y-full');
         }
 
-        // Initialize mobile search
-        document.addEventListener('DOMContentLoaded', () => {
-            new MobileSearch();
-        });
-
-        // Smooth scroll handling
-        let lastScroll = 0;
-        const header = document.querySelector('header');
-        const mobileSearchBar = document.querySelector('.mobile-search-bar');
-
-        window.addEventListener('scroll', () => {
-            const currentScroll = window.pageYOffset;
-            
-            if (currentScroll > lastScroll && currentScroll > 100) {
-                mobileSearchBar?.classList.add('-translate-y-full');
-            } else {
-                mobileSearchBar?.classList.remove('-translate-y-full');
-            }
-
-            lastScroll = currentScroll;
-        });
+        lastScroll = currentScroll;
+    });
+});
 
 
         function toggleAccountMenu() {
@@ -667,15 +676,27 @@ document.addEventListener('click', function(event) {
     }
 });
 
+
+// marquee
+
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         const response = await fetch('/api/active-info-tag');
         const infoTag = await response.json();
         
         if (infoTag) {
-            const container = document.getElementById('info-tag-container');
-            container.textContent = infoTag.message;
-            container.style.display = 'block';
+            // Update both desktop and mobile info tag containers
+            const desktopContainer = document.getElementById('info-tag-container');
+            const mobileContainer = document.getElementById('mobile-info-tag-container');
+            
+            if (desktopContainer) {
+                desktopContainer.textContent = infoTag.message;
+                desktopContainer.style.display = 'block';
+            }
+            if (mobileContainer) {
+                mobileContainer.textContent = infoTag.message;
+                mobileContainer.style.display = 'block';
+            }
         }
     } catch (error) {
         console.error('Error fetching info tag:', error);
