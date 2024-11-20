@@ -89,7 +89,6 @@ const removeFromWishlist = async (req, res) => {
 
 
 
-
   const getWishlist = async (req, res) => {
     try {
       const user = req.session.user;
@@ -111,38 +110,52 @@ const removeFromWishlist = async (req, res) => {
       });
   
       let wishlistItems = [];
-      if (wishlist && wishlist.products) {
-        wishlistItems = wishlist.products.map(item => {
-          if (item.productId) {
-            const productImage = item.productId.productImage && item.productId.productImage.length > 0
-              ? path.join('/uploads/product-images', item.productId.productImage[0])
-              : '/placeholder-image.jpg';
+      let hasRemovedBlockedItems = false;
   
-            return {
-              _id: item.productId._id,
-              product: {
-                productName: item.productId.productName,
-                price: item.productId.regularPrice,
-                salePrice: item.productId.salePrice,
-                discountedPrice: item.productId.salePrice,
-                productImage: productImage,
-                brand: item.productId.brand,
-                rating: item.productId.rating,
-                reviewCount: 0,
-                discount: calculateDiscount(item.productId.regularPrice, item.productId.salePrice),
-                description: item.productId.description,
-                quantity: item.productId.quantity,
-                sizes: item.productId.size || [], 
-              }
-            };
-          }
-          return null;
+      if (wishlist && wishlist.products) {
+        // Filter out blocked products and map remaining items
+        const filteredProducts = wishlist.products.filter(item => 
+          item.productId && !item.productId.isBlocked
+        );
+  
+        // Check if any items were filtered out
+        if (filteredProducts.length !== wishlist.products.length) {
+          hasRemovedBlockedItems = true;
+          // Update wishlist in database to remove blocked products
+          wishlist.products = filteredProducts;
+          await wishlist.save();
+        }
+  
+        wishlistItems = filteredProducts.map(item => {
+          const productImage = item.productId.productImage && item.productId.productImage.length > 0
+            ? path.join('/uploads/product-images', item.productId.productImage[0])
+            : '/placeholder-image.jpg';
+  
+          return {
+            _id: item.productId._id,
+            product: {
+              productName: item.productId.productName,
+              price: item.productId.regularPrice,
+              salePrice: item.productId.salePrice,
+              discountedPrice: item.productId.salePrice,
+              productImage: productImage,
+              brand: item.productId.brand,
+              rating: item.productId.rating,
+              reviewCount: 0,
+              discount: calculateDiscount(item.productId.regularPrice, item.productId.salePrice),
+              description: item.productId.description,
+              quantity: item.productId.quantity,
+              sizes: item.productId.size || [],
+            }
+          };
         }).filter(item => item !== null);
       }
-
-    
   
-      res.render('wishlist', { wishlistItems, user: userData });
+      res.render('wishlist', { 
+        wishlistItems, 
+        user: userData,
+        hasRemovedBlockedItems // Optional: Pass this to show a message if items were removed
+      });
       
     } catch (error) {
       console.error('Error fetching wishlist:', error);
@@ -158,9 +171,31 @@ const removeFromWishlist = async (req, res) => {
   }
 
 
+  const wishlistCount = async (req, res) => {
+    try {
+        const userId = req.session.user?.id;
+        
+        // First check if userId exists
+        if (!userId) {
+            return res.json({ count: 0 });
+        }
+
+        const wishlist = await Wishlist.findOne({ userId: userId });
+        
+        // Check if wishlist exists and has products array
+        const count = wishlist && wishlist.products ? wishlist.products.length : 0;
+        
+        res.json({ count });
+    } catch (error) {
+        console.error('Error fetching wishlist count:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
 module.exports = {
   addToWishlist,
   removeFromWishlist,
   getWishlist,
+  wishlistCount
   
 };

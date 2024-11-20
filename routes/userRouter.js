@@ -98,6 +98,8 @@ router.post('/addToCart', cartController.addToCart);
 // Update cart item
 router.post('/update', cartController.updateCart);
 
+//cart count 
+router.get('/api/cart/count',cartController.cartCount)
 
 //Remove cart item
 router.delete('/remove/:itemId', cartController.removeFromCart);
@@ -164,6 +166,8 @@ router.post('/api/orders/return', returnsController.initiateReturn);
 router.post('/wishlist/add', wishlistController.addToWishlist);
 router.delete('/wishlist/remove/:productId', wishlistController.removeFromWishlist);
 router.get('/wishlist', wishlistController.getWishlist);
+//wish count 
+router.get('/api/wishlist/count',wishlistController.wishlistCount)
 
 //donwload invoice 
 router.get('/orders/:id/invoice', orderController.downloadInvoice);

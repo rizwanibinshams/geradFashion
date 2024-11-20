@@ -16,7 +16,6 @@ const path = require("path");
 
 
 
-
 const loadHomepage = async (req, res) => {
     try {
         const { search, category } = req.query;
@@ -57,7 +56,20 @@ const loadHomepage = async (req, res) => {
         let userData = null;
 
         if (sessionUser) {
-            userData = await user.findOne({ email: sessionUser });
+            userData = await user.findOne({ 
+                email: sessionUser,
+                isBlocked: false  // Only fetch non-blocked users
+            });
+
+            // If user is blocked, destroy their session and redirect to login
+            if (!userData && req.session) {
+                req.session.destroy((err) => {
+                    if (err) {
+                        console.error('Session destruction error:', err);
+                    }
+                });
+                return res.redirect('/?error=Account%20is%20blocked');
+            }
         }
 
         // Fetch Best Seller Products
@@ -123,17 +135,17 @@ const loadHomepage = async (req, res) => {
         const activeBanners = await Banner.find({
             startDate: { $lte: currentDate },
             endDate: { $gte: currentDate }
-        }).sort({ createdAt: -1 }); // Get the most recent banners first
+        }).sort({ createdAt: -1 });
 
         // Render home page with all data including multiple banners
         return res.render('home', {
             user: userData || null,
             products: productData,
             bestSellers: bestSellerData,
-            categories, // Pass categories to the view for rendering
+            categories,
             currentSearch: search || '',
             currentCategory: category || '',
-            banners: activeBanners // Pass all active banners instead of just one
+            banners: activeBanners
         });
     } catch (error) {
         console.error('Home page loading error:', error);
@@ -379,67 +391,6 @@ const logout = async (req,res)=>{
 }
 
 
-// Example controller function for loading the profile page
-// const loadProfile = async (req, res) => {
-//     try {
-//         console.log("Session User:", req.session.user);
-      
-//         if (!req.session.user) {
-//             console.log("User not logged in");
-//             return res.redirect('/login');
-//         }
-        
-//         const userData = await user.findById(req.session.user.id);
-//         if (!userData) {
-//             console.log("User not found");
-//             return res.status(404).render('page-404', { message: 'User not found' });
-//         }
-
-//         const addresses = await Address.find({ userId: userData.id });
-//         console.log("Addresses:", addresses);
-
-//         const orders = await Order.find({ user: userData._id })
-//             .populate('orderedItems.product')
-//             .sort({ createdOn: -1 });
-
-//         console.log("Orders:", orders);
-
-//         if (orders.length === 0) {
-//             console.log("No orders found for this user");
-//         }
-
-//         // Fetch wallet information
-//         let wallet = await Wallet.findOne({ userId: userData._id });
-//         if (!wallet) {
-//             // If wallet doesn't exist, create a new one
-//             wallet = new Wallet({
-//                 userId: userData._id,
-//                 balance: 0,
-//                 transactionHistory: []
-//             });
-//             await wallet.save();
-//         }
-
-//         res.render('profile', { 
-//             user: userData, 
-//             addresses: addresses, 
-//             orders: orders,
-//             wallet: wallet,
-//             helpers: {
-//                 formatDate: function(date) {
-//                     return new Date(date).toLocaleDateString('en-US', {
-//                         year: 'numeric', 
-//                         month: 'long', 
-//                         day: 'numeric'
-//                     });
-//                 }
-//             }
-//         });
-//     } catch (error) {
-//         console.error('Error loading profile:', error);
-//         res.status(500).render('page-404', { message: 'Server error occurred' });
-//     }
-// };
 
 
 const loadProfile = async (req, res) => {

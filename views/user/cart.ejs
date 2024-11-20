@@ -12,6 +12,24 @@
                 </ol>
             </nav>
 
+            <% if (typeof messages !== 'undefined') { %>
+                <% if (messages.error) { %>
+                    <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                        <%= messages.error %>
+                    </div>
+                <% } %>
+                <% if (messages.warning) { %>
+                    <div class="mb-4 p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-lg">
+                        <%= messages.warning %>
+                    </div>
+                <% } %>
+                <% if (messages.success) { %>
+                    <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+                        <%= messages.success %>
+                    </div>
+                <% } %>
+            <% } %>
+
             <!-- Responsive Header -->
             <h2 class="text-2xl sm:text-3xl font-light mb-6 sm:mb-8 uppercase tracking-wider">Shopping Bag</h2>
 
@@ -42,18 +60,18 @@
                                         </td>
                                         <td class="px-4 sm:px-6 py-3 sm:py-4">
                                             <input 
-    type="number" 
-    name="quantity" 
-    value="<%= item.quantity %>" 
-    min="1" 
-    max="10"
-    data-product-id="<%= item.productId._id %>"
-    data-available-quantity="<%= item.productId.quantity %>"
-    data-original-quantity="<%= item.quantity %>"
-    class="w-16 sm:w-20 px-2 sm:px-3 py-1 sm:py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-black focus:border-transparent transition-all"
-    onchange="validateAndUpdateQuantity(this)"
-    oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value > 10) this.value = 10;"
->
+                                            type="number" 
+                                            name="quantity" 
+                                            value="<%= item.quantity %>" 
+                                            min="1" 
+                                            max="10"
+                                            data-product-id="<%= item.productId._id %>"
+                                            data-available-quantity="<%= item.productId.quantity %>"
+                                            data-original-quantity="<%= item.quantity %>"
+                                            class="w-16 sm:w-20 px-2 sm:px-3 py-1 sm:py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                                            onchange="validateAndUpdateQuantity(this)"
+                                            oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value > 10) this.value = 10;"
+                                        >
                                         </td>
                                         <td class="px-4 sm:px-6 py-3 sm:py-4 text-gray-900">₹<%= item.productId.salePrice.toFixed(2) %></td>
                                         <td class="px-4 sm:px-6 py-3 sm:py-4 font-medium text-gray-900">₹<%= (item.productId.salePrice * item.quantity).toFixed(2) %></td>

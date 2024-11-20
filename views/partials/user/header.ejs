@@ -175,14 +175,13 @@
                     
                     <!-- Cart and Wishlist -->
                     <div class="flex items-center space-x-4">
-                        <a href="/wishlist" class="text-gray-800 hover:text-orange-500">
+                        <a href="/wishlist" class="text-gray-800 hover:text-orange-500 relative">
                             <i class="fas fa-heart text-xl"></i>
+                            <span class="wishlist-count-desktop absolute -top-2 -right-2 bg-orange-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
                         </a>
                         <button onclick="fetchCart()" class="text-gray-800 hover:text-orange-500 relative">
                             <i class="fas fa-shopping-cart text-xl"></i>
-                            <!-- <span class="absolute -top-2 -right-2 bg-orange-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                                0
-                            </span> -->
+                            <span class="cart-count-desktop absolute -top-2 -right-2 bg-orange-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
                         </button>
                     </div>
                 </div>
@@ -221,12 +220,14 @@
             <i class="fas fa-shopping-bag text-xl"></i>
             <span class="text-xs">Shop</span>
         </a>
-        <button onclick="fetchCart()" class="mobile-nav-item flex flex-col items-center space-y-1">
+        <button onclick="fetchCart()" class="mobile-nav-item flex flex-col items-center space-y-1 relative">
             <i class="fas fa-shopping-cart text-xl"></i>
+            <span class="cart-count-mobile absolute -top-1 right-0 bg-orange-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
             <span class="text-xs">Cart</span>
         </button>
-        <a href="/wishlist" class="mobile-nav-item flex flex-col items-center space-y-1">
+        <a href="/wishlist" class="mobile-nav-item flex flex-col items-center space-y-1 relative">
             <i class="fas fa-heart text-xl"></i>
+            <span class="wishlist-count-mobile absolute -top-1 right-0 bg-orange-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
             <span class="text-xs">Wishlist</span>
         </a>
         <div class="relative ml-3" >
@@ -703,6 +704,73 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+
+// Add these functions to fetch counts and update badges
+async function updateCartBadge() {
+    try {
+        const response = await fetch('/api/cart/count', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const desktopBadge = document.querySelector('.cart-count-desktop');
+            const mobileBadge = document.querySelector('.cart-count-mobile');
+            
+            if (data.count > 0) {
+                if (desktopBadge) desktopBadge.textContent = data.count;
+                if (mobileBadge) mobileBadge.textContent = data.count;
+                
+                desktopBadge?.classList.remove('hidden');
+                mobileBadge?.classList.remove('hidden');
+            } else {
+                desktopBadge?.classList.add('hidden');
+                mobileBadge?.classList.add('hidden');
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching cart count:', error);
+    }
+}
+
+async function updateWishlistBadge() {
+    try {
+        const response = await fetch('/api/wishlist/count', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const desktopBadge = document.querySelector('.wishlist-count-desktop');
+            const mobileBadge = document.querySelector('.wishlist-count-mobile');
+            
+            if (data.count > 0) {
+                if (desktopBadge) desktopBadge.textContent = data.count;
+                if (mobileBadge) mobileBadge.textContent = data.count;
+                
+                desktopBadge?.classList.remove('hidden');
+                mobileBadge?.classList.remove('hidden');
+            } else {
+                desktopBadge?.classList.add('hidden');
+                mobileBadge?.classList.add('hidden');
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching wishlist count:', error);
+    }
+}
+
+// Update the counts when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    updateCartBadge();
+    updateWishlistBadge();
+});
 
     </script>
 </body>

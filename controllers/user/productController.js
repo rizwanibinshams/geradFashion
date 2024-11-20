@@ -15,47 +15,6 @@ const fs = require('fs').promises;
 
 
 
-// const getProductDetailsPage = async (req, res) => {
-//     try {
-//         const productId = req.query.id; 
-//         const product = await Product.findById(productId).populate('category');
-//         const sessionUser = req.user ? req.user.email : req.session.user?.email;
-//         const categories = await Category.find({ isListed: true });
-
-//         if (!product) {
-//             return res.redirect("/pageNotFound");
-//         }
-
-//         let userData = null;
-//         if (sessionUser) {
-//             userData = await user.findOne({ email: sessionUser });
-//         }
-//         const relatedProducts = await Product.find({
-            
-//             $or: [
-//                  { category: product.category._id },
-//                 { brand: product.brand }
-//             ],
-//             _id: { $ne: product._id }, // Exclude the current product
-            
-//             isBlocked: false,
-//             category: { $in: categories.map(category => category._id) },
-//             quantity: { $gt: 0 }
-//         }).sort({createdAt:-1})
-//         .limit(3); // Limit the number of related products displayed
-
-//         res.render("product-details", {
-//             product: product,
-//             relatedProducts: relatedProducts, 
-//             user: userData,
-//             // products: relatedProducts 
-//         });
-//     } catch (error) {
-//         console.error(error);
-//         res.redirect("/pageNotFound");
-//     }
-// };
-
 
 const getProductDetailsPage = async (req, res) => {
     try {
@@ -99,75 +58,6 @@ const getProductDetailsPage = async (req, res) => {
         res.redirect("/pageNotFound"); // Redirect on error
     }
 };
-
-
-// const getAllProducts = async (req, res) => {
-//     try {
-//         const { category, sort, search } = req.query;
-
-//         // Fetch categories
-//         const categories = await Category.find({ isListed: true });
-
-//         // Determine session user email
-//         const sessionUser = req.user ? req.user.email : req.session.user?.email;
-
-//         // Build query
-//         let query = {
-//             isBlocked: false,
-//             category: { $in: categories.map(category => category._id) },
-//             quantity: { $gt: 0 }
-//         };
-
-//         // Apply category filter if provided
-//         if (category) {
-//             const selectedCategory = await Category.findOne({ name: category, isListed: true });
-//             if (selectedCategory) {
-//                 query.category = selectedCategory._id;
-//             }
-//         }
-
-//         // Apply search filter if provided
-//         if (search) {
-//             query.productName = { $regex: new RegExp(search, 'i') };
-           
-//         }
-        
-
-//         // Determine sort option
-//         let sortOption = { createdAt: -1 }; // Default sort (most recent)
-//         if (sort === 'low-high') {
-//             sortOption = { salePrice: 1 }; // Sort by price low to high
-//         } else if (sort === 'high-low') {
-//             sortOption = { salePrice: -1 }; // Sort by price high to low
-//         } else if (sort === 'az') {
-//             sortOption = { productName: 1 }; // Sort by name A to Z
-//         } else if (sort === 'za') {
-//             sortOption = { productName: -1 }; // Sort by name Z to A
-//         }
-
-//         // Fetch products
-//         const products = await Product.find(query).sort(sortOption);
-
-//         // Fetch user data if sessionUser exists
-//         let userData = null;
-//         if (sessionUser) {
-//             userData = await user.findOne({ email: sessionUser });
-//         }
-
-//         // Render the products page
-//         res.render("allProducts", {
-//             products: products,
-//             user: userData,
-//             categories: categories,
-//             currentCategory: category || 'All',
-//             currentSort: sort || 'default',
-//             currentSearch: search || ''
-//         });
-//     } catch (error) {
-//         console.error('Error fetching all products:', error);
-//         res.redirect("/pageNotFound");
-//     }
-// };
 
 
 const getAllProducts = async (req, res) => {
@@ -371,52 +261,6 @@ const getSearchSuggestions = async (req, res) => {
         res.status(500).json({ error: 'Error getting suggestions' });
     }
 };
-// Update the getSearchSuggestions function
-// const getSearchSuggestions = async (req, res) => {
-//     try {
-//         const { query } = req.query;
-        
-//         console.log('Received search query:', query); // Add this for debugging
-        
-//         if (!query) {
-//             return res.json([]); // Return an empty array if no query is provided
-//         }
-
-//         const searchQuery = {
-//             $and: [
-//                 { isBlocked: false },
-//                 {
-//                     $or: [
-//                         { productName: { $regex: query, $options: 'i' } },
-//                         { brand: { $regex: query, $options: 'i' } }
-//                     ]
-//                 }
-//             ]
-//         };
-
-//         // Fetch suggestions with populated category and selected fields
-//         const suggestions = await Product.find(searchQuery)
-//             .populate('category')
-//             .select('productName brand category salePrice productImage')
-//             .limit(5);
-
-//         console.log('Found suggestions:', suggestions.length); // Add this for debugging
-
-//         // Process suggestions to include correct image paths
-//         const processedSuggestions = suggestions.map(suggestion => ({
-//             ...suggestion.toObject(),
-//             productImage: suggestion.productImage && suggestion.productImage.length > 0
-//                 ? path.join('/uploads/product-images', suggestion.productImage[0])
-//                 : '/placeholder-image.jpg'
-//         }));
-
-//         res.json(processedSuggestions);
-        
-//     } catch (error) {
-//         console.error('Error in getSearchSuggestions function:', error.message);
-//         res.status(500).json({ error: 'Error getting suggestions' });
-//     }
-// };
 
 
 module.exports ={

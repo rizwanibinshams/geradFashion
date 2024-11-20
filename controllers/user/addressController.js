@@ -75,10 +75,9 @@ const addAddress = async (req, res) => {
         }
 
         await userAddress.save();
-        // Redirect to the profile page after successfully adding the address
-        //res.redirect('/profile'); // Adjust the route to your actual profile page route
+       
 
-        // Instead of redirecting on success, return JSON response
+        
 res.redirect("/address") // Send the newly added address back to the client
 
     } catch (error) {
@@ -277,7 +276,7 @@ const editAddress = async (req, res) => {
 const removeAddress = async (req, res) => {
     try {
         const { id } = req.params; // Address ID within the address array
-        const userId = req.user.id; // Extract the user ID correctly
+        const userId = req.user.id; 
 
         console.log('User ID:', userId);
         console.log('Address ID:', id);
