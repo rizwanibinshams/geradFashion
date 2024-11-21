@@ -22,33 +22,33 @@ const userAuth = (req,res,next)=>{
 }
 
 
-const adminAuth = (req,res,next)=>{
-    User.findOne({isAdmin:true})
-    .then(data=>{
-        if(data){
-            next()
-        }else{
-            res.redirect('/admin/login')
-        }
-    })
-    .catch(error =>{
-        console.log('error in admin auth',error);
-        res.status(500).send("internal server error")
-    })
-}
-
 // const adminAuth = (req,res,next)=>{
-//     try {
-//         if(req.session.admin){
-//              next()
+//     User.findOne({isAdmin:true})
+//     .then(data=>{
+//         if(data){
+//             next()
 //         }else{
-           
-//             res.redirect("/admin/login")
+//             res.redirect('/admin/login')
 //         }
-//     } catch (error) {
-//         console.log(error.message);
-//     }
+//     })
+//     .catch(error =>{
+//         console.log('error in admin auth',error);
+//         res.status(500).send("internal server error")
+//     })
 // }
+
+const adminAuth = (req,res,next)=>{
+    try {
+        if(req.session.admin){
+             next()
+        }else{
+           
+            res.redirect("/admin/login")
+        }
+    } catch (error) {
+        console.log(error.message);
+    }
+}
 
 
 const isAuthenticated = (req, res, next) => {

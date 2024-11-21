@@ -18,24 +18,53 @@ const loadLogin = (req,res)=>{
 res.render('adminlogin',{message:null})
     }
     
-const login = async (req,res)=>{
+// const login = async (req,res)=>{
+//     try {
+//         const {email,password} = req.body
+//         const admin = await user.findOne({email,isAdmin:true})
+//         if(admin){
+//             const passwordMatch = await bcrypt.compare(password,admin.password)
+//             if(passwordMatch){
+//                 req.session.admin = true;
+//                 return res.redirect('/admin')
+//             }else{
+//                 return res.redirect('/admin/login')
+//             }
+//         }else{
+//             return res.redirect('/admin/login')
+//         }
+//     } catch (error) {
+//         console.log('login error',error);
+//         return res.redirect('/admin/pageerror')
+//     }
+// }
+
+const login = async (req, res) => {
     try {
-        const {email,password} = req.body
-        const admin = await user.findOne({email,isAdmin:true})
-        if(admin){
-            const passwordMatch = bcrypt.compare(password,admin.password)
-            if(passwordMatch){
-                req.session.admin = true;
-                return res.redirect('/admin')
-            }else{
-                return res.redirect('/login')
-            }
-        }else{
-            return res.redirect('/login')
+        const { email, password } = req.body
+        const admin = await user.findOne({ email, isAdmin: true })
+        
+        if (!admin) {
+            // No admin found with this email
+            req.flash('error', 'Please provide both email and password')
+            return res.redirect('/admin/login')
+        }
+
+        // Use await with bcrypt.compare() as it returns a Promise
+        const passwordMatch = await bcrypt.compare(password, admin.password)
+        
+        if (passwordMatch) {
+            req.session.admin = true;
+            return res.redirect('/admin')
+        } else {
+            // Incorrect password
+            req.flash('error', 'Invalid email or password')
+            return res.redirect('/admin/login')
         }
     } catch (error) {
-        console.log('login error',error);
-        return res.redirect('/admin/pageerror')
+        console.log('login error', error);
+        req.flash('error', 'An unexpected error occurred')
+        return res.redirect('/admin/login')
     }
 }
 

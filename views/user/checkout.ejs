@@ -8,7 +8,8 @@
     <title>Fashion Checkout</title>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap');
 
@@ -158,10 +159,10 @@
     </style>
 </head>
 <body>
-    <div class="checkout-container py-12">
-        <div class="container mx-auto px-4">
+    <div class="checkout-container py-12 ">
+        <div class="container mx-auto px-4 ">
             <!-- Breadcrumb -->
-            <nav aria-label="breadcrumb" class="mb-8">
+            <nav aria-label="breadcrumb" class="mb-8 ">
                 <ol class="flex items-center space-x-2">
                     <li><a href="/" class="hover:text-black transition-colors">Home</a></li>
                     <li><span class="mx-2">/</span></li>
@@ -171,7 +172,7 @@
                 </ol>
             </nav>
             
-            <h2 class="text-4xl font-bold mb-12 text-center">Complete Your Order</h2>
+            <h2 class="text-4xl font-bold mb-12 text-center mt-16">Complete Your Order</h2>
             
             <div class="flex flex-wrap -mx-4">
                 <!-- Left Column - Billing Details -->
@@ -440,17 +441,7 @@
     
    
     <script>
-        // function applyCoupon() {
-        //     const couponCode = document.getElementById('couponCode').value;
-        //     if (couponCode) {
-                
-        //         $('#discountApplied').removeClass('hidden').addClass('animate__animated animate__fadeIn');
-        //         $('#discountAmount').text('₹50.00'); // Example discount
-        //         alert('Coupon applied successfully!');
-        //     } else {
-        //         alert('Please enter a valid coupon code.');
-        //     }
-        // }
+       
 
         AOS.init({
             duration: 800,
@@ -572,9 +563,9 @@
             body: JSON.stringify(formObject),
         });
 
-        const textResponse = await response.text(); 
-        console.log("Response Text:", textResponse); 
-        const result = JSON.parse(textResponse); 
+        const textResponse = await response.text();
+        console.log("Response Text:", textResponse);
+        const result = JSON.parse(textResponse);
 
         if (!response.ok) {
             throw new Error(result.error || 'An error occurred');
@@ -607,11 +598,17 @@
         // Clear the form
         form.reset();
 
-        alert('Address saved successfully!');
-    } catch (error) {
-        console.error('Error saving address:', error);
-        alert(`There was an error saving the address: ${error.message}`);
-    }
+showSuccessNotification(
+    'Address Saved',
+    'Your address has been successfully saved!'
+);
+} catch (error) {
+console.error('Error saving address:', error);
+showErrorNotification(
+    'Error Saving Address',
+    `There was an error saving the address: ${error.message}`
+);
+}
 }
 
 
@@ -652,24 +649,21 @@ async function confirmOrder() {
 
         // Validate required fields
         if (!addressInput) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Address Required',
-                text: 'Please select an address before placing the order.',
-                confirmButtonColor: '#3085d6'
-            });
-            return;
-        }
+        showWarningNotification(
+            'Address Required',
+            'Please select an address before placing the order.'
+        );
+        return;
+    }
 
-        if (!paymentMethodInput) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Payment Method Required',
-                text: 'Please select a payment method before placing the order.',
-                confirmButtonColor: '#3085d6'
-            });
-            return;
-        }
+
+    if (!paymentMethodInput) {
+        showWarningNotification(
+            'Payment Method Required',
+            'Please select a payment method before placing the order.'
+        );
+        return;
+    }
 
         // Build request body
         const requestBody = {
@@ -899,44 +893,32 @@ async function processCashOnDelivery(requestBody) {
 
 function handleOrderResponse(data) {
     if (data.success) {
-        Swal.fire({
-            icon: 'success',
-            title: 'Order Placed Successfully!',
-            text: data.message || 'Your order has been placed successfully.',
-            showConfirmButton: true,
-            confirmButtonColor: '#3085d6',
-            allowOutsideClick: false
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Use the orderId from the order creation response
+        showSuccessNotification(
+            'Order Placed Successfully!',
+            data.message || 'Your order has been placed successfully.',
+            () => {
                 window.location.href = `/success?orderId=${data.orderDetails?.orderId || data.orderId}`;
             }
-        });
+        );
     } else {
         if (data.quantityErrors && data.quantityErrors.length > 0) {
-            const errorMessage = data.quantityErrors.join('\n');
-            Swal.fire({
-                icon: 'error',
-                title: 'Unable to Place Order',
-                text: errorMessage,
-                confirmButtonColor: '#3085d6'
-            });
+            showErrorNotification(
+                'Unable to Place Order',
+                data.quantityErrors.join('\n')
+            );
         } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Order Failed',
-                text: data.message || 'An error occurred while placing the order.',
-                confirmButtonColor: '#3085d6'
-            });
+            showErrorNotification(
+                'Order Failed',
+                data.message || 'An error occurred while placing the order.'
+            );
         }
     }
 }
 
 
-
     // Helper function to handle errors
-function handleError(message) {
-    alert(message);
+    function handleError(message) {
+    showErrorNotification('Error', message);
 }
 
 // Helper function to add discount row to cart table
@@ -1008,7 +990,6 @@ async function applyCoupon() {
 
 // Function to update cart display after successful coupon application
 function updateCartDisplay(data) {
-    // Get elements
     const totalElement = document.querySelector('tfoot tr:last-child td:last-child');
     const discountAppliedDiv = document.getElementById('discountApplied');
     const discountAmountSpan = document.getElementById('discountAmount');
@@ -1016,11 +997,9 @@ function updateCartDisplay(data) {
     const applyCouponBtn = document.getElementById('applyCouponBtn');
     const couponInput = document.getElementById('couponCode');
 
-    // Format numbers
     const discountAmount = parseFloat(data.discountAmount);
     const newTotal = parseFloat(data.newTotal);
 
-    // Update total and discount display
     totalElement.textContent = `₹${newTotal.toFixed(2)}`;
     
     if (discountAppliedDiv && discountAmountSpan) {
@@ -1028,16 +1007,16 @@ function updateCartDisplay(data) {
         discountAmountSpan.textContent = `₹${discountAmount.toFixed(2)}`;
     }
 
-    // Add discount row to cart
     addDiscountRow(discountAmount);
 
-    // Update UI elements
     removeCouponBtn.classList.remove('hidden');
     applyCouponBtn.classList.add('hidden');
     couponInput.disabled = true;
 
-    // Show success message
-    alert('Coupon applied successfully!');
+    showSuccessNotification(
+        'Coupon Applied',
+        'Your coupon has been successfully applied to the order!'
+    );
 }
 
 // Function to remove coupon
@@ -1071,37 +1050,34 @@ async function removeCoupon() {
 
 // Function to reset display after coupon removal
 function resetCouponDisplay(data) {
-    // Get elements
     const totalElement = document.querySelector('tfoot tr:last-child td:last-child');
     const discountAppliedDiv = document.getElementById('discountApplied');
     const couponInput = document.getElementById('couponCode');
     const removeCouponBtn = document.getElementById('removeCouponBtn');
     const applyCouponBtn = document.getElementById('applyCouponBtn');
 
-    // Remove discount row
     removeExistingDiscountRow();
 
-    // Calculate final total with delivery charge
     const originalTotal = parseFloat(data.originalTotal);
     const deliveryCharge = originalTotal < 1000 ? 250 : 0;
     const finalTotal = originalTotal + deliveryCharge;
 
-    // Update UI
     totalElement.textContent = `₹${finalTotal.toFixed(2)}`;
     if (discountAppliedDiv) {
         discountAppliedDiv.classList.add('hidden');
     }
 
-    // Reset input and buttons
     couponInput.value = '';
     couponInput.disabled = false;
     removeCouponBtn.classList.add('hidden');
     applyCouponBtn.classList.remove('hidden');
     applyCouponBtn.disabled = false;
 
-    alert('Coupon removed successfully!');
+    showSuccessNotification(
+        'Coupon Removed',
+        'The coupon has been successfully removed from your order.'
+    );
 }
-
 
 //wallet payment 
 
@@ -1177,6 +1153,43 @@ async function fetchWalletBalance() {
 
 // Call this when the page loads
 document.addEventListener('DOMContentLoaded', fetchWalletBalance);
+
+
+// Function to show success notification
+function showSuccessNotification(title, message, callback) {
+    Swal.fire({
+        icon: 'success',
+        title: title,
+        text: message,
+        confirmButtonColor: '#3085d6',
+        showConfirmButton: true,
+        allowOutsideClick: false
+    }).then((result) => {
+        if (result.isConfirmed && callback) {
+            callback();
+        }
+    });
+}
+
+// Function to show error notification
+function showErrorNotification(title, message) {
+    Swal.fire({
+        icon: 'error',
+        title: title,
+        text: message,
+        confirmButtonColor: '#3085d6'
+    });
+}
+
+// Function to show warning notification
+function showWarningNotification(title, message) {
+    Swal.fire({
+        icon: 'warning',
+        title: title,
+        text: message,
+        confirmButtonColor: '#3085d6'
+    });
+}
 
 
     </script>

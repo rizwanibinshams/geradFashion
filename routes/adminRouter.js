@@ -36,7 +36,7 @@ router.get('/download', dashboardController.downloadReport);
 
 //customer management
 
-router.get('/users',customerController.customerInfo)
+router.get('/users',auth.adminAuth,customerController.customerInfo)
 router.get('/blockCustomer',auth.adminAuth,customerController.customerBlocked)
 router.get('/unblockCustomer',auth.adminAuth,customerController.customerunBlocked)
 router.get("/deleteCustomer",auth.adminAuth,customerController.deleteCustomer)
@@ -83,7 +83,7 @@ router.post('/update-order-status',auth.adminAuth, orderController.updateOrderSt
 // Return routes
 
 router.put('/orders/return', returnsController.updateReturnStatus);
-router.get('/returns', returnsController.renderReturnManagementPage);
+router.get('/returns',auth.adminAuth,  returnsController.renderReturnManagementPage);
 
 //coupon management 
 
@@ -95,7 +95,7 @@ router.delete('/coupons/:id', auth.adminAuth, couponController.deleteCoupon);
 
 //info 
 
-router.get('/info-tags', infoController.getinfoPage);
+router.get('/info-tags',auth.adminAuth, infoController.getinfoPage);
 router.post('/info-tags', infoController.createInfoTag);
 router.delete('/info-tags/:id', infoController.deleteInfoTag);
 
@@ -103,9 +103,9 @@ router.delete('/info-tags/:id', infoController.deleteInfoTag);
 
 //banner 
 
-router.get('/banners/add', bannerController.getAddBanner);
+router.get('/banners/add',auth.adminAuth,  bannerController.getAddBanner);
 router.post('/banners/add', bannerimg.single('image'), bannerController.addBanner);
-router.get('/banners', bannerController.getAllBanners);
+router.get('/banners',auth.adminAuth,  bannerController.getAllBanners);
 router.delete('/banners/:id', bannerController.deleteBanner);
 
 

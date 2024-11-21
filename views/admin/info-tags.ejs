@@ -74,10 +74,18 @@
                             <div class="space-y-2">
                                 <p class="text-gray-900"><span class="font-medium">Message:</span> <%= tag.message %></p>
                                 <p class="text-sm text-gray-600">
-                                    <span class="font-medium">Start:</span> <%= tag.startDate.toLocaleString() %>
+                                    <span class="font-medium">Start:</span> <%= tag.startDate.toLocaleDateString('en-GB', {
+                                        day: '2-digit',
+                                        month: '2-digit',
+                                        year: 'numeric'
+                                    }) %>
                                 </p>
                                 <p class="text-sm text-gray-600">
-                                    <span class="font-medium">End:</span> <%= tag.endDate.toLocaleString() %>
+                                    <span class="font-medium">End:</span> <%= tag.endDate.toLocaleDateString('en-GB', {
+                                        day: '2-digit',
+                                        month: '2-digit',
+                                        year: 'numeric'
+                                    }) %>
                                 </p>
                             </div>
                             <form action="/admin/info-tags/<%= tag._id %>?_method=DELETE" method="POST">

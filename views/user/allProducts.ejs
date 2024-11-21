@@ -18,26 +18,53 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
         
-        .category-link {
-            transition: all 0.3s ease;
+        /* Enhanced mobile category styles */
+        .category-wrapper {
             position: relative;
         }
-        
-        .category-link::after {
+
+        .category-toggle {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .category-toggle::after {
             content: '';
             position: absolute;
-            width: 0;
-            height: 1px;
-            bottom: -2px;
-            left: 0;
-            background-color: #000;
-            transition: width 0.3s ease;
+            right: 16px;
+            top: 50%;
+            width: 8px;
+            height: 8px;
+            border-right: 2px solid #666;
+            border-bottom: 2px solid #666;
+            transform: translateY(-50%) rotate(45deg);
+            transition: transform 0.3s ease;
         }
-        
-        .category-link:hover::after {
-            width: 100%;
+
+        .category-toggle.active::after {
+            transform: translateY(-50%) rotate(-135deg);
         }
-        
+
+        .category-list {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+
+        .category-list.show {
+            max-height: 500px;
+        }
+
+        @media (min-width: 768px) {
+            .category-toggle::after {
+                display: none;
+            }
+            
+            .category-list {
+                max-height: none !important;
+                overflow: visible;
+            }
+        }
         .offer-tag {
             position: absolute;
             top: 0;
@@ -95,20 +122,34 @@
         <div class="flex flex-col md:flex-row gap-8">
             <!-- Refined Sidebar -->
             <aside class="md:w-1/4 lg:w-1/5">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h5 class="text-xl font-light mb-6 tracking-wide">Categories</h5>
-                    <ul class="space-y-4">
-                        <li><a href="/products" class="category-link <%= currentCategory === 'All' ? 'font-medium text-black' : 'text-gray-600' %>">All Collections</a></li>
+                <div class="category-wrapper bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <!-- Mobile Category Toggle -->
+                    <button class="category-toggle w-full md:hidden text-left p-6 bg-white font-light text-xl tracking-wide flex justify-between items-center">
+                        Categories
+                    </button>
 
-                        <% categories.forEach(category => { %>
-                            <li>
-                                <a href="/products?category=<%= category.name %>" 
-                                   class="category-link <%= currentCategory === category.name ? 'font-medium text-black' : 'text-gray-600' %>">
-                                    <%= category.name %>
-                                </a>
-                            </li>
-                        <% }) %>
-                    </ul>
+                    <!-- Category List -->
+                    <div class="category-list">
+                        <div class="p-6 pt-0 md:pt-6">
+                            <ul class="space-y-4">
+                                <li>
+                                    <a href="/products" 
+                                       class="category-link block py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors <%= currentCategory === 'All' ? 'font-medium text-black bg-gray-50' : 'text-gray-600' %>">
+                                        All Collections
+                                    </a>
+                                </li>
+
+                                <% categories.forEach(category => { %>
+                                    <li>
+                                        <a href="/products?category=<%= category.name %>" 
+                                           class="category-link block py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors <%= currentCategory === category.name ? 'font-medium text-black bg-gray-50' : 'text-gray-600' %>">
+                                            <%= category.name %>
+                                        </a>
+                                    </li>
+                                <% }) %>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </aside>
 
@@ -332,6 +373,37 @@ priceFilterSelect.addEventListener('change', (event) => {
   currentUrl.search = searchParams.toString();
   window.location.href = currentUrl.toString();
 });
+
+
+document.addEventListener('DOMContentLoaded', function() {
+            const categoryToggle = document.querySelector('.category-toggle');
+            const categoryList = document.querySelector('.category-list');
+
+            if (categoryToggle && categoryList) {
+                categoryToggle.addEventListener('click', function() {
+                    categoryToggle.classList.toggle('active');
+                    categoryList.classList.toggle('show');
+                    
+                    // Add smooth animation
+                    if (categoryList.classList.contains('show')) {
+                        categoryList.style.maxHeight = categoryList.scrollHeight + "px";
+                    } else {
+                        categoryList.style.maxHeight = null;
+                    }
+                });
+
+                // Close categories when clicking outside
+                document.addEventListener('click', function(event) {
+                    const isClickInside = categoryToggle.contains(event.target) || categoryList.contains(event.target);
+                    
+                    if (!isClickInside && window.innerWidth < 768 && categoryList.classList.contains('show')) {
+                        categoryToggle.classList.remove('active');
+                        categoryList.classList.remove('show');
+                        categoryList.style.maxHeight = null;
+                    }
+                });
+            }
+        });
 
     </script>
 </body>

@@ -1,3 +1,4 @@
+<%- include("../partials/user/header") %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -331,7 +332,7 @@
     </style>
 </head>
 <body>
-    <%- include("../partials/user/header") %>
+   
     
     <div class="container">
         <nav class="breadcrumb" aria-label="breadcrumb">
@@ -419,12 +420,16 @@
                     </div>
                 <% }); %>
             <% } else { %>
-                <div class="empty-wishlist">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="col-span-full py-16 flex flex-col items-center justify-center">
+                    <svg class="w-24 h-24 text-gray-300 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                     </svg>
-                    <h2>Your Wishlist is Empty</h2>
-                    <p>Discover our latest collections and add your favorite pieces to create your perfect wardrobe.</p>
+                    <h2 class="font-[Playfair Display] text-2xl font-bold text-gray-900 mb-2">
+                        Your Wishlist is Empty
+                    </h2>
+                    <p class="text-gray-600 text-center max-w-md">
+                        Discover our latest collections and add your favorite pieces to create your perfect wardrobe.
+                    </p>
                 </div>
             <% } %>
         </div>

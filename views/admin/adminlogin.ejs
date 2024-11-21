@@ -4,77 +4,59 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Login</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800;900&display=swap"
-    rel="stylesheet"
-  />
-  <link rel="stylesheet" href="/css/bootstrap.min.css" />
-  <link rel="stylesheet" href="/css/style.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
-    body,
-    html {
-      height: 100%;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background-image: url('/img/adminlogin.png');
-      background-size: cover;
-      background-position: center;
+    body {
       font-family: 'Nunito Sans', sans-serif;
-       color: white;
-    }
-    .login-container {
-      width: 100%;
-      max-width: 500px;
-      padding: 20px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      background-color: hsl(193, 80%, 17%);
-      border-radius: 8px;
-    }
-    .error-message {
-      color: red;
-      font-size: 0.875rem;
-    }
-    .text-center{
-      color: white;
     }
   </style>
 </head>
-<body>
-  <div class="login-container">
-    <h2 class="text-center">Admin Login</h2>
-    <% if (message) { %>
-    <div class="alert alert-danger text-center"><%= message %></div>
-    <% } %>
-    <form id="adminLoginForm" method="post" action="/admin/login">
-      <div class="form-group">
-        <label for="adminEmail">Email address</label>
-        <input
-          type="email"
-          class="form-control"
-          id="adminEmail"
-          name="email"
-          required
+<body class="min-h-screen bg-cover bg-center flex items-center justify-center" style="background-image: url('/img/adminlogin.png')">
+  <div class="w-full max-w-md bg-teal-900 bg-opacity-90 p-8 rounded-xl shadow-2xl">
+    <h2 class="text-3xl font-bold text-center text-white mb-6">Admin Login</h2>
+    
+    <!-- <% if (message) { %>
+    <div class="bg-red-500 text-white p-3 rounded-md text-center mb-4"><%= message %></div>
+    <% } %> -->
+    <% if (messages.error) { %>
+      <div class="alert alert-danger text-center"><%= messages.error %></div>
+      <% } %>
+    
+    <form id="adminLoginForm" method="post" action="/admin/login" class="space-y-4">
+      <div>
+        <label for="adminEmail" class="block text-white text-sm font-semibold mb-2">Email address</label>
+        <input 
+          type="email" 
+          id="adminEmail" 
+          name="email" 
+          
+          class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-800"
         />
-        <div id="emailError" class="error-message"></div>
+        <div id="emailError" class="text-red-400 text-sm mt-1"></div>
       </div>
-      <div class="form-group">
-        <label for="adminPassword">Password</label>
-        <input
-          type="password"
-          class="form-control"
-          id="adminPassword"
-          name="password"
-          required
+      
+      <div>
+        <label for="adminPassword" class="block text-white text-sm font-semibold mb-2">Password</label>
+        <input 
+          type="password" 
+          id="adminPassword" 
+          name="password" 
+        
+          class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-800"
         />
-        <div id="passwordError" class="error-message"></div>
+        <div id="passwordError" class="text-red-400 text-sm mt-1"></div>
       </div>
-      <button type="submit" class="btn btn-primary btn-block">Log In</button>
+      
+      <button 
+        type="submit" 
+        class="w-full bg-teal-600 text-white py-2 rounded-md hover:bg-teal-700 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-500"
+      >
+        Log In
+      </button>
     </form>
   </div>
-  <script src="/js/jquery.min.js"></script>
-  <script src="/js/bootstrap.bundle.min.js"></script>
+
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const adminLoginForm = document.getElementById("adminLoginForm");
@@ -108,4 +90,3 @@
   </script>
 </body>
 </html>
-

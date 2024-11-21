@@ -213,31 +213,107 @@
     <%- include("../partials/editAddressModal") %>
 
     <script>
-         async function deleteAddress(id) {
-            const confirmation = confirm("Are you sure you want to delete this address?");
-            if (confirmation) {
-                try {
-                    const response = await fetch(`/addresses/${id}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    const data = await response.json();
-                    if (response.ok) {
-                        location.reload();
-                    } else {
-                        alert(data.error);
-                    }
-                } catch (error) {
-                    console.error("Error deleting address:", error);
-                    alert('An error occurred while deleting the address.');
+
+
+// Function to show success message
+const SwalConfig = {
+    success: {
+        icon: 'success',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'OK'
+    },
+    error: {
+        icon: 'error',
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'OK'
+    },
+    loading: {
+        title: 'Processing...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    },
+    confirmation: {
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'No'
+    }
+};
+
+// Function to show success message
+function showSuccess(message) {
+    return Swal.fire({
+        title: 'Success!',
+        text: message,
+        ...SwalConfig.success
+    });
+}
+
+// Function to show error message
+function showError(message) {
+    return Swal.fire({
+        title: 'Error!',
+        text: message,
+        ...SwalConfig.error
+    });
+}
+
+// Function to show confirmation dialog
+function showConfirmation(message) {
+    return Swal.fire({
+        title: 'Are you sure?',
+        text: message,
+        ...SwalConfig.confirmation
+    });
+}
+
+// Function to show loading state
+function showLoading(message = 'Processing...') {
+    return Swal.fire({
+        title: message,
+        ...SwalConfig.loading
+    });
+}
+
+// Delete address function with enhanced error handling
+async function deleteAddress(id) {
+    try {
+        const result = await showConfirmation("Are you sure you want to delete this address?");
+        
+        if (result.isConfirmed) {
+            showLoading('Deleting address...');
+            
+            const response = await fetch(`/addresses/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
                 }
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                await showSuccess('Address deleted successfully');
+                location.reload();
+            } else {
+                throw new Error(data.error || 'Failed to delete address');
             }
         }
-        
-        async function editAddress(id) {
+    } catch (error) {
+        console.error("Error deleting address:", error);
+        await showError(error.message || 'An error occurred while deleting the address');
+    }
+}
+
+// Edit address function with enhanced feedback
+async function editAddress(id) {
     try {
+        showLoading('Fetching address details...');
+        
         const response = await fetch(`/addresses/${id}`);
         const data = await response.json();
         
@@ -250,6 +326,10 @@
             throw new Error('Address data is missing or undefined');
         }
 
+        // Close loading dialog
+        Swal.close();
+
+        // Populate form fields
         document.getElementById('editAddressId').value = id;
         document.getElementById('editAddressName').value = address.name || '';
         document.getElementById('editAddressType').value = address.addressType || '';
@@ -268,7 +348,7 @@
         document.getElementById('editAddressModal').style.display = 'flex';
     } catch (error) {
         console.error('Error in editAddress function:', error);
-        alert(`An error occurred while fetching address details: ${error.message}`);
+        await showError(error.message || 'An error occurred while fetching address details');
     }
 }
         function logModalValues() {
@@ -395,23 +475,26 @@ document.getElementById('editAddressForm').addEventListener('submit', function(e
 // Function to update address
 async function updateAddress(id) {
     if (!validateAddressForm('editAddressForm', 'edit')) {
-        return; // Stop the function if validation fails
+        await showError('Please correct the validation errors before submitting.');
+        return;
     }
 
-    const form = document.getElementById('editAddressForm');
-    const addressData = {
-        name: form.name.value,
-        addressType: form.addressType.value,
-        street: form.street.value,
-        city: form.city.value,
-        landMark: form.landMark.value,
-        state: form.state.value,
-        pincode: form.pincode.value,
-        phone: form.phone.value,
-        altPhone: form.altPhone.value,
-    };
-
     try {
+        showLoading('Updating address...');
+
+        const form = document.getElementById('editAddressForm');
+        const addressData = {
+            name: form.name.value,
+            addressType: form.addressType.value,
+            street: form.street.value,
+            city: form.city.value,
+            landMark: form.landMark.value,
+            state: form.state.value,
+            pincode: form.pincode.value,
+            phone: form.phone.value,
+            altPhone: form.altPhone.value,
+        };
+
         const response = await fetch(`/addresses/${id}`, {
             method: 'PUT',
             headers: {
@@ -420,21 +503,18 @@ async function updateAddress(id) {
             body: JSON.stringify(addressData),
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-            const data = await response.json(); // Get the error response
             throw new Error(data.error || 'Failed to update address');
         }
 
-        // If successful, you can redirect or update the UI accordingly
-        console.log('Address updated successfully:', await response.json());
-        document.getElementById('updateSuccessMessage').innerText = 'Address updated successfully!';
-        setTimeout(() => {
-            closeModal(); // Close the modal
-            location.reload(); // Reload the page to see the updated address
-        }, 2000);
+        await showSuccess('Address updated successfully!');
+        closeModal();
+        location.reload();
     } catch (error) {
         console.error('Error updating address:', error);
-        document.getElementById('updateErrorMessage').innerText = `An error occurred while updating the address: ${error.message}`;
+        await showError(error.message || 'An error occurred while updating the address');
     }
 }
 
@@ -460,12 +540,13 @@ addInputListeners('addAddressForm');
 addInputListeners('editAddressForm', 'edit');
         // Function to close the modal
         function closeModal() {
-    document.getElementById('editAddressModal').style.display = 'none';
-    document.getElementById('editAddressForm').reset();
-    const errorElements = document.querySelectorAll('#editAddressModal .text-red-500');
-    errorElements.forEach(el => el.innerText = '');
-    document.getElementById('updateSuccessMessage').innerText = '';
-    document.getElementById('updateErrorMessage').innerText = '';
+    const modal = document.getElementById('editAddressModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.getElementById('editAddressForm').reset();
+        const errorElements = document.querySelectorAll('#editAddressModal .text-red-500');
+        errorElements.forEach(el => el.innerText = '');
+    }
 }
         // Event listener for opening the modal
         document.querySelectorAll('.edit-address-button').forEach(button => {
@@ -476,29 +557,37 @@ addInputListeners('editAddressForm', 'edit');
         });
          // Check the URL for the update success parameter
          const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('update') === 'success') {
-                alert('Profile updated successfully!');
-            } else if (urlParams.get('update') === 'error') {
-                alert('An error occurred while updating the profile.');
+    
+    if (urlParams.get('update') === 'success') {
+        showSuccess('Profile updated successfully!');
+    } else if (urlParams.get('update') === 'error') {
+        showError('An error occurred while updating the profile.');
+    }
+        
+        
+            async function setDefaultAddress(addressId) {
+    try {
+        showLoading('Setting default address...');
+
+        const response = await fetch(`/setDefaultAddress/${addressId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
             }
-        
-        
-            function setDefaultAddress(addressId) {
-    fetch(`/setDefaultAddress/${addressId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
+        });
+
+        const data = await response.json();
+
         if (data.success) {
-            location.reload(); // Refresh to update the default address visually
+            await showSuccess('Default address has been updated successfully');
+            location.reload();
         } else {
-            alert('Failed to set default address');
+            throw new Error(data.message || 'Failed to set default address');
         }
-    })
-    .catch(error => console.error('Error:', error));
+    } catch (error) {
+        console.error('Error setting default address:', error);
+        await showError(error.message || 'An unexpected error occurred while setting the default address');
+    }
 }
 
        
