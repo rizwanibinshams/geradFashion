@@ -9,7 +9,7 @@ const createCoupon = async (req, res) => {
     const { code, discountType, discountValue, validFrom, validUntil, maxUses, isActive, minPurchase } = req.body;
     console.log('Coupon Data Received:', req.body);
 
-    // Validation: Ensure all required fields are provided
+   
     if (!code || !discountType || !discountValue || !validFrom || !validUntil || !maxUses || !minPurchase) {
       console.log('Missing required fields');
       const coupons = await Coupon.find();
@@ -20,10 +20,10 @@ const createCoupon = async (req, res) => {
       });
     }
 
-    // Clean and standardize the coupon code
+   
     const standardizedCode = code.trim().toUpperCase();
 
-    // Check for existing coupon excluding "deleted" coupons
+    
     const existingCoupon = await Coupon.findOne({
       code: { $regex: new RegExp(`^${standardizedCode}$`, 'i') },
       isDeleted: { $ne: true }
@@ -39,7 +39,7 @@ const createCoupon = async (req, res) => {
       });
     }
 
-    // Create the new coupon with standardized code
+    
     const newCoupon = new Coupon({
       code: standardizedCode,
       discountType,
@@ -53,7 +53,7 @@ const createCoupon = async (req, res) => {
       userId: []
     });
 
-    // Save with error handling
+   
     await newCoupon.save();
     console.log('Coupon saved successfully:', newCoupon);
     const coupons = await Coupon.find();
@@ -99,7 +99,7 @@ const updateCoupon = async (req, res) => {
       });
     }
 
-    // Find the existing coupon first
+   
     const existingCoupon = await Coupon.findById(couponId);
     
     if (!existingCoupon) {
@@ -108,10 +108,10 @@ const updateCoupon = async (req, res) => {
       return res.render('coupon', { error: 'Coupon not found', coupons });
     }
 
-    // Prepare the updated code (if provided)
+   
     const updatedCode = updateData.code ? updateData.code.trim().toUpperCase() : existingCoupon.code;
 
-    // Check for duplicate code only if the code is being changed
+   
     if (updatedCode !== existingCoupon.code) {
       const duplicateCheck = await Coupon.findOne({
         code: updatedCode,
@@ -125,10 +125,10 @@ const updateCoupon = async (req, res) => {
       }
     }
 
-    // Handle isActive field
+    
     const isActive = updateData.isActive === 'on' || updateData.isActive === true;
 
-    // Create updates object with existing values as fallback
+   
     const updates = {
       code: updatedCode,
       discountType: updateData.discountType || existingCoupon.discountType,
@@ -140,7 +140,7 @@ const updateCoupon = async (req, res) => {
       isActive
     };
 
-    // Update the existing coupon
+  
     await Coupon.findByIdAndUpdate(
       couponId,
       updates,
@@ -149,7 +149,7 @@ const updateCoupon = async (req, res) => {
 
     console.log('Coupon updated successfully');
 
-    // Fetch all coupons for rendering
+   
     const coupons = await Coupon.find();
     return res.render('coupon', { 
       message: 'Coupon updated successfully', 
@@ -178,7 +178,7 @@ const applyCoupon = async (req, res) => {
       });
     }
 
-    // Retrieve the user's cart
+   
     const cart = await Cart.findOne({ userId })
       .populate({ path: 'items.productId', select: 'salePrice name' });
 
@@ -191,11 +191,11 @@ const applyCoupon = async (req, res) => {
 
     // Calculate cart total
     const cartTotal = cart.items.reduce((total, item) => {
-      return total + item.totalPrice; // Ensure item.totalPrice reflects the item's price
+      return total + item.totalPrice; 
     }, 0);
 
-    // Determine delivery charge based on cart total
-    const deliveryCharge = cartTotal < 1000 ? 250 : 0; // Example: ₹250 if total is less than ₹1000
+   
+    const deliveryCharge = cartTotal < 1000 ? 250 : 0; // ₹250 if total is less than ₹1000
 
     // Find valid coupon
     const coupon = await Coupon.findOne({
@@ -211,7 +211,7 @@ const applyCoupon = async (req, res) => {
       });
     }
 
-    // Check if coupon maxUses is greater than 0 (if 0, it's not allowed to be applied)
+    
     if (coupon.maxUses === 0) {
       return res.json({
         success: false,
@@ -219,7 +219,7 @@ const applyCoupon = async (req, res) => {
       });
     }
 
-    // Check if cart total meets the minPurchase requirement
+    
     if (cartTotal < coupon.minPurchase) {
       return res.json({
         success: false,
@@ -241,7 +241,7 @@ const applyCoupon = async (req, res) => {
     // Calculate new total after applying the discount
     const newTotal = cartTotal - discountAmount + deliveryCharge;
 
-    // Store applied coupon details in the session
+   
     req.session.appliedCoupon = {
       code: coupon.code,
       discountAmount: discountAmount,
@@ -288,7 +288,7 @@ const removeCoupon = async (req, res) => {
           });
       }
 
-      // Check if there's a coupon applied in the session
+      
       if (!req.session.appliedCoupon) {
           return res.json({
               success: false,
@@ -296,7 +296,7 @@ const removeCoupon = async (req, res) => {
           });
       }
 
-      // Retrieve the user's cart
+     
       const cart = await Cart.findOne({ userId })
           .populate({ path: 'items.productId', select: 'salePrice name' });
 
@@ -307,12 +307,12 @@ const removeCoupon = async (req, res) => {
           });
       }
 
-      // Calculate cart total without discount
+      
       const cartTotal = cart.items.reduce((total, item) => {
           return total + item.totalPrice;
       }, 0);
 
-      // Remove the applied coupon from session
+      
       delete req.session.appliedCoupon;
 
       console.log('Coupon removed successfully:', {
@@ -379,7 +379,7 @@ const getCouponById = async (req, res) => {
 const getAllCoupons = async (req, res) => {
   try {
     const coupons = await Coupon.find();
-    // Always pass both error and message, with null as default
+   
     res.render('coupon', { 
       coupons,
       error: null,

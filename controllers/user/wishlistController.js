@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
-const Wishlist = require("../../models/wishlistSchema"); // Adjust the path as needed
-const Product = require("../../models/productSchema"); // Adjust the path as needed
+const Wishlist = require("../../models/wishlistSchema"); 
+const Product = require("../../models/productSchema"); 
 const path = require("path");
 const User = require("../../models/userSchema");
 // Add to Wishlist
@@ -9,29 +9,29 @@ const addToWishlist = async (req, res) => {
     const { productId } = req.body;
     const userId = req.session.user?.id;
 
-    // Check if the user is authenticated
+    
     if (!userId) {
       return res.status(401).json({ message: "User not authenticated" });
     }
 
-    // Validate productId
+   
     if (!productId) {
       return res.status(400).json({ message: "Product ID is required" });
     }
 
-    // Find or create a wishlist for the user
+   
     let wishlist = await Wishlist.findOne({ userId });
     if (!wishlist) {
       wishlist = new Wishlist({ userId, products: [] });
     }
 
-    // Check if the product is already in the wishlist
+    
     const productExists = wishlist.products.some(item => 
       item.productId.toString() === productId
     );
 
     if (!productExists) {
-      // Add the product to the wishlist
+     
       wishlist.products.push({ productId });
       await wishlist.save();
       res.status(200).json({ message: "Product added to wishlist successfully" });
@@ -44,7 +44,7 @@ const addToWishlist = async (req, res) => {
   }
 };
 
-// Remove from Wishlist
+
 const removeFromWishlist = async (req, res) => {
     try {
       const { productId } = req.params;
@@ -52,20 +52,20 @@ const removeFromWishlist = async (req, res) => {
   
       console.log(`Attempting to remove product ${productId} for user ${userId}`);
   
-      // Check if the user is authenticated
+     
       if (!userId) {
         console.log('User not authenticated');
         return res.status(401).json({ message: "User not authenticated" });
       }
   
-      // Find the user's wishlist
+  
       const wishlist = await Wishlist.findOne({ userId });
       if (!wishlist) {
         console.log(`Wishlist not found for user ${userId}`);
         return res.status(404).json({ message: "Wishlist not found" });
       }
   
-      // Check if the product exists in the wishlist
+     
       const productIndex = wishlist.products.findIndex(item => 
         item.productId.toString() === productId
       );
@@ -75,7 +75,7 @@ const removeFromWishlist = async (req, res) => {
         return res.status(404).json({ message: "Product not found in wishlist" });
       }
   
-      // Remove the product from the wishlist
+     
       wishlist.products.splice(productIndex, 1);
   
       await wishlist.save();
@@ -113,15 +113,15 @@ const removeFromWishlist = async (req, res) => {
       let hasRemovedBlockedItems = false;
   
       if (wishlist && wishlist.products) {
-        // Filter out blocked products and map remaining items
+        
         const filteredProducts = wishlist.products.filter(item => 
           item.productId && !item.productId.isBlocked
         );
   
-        // Check if any items were filtered out
+       
         if (filteredProducts.length !== wishlist.products.length) {
           hasRemovedBlockedItems = true;
-          // Update wishlist in database to remove blocked products
+         
           wishlist.products = filteredProducts;
           await wishlist.save();
         }
@@ -154,7 +154,7 @@ const removeFromWishlist = async (req, res) => {
       res.render('wishlist', { 
         wishlistItems, 
         user: userData,
-        hasRemovedBlockedItems // Optional: Pass this to show a message if items were removed
+        hasRemovedBlockedItems 
       });
       
     } catch (error) {
@@ -175,14 +175,14 @@ const removeFromWishlist = async (req, res) => {
     try {
         const userId = req.session.user?.id;
         
-        // First check if userId exists
+        
         if (!userId) {
             return res.json({ count: 0 });
         }
 
         const wishlist = await Wishlist.findOne({ userId: userId });
         
-        // Check if wishlist exists and has products array
+       
         const count = wishlist && wishlist.products ? wishlist.products.length : 0;
         
         res.json({ count });

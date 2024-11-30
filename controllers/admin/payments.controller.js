@@ -14,7 +14,7 @@ exports.createOrder = async (req, res) => {
         }
 
         const options = {
-            amount: Math.round(amount * 100), // Convert to paise
+            amount: Math.round(amount * 100),
             currency: currency,
             receipt: `receipt_${Date.now()}_${Math.random().toString(36).substring(7)}`,
         };
@@ -45,7 +45,7 @@ exports.verifyPayment = async (req, res) => {
             razorpay_signature
         } = req.body;
 
-        // Verify the payment signature
+        
         const sign = razorpay_order_id + "|" + razorpay_payment_id;
         const expectedSign = crypto
             .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)

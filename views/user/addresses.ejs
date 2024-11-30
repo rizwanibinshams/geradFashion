@@ -364,25 +364,19 @@ async function editAddress(id) {
             console.log('Alt Phone:', document.getElementById('editAddressAltPhone').value);
         }
         
-        // document.getElementById('editAddressForm').onsubmit = async function (event) {
-        //     event.preventDefault(); // Prevent the default form submission
-        //     const id = document.getElementById('editAddressId').value; // Get ID from a hidden input in the form
-        
-        //     // Call the editAddress function with the extracted ID
-        //     await editAddress(id); 
-        // };
+    
         document.getElementById('editAddressForm').onsubmit = async function (event) {
-    event.preventDefault(); // Prevent the default form submission
-    const id = document.getElementById('editAddressId').value; // Get ID from a hidden input in the form
+    event.preventDefault(); 
+    const id = document.getElementById('editAddressId').value; 
 
-    // Validate the form before attempting to update
+    
     if (validateAddressForm('editAddressForm', 'edit')) {
-        await updateAddress(id); // Only call updateAddress if validation passes
+        await updateAddress(id);
     }
 };
 
        
-// Utility function to validate input fields
+
 function validateField(value, regex, errorElement, errorMessage) {
     if (!regex.test(value)) {
         errorElement.innerText = errorMessage;
@@ -392,7 +386,7 @@ function validateField(value, regex, errorElement, errorMessage) {
     return true;
 }
 
-// Utility function to validate required fields
+
 function validateRequired(value, errorElement, fieldName) {
     if (!value.trim()) {
         errorElement.innerText = `${fieldName} is required.`;

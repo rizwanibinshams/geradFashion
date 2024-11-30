@@ -4,8 +4,7 @@ const user = require('../../models/userSchema');
 // Add a new address
 const addAddress = async (req, res) => {
     try {
-        console.log("user eksdf", req.user); // Check user
-        console.log("body dvbjhvd", req.body); // Check request body
+        
 
         const {
             name,
@@ -24,18 +23,18 @@ const addAddress = async (req, res) => {
             return res.status(400).json({ error: 'All fields are required' });
         }
 
-        const userId = req.session.user?.id; // Ensure user is authenticated
+        const userId = req.session.user?.id; 
         if (!userId) {
             return res.status(401).json({ error: 'User not authenticated' });
         }
 
-        console.log("User ID:", userId); // Log the user ID
+        console.log("User ID:", userId); 
 
         // Find the address document by userId
         let userAddress = await Address.findOne({ userId });
 
         if (!userAddress) {
-            // Create a new address document if it doesn't exist
+           
             userAddress = new Address({
                 userId,
                 address: [{
@@ -51,7 +50,7 @@ const addAddress = async (req, res) => {
                 }]
             });
         } else {
-            // Check if the address already exists to avoid duplicates
+            
             const existingAddress = userAddress.address.find(addr => 
                 addr.addressType === addressType && addr.street === street && addr.city === city
             );
@@ -60,7 +59,7 @@ const addAddress = async (req, res) => {
                 return res.status(409).json({ error: 'This address already exists' });
             }
 
-            // Push the new address into the array
+           
             userAddress.address.push({
                 name,
                 addressType,
@@ -78,10 +77,10 @@ const addAddress = async (req, res) => {
        
 
         
-res.redirect("/address") // Send the newly added address back to the client
+res.redirect("/address") 
 
     } catch (error) {
-        console.error("Error adding address:", error.message); // Log specific error message
+        console.error("Error adding address:", error.message); 
         res.status(500).json({ error: 'An error occurred while adding the address' });
     }
 };
@@ -89,8 +88,7 @@ res.redirect("/address") // Send the newly added address back to the client
 
 const CheckoutaddAddress = async (req, res) => {
     try {
-        console.log("user eksdf", req.user); // Check user
-        console.log("body dvbjhvd", req.body); // Check request body
+       
 
         const {
             name,
@@ -109,18 +107,18 @@ const CheckoutaddAddress = async (req, res) => {
             return res.status(400).json({ error: 'All fields are required' });
         }
 
-        const userId = req.session.user?.id; // Ensure user is authenticated
+        const userId = req.session.user?.id; 
         if (!userId) {
             return res.status(401).json({ error: 'User not authenticated' });
         }
 
-        console.log("User ID:", userId); // Log the user ID
+        console.log("User ID:", userId); 
 
-        // Find the address document by userId
+        
         let userAddress = await Address.findOne({ userId });
 
         if (!userAddress) {
-            // Create a new address document if it doesn't exist
+           
             userAddress = new Address({
                 userId,
                 address: [{
@@ -136,7 +134,7 @@ const CheckoutaddAddress = async (req, res) => {
                 }]
             });
         } else {
-            // Check if the address already exists to avoid duplicates
+            
             const existingAddress = userAddress.address.find(addr => 
                 addr.landMark === landMark && addr.street === street 
             );
@@ -145,7 +143,7 @@ const CheckoutaddAddress = async (req, res) => {
                 return res.status(409).json({ error: 'This address already exists' });
             }
 
-            // Push the new address into the array
+          
             userAddress.address.push({
                 name,
                 addressType,
@@ -161,11 +159,11 @@ const CheckoutaddAddress = async (req, res) => {
 
         await userAddress.save();
         
-        // Instead of redirecting on success, return JSON response
-res.status(201).json({ address: userAddress.address[userAddress.address.length - 1] }); // Send the newly added address back to the client
+        
+res.status(201).json({ address: userAddress.address[userAddress.address.length - 1] });
 
     } catch (error) {
-        console.error("Error adding address:", error.message); // Log specific error message
+        console.error("Error adding address:", error.message); 
         res.status(500).json({ error: 'An error occurred while adding the address' });
     }
 };
@@ -175,13 +173,13 @@ const getAddressById = async (req, res) => {
         console.log('Request params:', req.params);
         console.log('Request user:', req.user);
 
-        const { id } = req.params; // Address ID from the URL
+        const { id } = req.params; 
         if (!id) {
             console.log('Address ID is missing in the request parameters');
             return res.status(400).json({ error: 'Address ID is required' });
         }
 
-        const userId = req.user.id; // Use req.user.id instead of req.user._id
+        const userId = req.user.id;
         if (!userId) {
             console.log('User ID is missing in the user object');
             return res.status(400).json({ error: 'User ID is missing' });
@@ -217,25 +215,25 @@ const getAddressById = async (req, res) => {
     }
 };
 
-// Edit an existing address
+
 const editAddress = async (req, res) => {
     try {
-        const { id } = req.params; // Address ID from the URL parameters
+        const { id } = req.params; 
         const { name,addressType, street, city, landMark, state, pincode, phone, altPhone } = req.body;
 
         console.log('Request Params:', req.params);
         console.log('Request Body:', req.body);
         console.log('Authenticated user:', req.user);
 
-        const userId = req.user.id; // Use the correct property for user ID
+        const userId = req.user.id; 
         console.log('Authenticated User ID:', userId);
 
         if (!userId) {
             return res.status(401).json({ error: 'User ID is undefined' });
         }
 
-        // Fetch user's address with the given address ID
-        const userAddress = await Address.findOne({ userId, 'address._id': id }); // Adjust query accordingly
+       
+        const userAddress = await Address.findOne({ userId, 'address._id': id });
         if (!userAddress) {
             console.error('User address not found for user ID:', userId);
             return res.status(404).json({ error: 'User address not found' });
@@ -249,7 +247,7 @@ const editAddress = async (req, res) => {
 
         console.log('Updating address:', addressToEdit);
 
-        // Update the address fields
+       
         addressToEdit.name = name;
         addressToEdit.addressType = addressType;
         addressToEdit.street = street;
@@ -260,7 +258,7 @@ const editAddress = async (req, res) => {
         addressToEdit.phone = phone;
         addressToEdit.altPhone = altPhone;
 
-        await userAddress.save(); // Save the updated address
+        await userAddress.save(); 
 
         console.log('Address updated successfully:', addressToEdit);
         return res.json({ message: 'Address updated successfully', address: addressToEdit });
@@ -275,13 +273,13 @@ const editAddress = async (req, res) => {
 // Remove an address
 const removeAddress = async (req, res) => {
     try {
-        const { id } = req.params; // Address ID within the address array
+        const { id } = req.params; 
         const userId = req.user.id; 
 
         console.log('User ID:', userId);
         console.log('Address ID:', id);
 
-        // Find the user's address document
+        
         const userAddress = await Address.findOne({ userId });
         if (!userAddress) {
             console.error('User address document not found');
@@ -291,10 +289,10 @@ const removeAddress = async (req, res) => {
         console.log('User Address Document:', userAddress);
         console.log('User Addresses:', userAddress.address);
 
-        // Use filter to remove the address from the array by its ID
+        //  remove the address from the array by its ID
         userAddress.address = userAddress.address.filter(address => address._id.toString() !== id);
         
-        // Save the updated user address document
+       
         await userAddress.save();
         
         console.log('Address removed successfully');
@@ -311,13 +309,13 @@ const getAddresses = async (req, res) => {
     try {
         const userId = req.user._id;
 
-        // Find the user's address document
+       
         const userAddress = await Address.findOne({ userId });
         if (!userAddress) {
             return res.status(404).json({ error: 'No addresses found' });
         }
 
-        res.json(userAddress.address); // Return all addresses for the user
+        res.json(userAddress.address); 
     } catch (error) {
         res.status(500).json({ error: 'An error occurred while fetching addresses' });
     }
@@ -325,7 +323,7 @@ const getAddresses = async (req, res) => {
 
 
 const setDefaultAddress = async (req, res) => {
-    const userId = req.user?._id || req.session.user?.id; // Assuming user is authenticated and user ID is accessible
+    const userId = req.user?._id || req.session.user?.id;
     const addressId = req.params.addressId;
 
     try {
@@ -333,18 +331,18 @@ const setDefaultAddress = async (req, res) => {
         const userAddress = await Address.findOne({ userId });
         if (!userAddress) return res.status(404).json({ success: false, message: "User address not found" });
 
-        // Set all addresses to non-default
+       
         userAddress.address.forEach((addr) => {
             addr.isDefault = false;
         });
 
-        // Set the chosen address as default
+        
         const defaultAddress = userAddress.address.id(addressId);
         if (!defaultAddress) return res.status(404).json({ success: false, message: "Address not found" });
         
         defaultAddress.isDefault = true;
 
-        // Save changes
+       
         await userAddress.save();
 
         res.json({ success: true, message: "Default address set successfully" });

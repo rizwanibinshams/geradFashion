@@ -1,10 +1,10 @@
 const Banner = require('../../models/bannerSchema');
 const Category = require("../../models/categorySchema")
 
-    // Render add banner page
+
    const getAddBanner = async (req, res) => {
     try {
-        // Fetch only listed categories
+    
         const categories = await Category.find({ isListed: true }).sort('name');
         res.render('add-banner', { categories });
     } catch (error) {
@@ -22,13 +22,13 @@ const Category = require("../../models/categorySchema")
             return res.status(400).json({ message: 'Image is required' });
         }
 
-        // Fetch category name for the link
+        
         const category = await Category.findById(categoryId);
         if (!category) {
             return res.status(400).json({ message: 'Invalid category' });
         }
 
-        // Construct the products URL with category query parameter
+       
         const link = `/products?category=${category.name}`;
 
         const banner = new Banner({
@@ -52,9 +52,9 @@ const Category = require("../../models/categorySchema")
     try {
         const banners = await Banner.find({});
         
-        // Get category details for each banner
+       
         const bannersWithCategory = await Promise.all(banners.map(async (banner) => {
-            // Extract category name from the link
+           
             const categoryName = banner.link.split('category=')[1];
             return {
                 ...banner.toObject(),

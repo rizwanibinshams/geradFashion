@@ -18,13 +18,13 @@ const fs = require('fs').promises;
 
 const getProductDetailsPage = async (req, res) => {
     try {
-        const productId = req.params.id || req.query.id; ; // Fetch product ID from query parameters
+        const productId = req.params.id || req.query.id; ;
         const product = await Product.findById(productId).populate('category');
         const sessionUser = req.user ? req.user.email : req.session.user?.email;
         const categories = await Category.find({ isListed: true });
 
         if (!product) {
-            return res.redirect("/pageNotFound"); // Redirect if the product is not found
+            return res.redirect("/pageNotFound"); 
         }
 
         let userData = null;
@@ -32,30 +32,30 @@ const getProductDetailsPage = async (req, res) => {
             userData = await user.findOne({ email: sessionUser });
         }
 
-        // Fetch related products based on the category and brand
+        
         const relatedProducts = await Product.find({
             $or: [
-                { category: product.category._id }, // Match by category
-                { brand: product.brand } // Match by brand
+                { category: product.category._id }, 
+                { brand: product.brand } 
             ],
-            _id: { $ne: product._id }, // Exclude the current product
-            isBlocked: false, // Ensure the product is not blocked
-            category: { $in: categories.map(category => category._id) }, // Limit to listed categories
-            quantity: { $gt: 0 } // Ensure there is quantity available
+            _id: { $ne: product._id }, 
+            isBlocked: false, 
+            category: { $in: categories.map(category => category._id) }, 
+            quantity: { $gt: 0 } 
         })
-        .sort({ createdAt: -1 }) // Sort by creation date, newest first
+        .sort({ createdAt: -1 }) 
         .limit(3); // Limit to 3 related products
 
-        // Render the product details page with the product and related products
+       
         res.render("product-details", {
             product: product,
             relatedProducts: relatedProducts,
             user: userData,
-            title: product.productName // Set the title to the product name
+            title: product.productName 
         });
     } catch (error) {
         console.error('Error fetching product details:', error.message);
-        res.redirect("/pageNotFound"); // Redirect on error
+        res.redirect("/pageNotFound"); 
     }
 };
 
@@ -67,17 +67,17 @@ const getAllProducts = async (req, res) => {
         // Fetch categories
         const categories = await Category.find({ isListed: true });
 
-        // Determine session user email
+       
         const sessionUser = req.user ? req.user.email : req.session.user?.email;
 
-        // Build query
+   
         let query = {
             isBlocked: false,
             category: { $in: categories.map(category => category._id) },
             quantity: { $gt: 0 }
         };
 
-        // Apply category filter if provided
+       
         if (category) {
             const selectedCategory = await Category.findOne({ name: category, isListed: true });
             if (selectedCategory) {
@@ -90,7 +90,7 @@ const getAllProducts = async (req, res) => {
             query.productName = { $regex: new RegExp(search, 'i') };
         }
 
-        // Determine sort option
+        //  sort option
         let sortOption = { createdAt: -1 }; 
         if (sort === 'low-high') {
             sortOption = { salePrice: 1 }; // Sort by price low to high
@@ -102,16 +102,16 @@ const getAllProducts = async (req, res) => {
             sortOption = { productName: -1 }; // Sort by name Z to A
         }
 
-        // Fetch products
+      
         const products = await Product.find(query).sort(sortOption);
 
-        // Fetch user data if sessionUser exists
+  
         let userData = null;
         if (sessionUser) {
             userData = await user.findOne({ email: sessionUser });
         }
 
-        // Render the products page with the current category
+     
         res.render("allProducts", {
             products: products,
             user: userData,
@@ -135,7 +135,7 @@ const searchProducts = async (req, res) => {
         
         let searchQuery = {};
 
-        // Define the search query based on the query parameter
+       
         if (query) {
             searchQuery = {
                 $and: [
@@ -155,17 +155,17 @@ const searchProducts = async (req, res) => {
             searchQuery = { isBlocked: false };
         }
 
-        // Get total count for pagination
+        // total count for pagination
         const totalCount = await Product.countDocuments(searchQuery);
 
-        // Fetch products with populated category
+       
         const products = await Product.find(searchQuery)
             .populate('category')
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(parseInt(limit));
 
-        // Process products to include correct image paths
+      
         const processedProducts = products.map(product => ({
             ...product.toObject(),
             productImage: product.productImage && product.productImage.length > 0
@@ -175,7 +175,7 @@ const searchProducts = async (req, res) => {
 
         console.log('Products found:', products.length);
 
-        // Determine current values
+      
         const currentCategory = category || 'All';
         const currentSort = sort || 'default';
 
@@ -189,7 +189,7 @@ const searchProducts = async (req, res) => {
             });
         }
 
-        // Render products page with search results
+       
         return res.render('allProducts', {
             products: processedProducts,
             searchQuery: query || '',
@@ -232,7 +232,7 @@ const getSearchSuggestions = async (req, res) => {
                 { isBlocked: false },
                 {
                     $or: [
-                        // Using ^ in regex to match from the start of the string
+                       
                         { productName: { $regex: `^${query}`, $options: 'i' } },
                         { brand: { $regex: `^${query}`, $options: 'i' } }
                     ]
@@ -240,13 +240,13 @@ const getSearchSuggestions = async (req, res) => {
             ]
         };
 
-        // Fetch suggestions with populated category and selected fields
+       
         const suggestions = await Product.find(searchQuery)
             .populate('category')
             .select('productName brand category salePrice productImage')
             .limit(5);
 
-        // Process suggestions to include correct image paths
+        
         const processedSuggestions = suggestions.map(suggestion => ({
             ...suggestion.toObject(),
             productImage: suggestion.productImage && suggestion.productImage.length > 0

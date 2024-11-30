@@ -4,53 +4,85 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Email Verification</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
     <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
         }
+        input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+        }
     </style>
 </head>
-<body class="bg-gradient-to-r from-blue-500 to-purple-600 min-h-screen flex items-center justify-center">
-    <div class="container mx-auto px-4">
-        <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105">
+<body class="bg-white min-h-screen flex items-center justify-center p-4">
+    <div class="container mx-auto">
+        <div class="max-w-md mx-auto bg-white rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 hover:scale-[1.01] border border-gray-100">
             <div class="p-8">
                 <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Email Verification</h2>
-                    <p class="text-gray-600">Please enter the OTP sent to your email</p>
+                    <div class="mb-4 flex justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                    </div>
+                    <h2 class="text-4xl font-extrabold text-gray-800 mb-2">Verify Email</h2>
+                    <p class="text-gray-600 text-lg">Enter the 6-digit code sent to your email</p>
                 </div>
                 <form id="otpForm" action="" method="post" onsubmit="return validateOTPForm()">
                     <div class="mb-6">
-                        <label for="otp" class="block text-gray-700 text-sm font-bold mb-2">Enter OTP:</label>
-                        <input type="text" id="otp" name="otp" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required maxlength="6" pattern="\d*" />
+                        <label for="otp" class="block text-gray-700 text-sm font-bold mb-2">One-Time Password (OTP):</label>
+                        <input 
+                            type="text" 
+                            id="otp" 
+                            name="otp" 
+                            class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 transition duration-300 text-center text-2xl tracking-[.5em] font-bold text-gray-800" 
+                            required 
+                            maxlength="6" 
+                            pattern="\d*" 
+                            placeholder="------"
+                        />
                     </div>
-                    <div class="flex items-center justify-between mb-6">
-                        <div id="otpTimer" class="text-2xl font-bold text-gray-800 bg-gray-200 rounded-full w-16 h-16 flex items-center justify-center">
+                    <div class="flex items-center justify-between mb-6 space-x-4">
+                        <div 
+                            id="otpTimer" 
+                            class="text-2xl font-bold text-gray-800 bg-gray-100 rounded-full w-20 h-20 flex items-center justify-center shadow-md"
+                        >
                             <span id="timerValue">60</span>
                         </div>
-                        <button type="button" id="resendOtpBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out" onclick="resendOTP()" disabled>
+                        <button 
+                            type="button" 
+                            id="resendOtpBtn" 
+                            class="flex-grow bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 ease-in-out" 
+                            onclick="resendOTP()" 
+                            disabled
+                        >
                             Resend OTP
                         </button>
                     </div>
                     <div class="flex items-center justify-center">
-                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out transform hover:scale-105">
+                        <button 
+                            type="submit" 
+                            class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 ease-in-out transform hover:bg-blue-700 hover:scale-105 hover:shadow-xl"
+                        >
                             Verify Email
                         </button>
                     </div>
                 </form>
                 <% if (locals.message && message.length > 0) { %>
-                <div class="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <div class="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">
                     <span class="block sm:inline"><%= message %></span>
                 </div>
                 <% } %>
                 <div class="mt-8 text-center">
                     <p class="text-gray-600">
-                        Already verified? <a href="/login" class="text-blue-500 hover:text-blue-700 font-semibold">Login now</a>
+                        Already verified? <a href="/login" class="text-blue-600 hover:text-blue-800 font-semibold transition duration-300">Login now</a>
                     </p>
                 </div>
             </div>
@@ -58,6 +90,8 @@
     </div>
 
     <script>
+        // Entire previous script remains unchanged
+        // Copy-pasted from the previous artifact
         document.getElementById("otp").focus();
 
         let timer = 60;

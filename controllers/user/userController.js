@@ -23,27 +23,27 @@ const loadHomepage = async (req, res) => {
 
         console.log("Session User Email:", sessionUser);
 
-        // Fetch categories (needed for category filter)
+        
         const categories = await Category.find({ isListed: true });
 
-        // Build the base query
+      
         let baseQuery = {
             isBlocked: false,
-            quantity: { $gt: 0 }  // Only show products with stock
+            quantity: { $gt: 0 } 
         };
 
-        // Add category filter if a category is provided
+        
         if (category) {
             const selectedCategory = await Category.findOne({ name: category });
             if (selectedCategory) {
                 baseQuery.category = selectedCategory._id;
             }
         } else {
-            // If no category is selected, show all categories
+          
             baseQuery.category = { $in: categories.map(cat => cat._id) };
         }
 
-        // Add search condition if search query is provided
+        // Add search condition 
         if (search) {
             baseQuery.productName = { $regex: new RegExp(search, 'i') };
         }
@@ -58,10 +58,10 @@ const loadHomepage = async (req, res) => {
         if (sessionUser) {
             userData = await user.findOne({ 
                 email: sessionUser,
-                isBlocked: false  // Only fetch non-blocked users
+                isBlocked: false  
             });
 
-            // If user is blocked, destroy their session and redirect to login
+            
             if (!userData && req.session) {
                 req.session.destroy((err) => {
                     if (err) {
@@ -72,7 +72,7 @@ const loadHomepage = async (req, res) => {
             }
         }
 
-        // Fetch Best Seller Products
+        
         const bestSellerPipeline = [
             {
                 $match: baseQuery
@@ -128,16 +128,16 @@ const loadHomepage = async (req, res) => {
 
         const bestSellerData = await Product.aggregate(bestSellerPipeline);
 
-        // Get current date
+       
         const currentDate = new Date();
             
-        // Fetch all active banners (within start and end date)
+     
         const activeBanners = await Banner.find({
             startDate: { $lte: currentDate },
             endDate: { $gte: currentDate }
         }).sort({ createdAt: -1 });
 
-        // Render home page with all data including multiple banners
+       
         return res.render('home', {
             user: userData || null,
             products: productData,
@@ -204,7 +204,7 @@ async function sendVerificationEmail(email, otp) {
         console.log('Email sent: %s', info.messageId);  
         return true;
     } catch (error) {
-        console.error('Error sending email:', error.message);  // Log the detailed error
+        console.error('Error sending email:', error.message);  
         return false;
     }
 }
@@ -271,7 +271,7 @@ const verifyOtp = async (req, res) => {
         console.log('Entered OTP:', enteredOtp);  
         console.log('Session OTP:', sessionOtp);  
 
-        // Compare entered OTP and session OTP
+        //  entered OTP and session OTP
         if (enteredOtp === sessionOtp) {
             const userData = req.session.userData;
             console.log('User data from session:', userData);  
@@ -289,9 +289,9 @@ const verifyOtp = async (req, res) => {
                 });
                 console.log(newUser);
 
-                // Save user data to the database
+            
                 await newUser.save();  
-                req.session.user = newUser._id;  
+                req.session.user = newUser._id; 
 
                 return res.json({ success: true, redirectUrl: "/" });
             } catch (hashError) {
@@ -362,8 +362,8 @@ const login = async (req, res) => {
 const products = await Product.find()
         // Set session user
         req.session.user = {
-            id: findUser._id,    // Save the user ID
-            email: findUser.email // Save the email for reference
+            id: findUser._id,    
+            email: findUser.email 
         };
         
         console.log("User logged  :", req.session.user); 
@@ -406,7 +406,7 @@ const loadProfile = async (req, res) => {
 
         const addresses = await Address.find({ userId: userData.id });
         
-        // Fetch ALL orders for the user without coupon filter
+       
         const orders = await Order.find({ 
             user: userData._id
         })
@@ -434,7 +434,7 @@ const loadProfile = async (req, res) => {
             });
             return orderObj;
           });
-        // Extract coupon history only from orders that used coupons
+       
         const couponHistory = orders
             .filter(order => order.coupon && order.coupon.applied)
             .map(order => ({
@@ -488,26 +488,25 @@ const loadProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
     try {
-        const { name, email, phone } = req.body; // Extract data from the request body
-        const userId = req.user.id; // Assuming user ID is set in the request user object from middleware
+        const { name, email, phone } = req.body; 
+        const userId = req.user.id; 
 
-        // Validate input data
+      
         if (!name || !email || !phone) {
             return res.status(400).json({ error: 'All fields are required' });
         }
 
-        // Find and update the user profile
+       
         const updatedUser = await user.findByIdAndUpdate(
             userId,
             { name, email, phone },
-            { new: true, runValidators: true } // Return the updated document
+            { new: true, runValidators: true } 
         );
 
         if (!updatedUser) {
             return res.status(404).json({ error: 'User not found' });
         }
         
-        // Redirect to profile page after update with a query parameter
         res.redirect('/profile');
     } catch (error) {
         console.error('Error updating profile:', error);
@@ -518,10 +517,10 @@ const success = async (req, res) => {
     try {
         const orderId = req.query.orderId;
 
-        // Use `findOne` with the `orderId` field since it's a UUID string
+        
         const order = await Order.findOne({ orderId: orderId });
         
-        // Check if the order exists
+       
         if (!order) {
             return res.status(404).send("Order not found");
         }

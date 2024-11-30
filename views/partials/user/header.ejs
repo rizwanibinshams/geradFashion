@@ -13,7 +13,7 @@
      integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <style>
-        /* Refined animations and transitions */
+     
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -189,7 +189,7 @@
         </div>
     </header>
 
-    <!-- Mobile Header -->
+
    <!-- Mobile Header -->
    <div class="mobile-search-bar md:hidden">
     <marquee behavior="scroll" direction="left" class="mb-2">
@@ -209,7 +209,7 @@
 </div>
 
     <!-- Mobile Bottom Navigation -->
-   <!-- Updated Mobile Bottom Navigation -->
+   <!--  Mobile Bottom Navigation -->
 <nav class="mobile-nav md:hidden fixed bottom-0 left-0 right-0">
     <div class="grid grid-cols-5 gap-1 py-2 px-4">
         <a href="/" class="mobile-nav-item flex flex-col items-center space-y-1">
@@ -260,7 +260,7 @@
     </div>
 </nav>
 
-<!-- Add this JavaScript for the auth menu toggle -->
+
 <script>
 function toggleAuthMenu() {
     const menu = document.getElementById('mobile-auth-menu');
@@ -302,7 +302,7 @@ document.addEventListener('click', function(event) {
 
        
 
-        // Animate header elements on page load
+        
         document.addEventListener('DOMContentLoaded', () => {
             gsap.from('.header__logo, .header__menu, .header__nav__option', {
                 opacity: 0,
@@ -349,27 +349,6 @@ document.addEventListener('click', function(event) {
     }
 });
 
-        //search main 
-    //     function handleSearch() {
-    //     const searchValue = document.getElementById('search-input').value.trim();
-       
-    //     if (searchValue) {
-    //         // Redirect with search query as URL parameter
-    //         window.location.href = `/products?search=${encodeURIComponent(searchValue)}`;
-    //     }
-    // }
-
-    // // Event listener for button click
-    // document.getElementById('search-button').addEventListener('click', handleSearch);
-
-    // // Event listener for pressing "Enter" in the search input
-    // document.getElementById('search-input').addEventListener('keypress', function(event) {
-    //     if (event.key === 'Enter') {
-    //         event.preventDefault();  // Prevent form submission if within a form element
-    //         handleSearch();
-    //     }
-    // });
-        
 
 
 
@@ -379,43 +358,43 @@ document.addEventListener('click', function(event) {
         const { isMobile = false } = options;
         this.isMobile = isMobile;
         
-        // Get correct elements based on mobile/desktop
+      
         const inputId = isMobile ? 'mobile-search-input' : 'search-input';
         const buttonId = isMobile ? 'mobile-search-button' : 'search-button';
         
         this.searchInput = document.getElementById(inputId);
         this.searchButton = document.getElementById(buttonId);
         
-        // Only initialize if elements exist
+      
         if (!this.searchInput || !this.searchButton) {
             console.warn(`Search elements not found for ${isMobile ? 'mobile' : 'desktop'} view`);
             return;
         }
 
-        // Create results container
+       
         this.searchResults = document.createElement('div');
         this.searchResults.className = `search-results absolute w-full bg-white mt-1 rounded-lg shadow-lg z-50 hidden ${
             isMobile ? 'mobile-search-results' : ''
         }`;
         
-        // Append results container after the search input
+        
         this.searchInput.parentNode.appendChild(this.searchResults);
         
-        // Initialize events
+      
         this.setupEventListeners();
         
-        // For mobile: Initialize position adjustment
+  
         if (this.isMobile) {
             this.initializeMobilePosition();
         }
     }
 
     initializeMobilePosition() {
-        // Ensure mobile results are properly positioned initially
+      
         this.searchResults.style.position = 'fixed';
         this.adjustMobileResultsPosition();
 
-        // Add scroll listener for mobile
+       
         window.addEventListener('scroll', this.debounce(() => {
             this.adjustMobileResultsPosition();
         }, 100));
@@ -425,7 +404,7 @@ document.addEventListener('click', function(event) {
         if (!this.isMobile || !this.searchInput) return;
         
         const inputRect = this.searchInput.getBoundingClientRect();
-        const safeAreaBottom = 10; // Padding from bottom of viewport
+        const safeAreaBottom = 10; 
 
         this.searchResults.style.top = `${inputRect.bottom}px`;
         this.searchResults.style.left = `${inputRect.left}px`;
@@ -625,27 +604,27 @@ document.addEventListener('click', function(event) {
     }
 
     static init() {
-        // Remove any existing instances
+        
         const existingResults = document.querySelectorAll('.search-results');
         existingResults.forEach(result => result.remove());
 
-        // Initialize desktop search if elements exist
+       
         if (document.getElementById('search-input')) {
             new ProductSearch({ isMobile: false });
         }
 
-        // Initialize mobile search if elements exist
+       
         if (document.getElementById('mobile-search-input')) {
             new ProductSearch({ isMobile: true });
         }
     }
 }
 
-// Initialize when document is ready
+
 document.addEventListener('DOMContentLoaded', () => {
     ProductSearch.init();
     
-    // Mobile-specific scroll handling
+    
     let lastScroll = 0;
     const mobileSearchBar = document.querySelector('.mobile-search-bar');
 
@@ -668,7 +647,7 @@ document.addEventListener('DOMContentLoaded', () => {
     menu.classList.toggle('hidden');
 }
 
-// Close menu when clicking outside
+
 document.addEventListener('click', function(event) {
     const menu = document.getElementById('mobile-account-menu');
     const accountButton = event.target.closest('.mobile-nav-item');
@@ -686,7 +665,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const infoTag = await response.json();
         
         if (infoTag) {
-            // Update both desktop and mobile info tag containers
+         
             const desktopContainer = document.getElementById('info-tag-container');
             const mobileContainer = document.getElementById('mobile-info-tag-container');
             
@@ -705,7 +684,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 
-// Add these functions to fetch counts and update badges
+
 async function updateCartBadge() {
     try {
         const response = await fetch('/api/cart/count', {
@@ -766,7 +745,7 @@ async function updateWishlistBadge() {
     }
 }
 
-// Update the counts when the page loads
+
 document.addEventListener('DOMContentLoaded', () => {
     updateCartBadge();
     updateWishlistBadge();

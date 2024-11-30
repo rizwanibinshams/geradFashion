@@ -16,18 +16,18 @@ const getCouponsPage = async (req, res) => {
             return res.status(404).render('page-404', { message: 'User not found' });
         }
 
-        // Pagination parameters
+        // Pagination 
         const page = parseInt(req.query.page) || 1;
         const limit = 10; // Items per page
         const skip = (page - 1) * limit;
 
-        // Get total count for pagination
+        // for pagination
         const totalOrders = await Order.countDocuments({
             user: userData._id,
             'coupon.applied': true
         });
 
-        // Calculate statistics first (using all orders for accurate stats)
+        
         const statsQuery = await Order.aggregate([
             {
                 $match: {
@@ -46,7 +46,7 @@ const getCouponsPage = async (req, res) => {
             }
         ]);
 
-        // Extract statistics
+     
         const stats = statsQuery[0] || {
             totalSavings: 0,
             totalAmount: 0,
@@ -54,12 +54,12 @@ const getCouponsPage = async (req, res) => {
             totalCouponsUsed: 0
         };
 
-        // Calculate average discount
+        // average discount
         const averageDiscount = stats.totalAmount > 0 
             ? (stats.totalSavings / stats.totalAmount) * 100 
             : 0;
 
-        // Fetch paginated orders with applied coupons
+        
         const orders = await Order.find({
             user: userData._id,
             'coupon.applied': true
@@ -68,7 +68,7 @@ const getCouponsPage = async (req, res) => {
         .skip(skip)
         .limit(limit);
 
-        // Format coupon history from paginated orders
+       
         const couponHistory = orders.map(order => ({
             orderId: order.orderId,
             couponCode: order.coupon.code,
@@ -78,7 +78,7 @@ const getCouponsPage = async (req, res) => {
             usedOn: order.createdOn
         }));
 
-        // Calculate total pages
+       
         const totalPages = Math.ceil(totalOrders / limit);
 
         const helpers = {

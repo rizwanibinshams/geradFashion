@@ -175,7 +175,7 @@ const orderSchema = new Schema({
     return: {
         requested: { type: Boolean, default: false },
         requestDate: { type: Date },
-        items: [{                           // Add this items array
+        items: [{                          
             itemId: { 
                 type: Schema.Types.ObjectId, 
                 ref: 'orderedItems' 
@@ -312,7 +312,7 @@ orderSchema.methods.cancelItem = async function(itemId, reason) {
     return this.save();
 };
 
-// Add method to return single item
+
 orderSchema.methods.returnItem = async function(itemId, reason, comments) {
     const item = this.orderedItems.id(itemId);
     if (!item) throw new Error('Item not found');
@@ -330,7 +330,7 @@ orderSchema.methods.returnItem = async function(itemId, reason, comments) {
         comments: comments
     };
     
-    // Update main order status if all items are return requested
+   
     const activeItems = this.orderedItems.filter(item => 
         !['Returned', 'Return Requested'].includes(item.status)
     );
@@ -349,11 +349,11 @@ orderSchema.methods.calculateItemRefundAmount = function(itemId) {
     }
 
     // Get the item's price and quantity
-    const itemSubtotal = orderItem.price; // Remove multiplication with quantity here since price already includes it
+    const itemSubtotal = orderItem.price; 
     
     // Calculate item's proportion of the total order
     const orderSubtotal = this.orderedItems.reduce((sum, item) => 
-        sum + item.price, 0); // Remove multiplication with quantity here
+        sum + item.price, 0);
     const itemProportion = itemSubtotal / orderSubtotal;
 
     // Calculate proportional coupon discount for this item
@@ -362,7 +362,7 @@ orderSchema.methods.calculateItemRefundAmount = function(itemId) {
         itemCouponDiscount = this.coupon.discountAmount * itemProportion;
     }
 
-    // Calculate proportional delivery charge for this item (if you want to refund it)
+    // Calculate proportional delivery charge for this item 
     const itemDeliveryCharge = this.deliveryCharge * itemProportion;
 
     // Calculate final refund amount
@@ -380,14 +380,14 @@ orderSchema.methods.calculateItemRefundAmount = function(itemId) {
 orderSchema.methods.calculateReturnRefundAmount = function(returnedItems) {
     // Calculate total order subtotal (before discount)
     const orderSubtotal = this.orderedItems.reduce((sum, item) => 
-        sum + item.price, 0); // Remove quantity multiplication since price includes it
+        sum + item.price, 0); 
 
     let totalRefundAmount = 0;
     const refundDetails = [];
 
     // Calculate refund for each returned item
     returnedItems.forEach(item => {
-        const itemSubtotal = item.price; // Remove quantity multiplication
+        const itemSubtotal = item.price; 
         const itemProportion = itemSubtotal / orderSubtotal;
 
         // Calculate proportional coupon discount for this item
@@ -396,7 +396,7 @@ orderSchema.methods.calculateReturnRefundAmount = function(returnedItems) {
             itemCouponDiscount = this.coupon.discountAmount * itemProportion;
         }
 
-        // Calculate proportional delivery charge (only if all items are being returned)
+        
         let itemDeliveryCharge = 0;
         if (returnedItems.length === this.orderedItems.length && this.deliveryCharge > 0) {
             itemDeliveryCharge = this.deliveryCharge * itemProportion;
@@ -421,7 +421,7 @@ orderSchema.methods.calculateReturnRefundAmount = function(returnedItems) {
     };
 };
 
-// Use mongoose.models to prevent overwriting the model
+
 const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
 const Address = mongoose.models.Address || mongoose.model("Address", addressSchema);
 

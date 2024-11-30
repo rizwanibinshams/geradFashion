@@ -160,20 +160,20 @@
         let currentCropper = null;
         let files = new Map(); // Store all files with their IDs
         
-        // Initialize everything when DOM is loaded
+     
         document.addEventListener('DOMContentLoaded', function() {
             const dropZone = document.getElementById('dropZone');
             const fileInput = document.getElementById('fileInput');
             const cropperModal = document.getElementById('cropperModal');
             const addedImagesContainer = document.getElementById('addedImagesContainer');
             
-            // Setup drag and drop events
+            //  drag and drop events
             setupDragAndDrop(dropZone);
             
-            // Setup file input change event
+            //  file input change event
             fileInput.addEventListener('change', handleFileSelect);
             
-            // Setup cropper modal events
+            //  cropper modal events
             setupCropperModalEvents();
         });
         
@@ -214,7 +214,7 @@
             handleFiles(files);
         }
         
-        // File Handling Functions
+        
         function handleFileSelect(e) {
             handleFiles(e.target.files);
         }
@@ -405,7 +405,7 @@ function setupCropperModalEvents() {
                 return false;
             }
         
-            // Create FormData object
+            // FormData object
             const formData = new FormData(document.querySelector('form'));
             
             // Add all files (including cropped ones) to the FormData
@@ -414,7 +414,7 @@ function setupCropperModalEvents() {
                 // Remove any existing files from FormData
                 formData.delete('images');
                 
-                // Add each file from our files Map
+           
                 files.forEach((file, fileId) => {
                     formData.append('images', file);
                 });
@@ -508,12 +508,12 @@ function setupCropperModalEvents() {
             });
         }
         
-        // Keep the existing GSAP animations
+       
         document.addEventListener('DOMContentLoaded', function() {
-            // Animate the page title
+            
             gsap.to("#pageTitle", {duration: 1, opacity: 1, y: 20, ease: "power3.out"});
         
-            // Animate form fields on scroll
+          
             const formFields = document.querySelectorAll('form > div');
             formFields.forEach((field, index) => {
                 gsap.from(field, {
@@ -529,7 +529,7 @@ function setupCropperModalEvents() {
                 });
             });
         
-            // Add hover effect to input fields
+          
             const inputFields = document.querySelectorAll('input, select, textarea');
             inputFields.forEach(field => {
                 field.addEventListener('focus', () => {
@@ -540,7 +540,7 @@ function setupCropperModalEvents() {
                 });
             });
         
-            // Animate the publish button on hover
+            
             const publishButton = document.querySelector('button[onclick="validateAndSubmit()"]');
             publishButton.addEventListener('mouseenter', () => {
                 gsap.to(publishButton, {scale: 1.05, duration: 0.2, ease: "power3.out"});

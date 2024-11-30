@@ -78,7 +78,7 @@ const couponSchema = new Schema({
 }, { timestamps: true });
 
 couponSchema.pre('save', function(next) {
-    // Check if validFrom is before validUntil
+   
     if (this.validFrom >= this.validUntil) {
         return next(new Error('validFrom must be before validUntil'));
     }

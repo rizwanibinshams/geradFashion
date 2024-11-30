@@ -261,7 +261,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.message === 'Cart updated successfully') {
-                    // Update original quantity and reload page
+                    
                     const quantityInput = document.querySelector(`input[data-product-id="${productId}"]`);
                     if (quantityInput) {
                         quantityInput.setAttribute('data-original-quantity', quantity.toString());

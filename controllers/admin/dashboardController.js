@@ -318,7 +318,7 @@ const dashboardService = {
             { $unwind: '$productInfo' },
             {
                 $lookup: {
-                    from: 'categories',  // Assuming your categories collection name
+                    from: 'categories', 
                     localField: 'productInfo.category',
                     foreignField: '_id',
                     as: 'categoryInfo'
@@ -329,7 +329,7 @@ const dashboardService = {
                 $group: {
                     _id: {
                         id: '$productInfo.category',
-                        name: '$categoryInfo.name'  // Include category name in grouping
+                        name: '$categoryInfo.name'  
                     },
                     totalQuantity: { $sum: '$orderedItems.quantity' },
                     totalRevenue: { $sum: { $multiply: ['$orderedItems.price', '$orderedItems.quantity'] } },
@@ -350,7 +350,7 @@ const dashboardService = {
         ]);
     },
 
-    // Top 10 best-selling brands
+   
     async getTopBrands(dateRange) {
         return Order.aggregate([
             {
@@ -528,7 +528,7 @@ const dashboardService = {
             deliveredOrders: totalStats.totalDeliveredOrders,
             revenue: totalStats.totalRevenue,
             discount: totalStats.totalDiscount,
-            avgOrder: totalStats.totalRevenue / totalStats.totalDeliveredOrders, // Calculate overall average
+            avgOrder: totalStats.totalRevenue / totalStats.totalDeliveredOrders, 
             cancelledOrders: totalStats.totalCancelledOrders,
             cancelledAmount: totalStats.totalCancelledAmount
         });
@@ -543,7 +543,7 @@ const dashboardService = {
             };
         });
     
-        // Format numbers in the entire sheet
+    
         salesSheet.eachRow((row, rowNumber) => {
             if (rowNumber > 1) { // Skip header row
                 const cells = ['revenue', 'discount', 'avgOrder', 'cancelledAmount'];
@@ -633,7 +633,7 @@ const dashboardService = {
 
         // Draw table rows
         salesData.forEach((data) => {
-            if (currentY > 700) { // Check if we need a new page
+            if (currentY > 700) { 
                 doc.addPage();
                 currentY = 50;
             }

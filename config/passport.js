@@ -24,11 +24,11 @@ async (req, accessToken, refreshToken, profile, done) => {
                 name: profile.displayName,
                 email: email,
                 googleId: profile.id,
-                // Add any other required fields with default values
+               
             })
         }
 
-        // Update last login timestamp
+        // last login timestamp
         user.lastLogin = new Date()
         await user.save()
 

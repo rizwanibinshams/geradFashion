@@ -20,8 +20,8 @@ const cartItemSchema = new Schema({
     size: {
         type: String,
         required: false,
-        enum: ['S', 'M', 'L', 'XL', 'XXL', 'none'], // Example values if relevant
-        default: 'none' // Default if size is optional
+        enum: ['S', 'M', 'L', 'XL', 'XXL', 'none'], 
+        default: 'none' 
     },
     totalPrice: {
         type: Number,
@@ -30,7 +30,7 @@ const cartItemSchema = new Schema({
     status: {
         type: String,
         default: 'placed',
-        enum: ['placed', 'shipped', 'delivered', 'cancelled'] // Enforcing valid status values
+        enum: ['placed', 'shipped', 'delivered', 'cancelled'] 
     },
     cancellationReason: {
         type: String,
@@ -42,10 +42,10 @@ cartItemSchema.pre('save', function(next) {
     if (isNaN(this.price) || isNaN(this.quantity)) {
         const error = new Error('Invalid price or quantity.');
         console.error('Invalid price or quantity:', this.price, this.quantity);
-        return next(error);  // Pass the error to the next middleware
+        return next(error);  
     }
 
-    // Ensure that totalPrice is calculated correctly before saving
+    
     this.totalPrice = this.price * this.quantity;
     next();
 });

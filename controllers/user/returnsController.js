@@ -25,7 +25,6 @@ const initiateReturn = async (req, res) => {
             });
         }
 
-        // Validate that all items exist in the order and are eligible for return
         const invalidItems = items.filter(itemId => {
             const orderItem = order.orderedItems.find(oi => oi._id.toString() === itemId);
             return !orderItem || orderItem.status === 'Cancelled' || orderItem.status === 'Returned';
@@ -45,7 +44,7 @@ const initiateReturn = async (req, res) => {
             returnAmount += orderItem.price * orderItem.quantity;
         });
 
-        // Initialize return data
+        
         const returnData = {
             requested: true,
             requestDate: new Date(),
@@ -113,7 +112,7 @@ const updateReturnStatus = async (req, res) => {
             });
         }
 
-        // Check for items with return requested status
+        
         const returnedItems = order.orderedItems.filter(item => 
             item.status === 'Return Requested'
         );
@@ -126,13 +125,13 @@ const updateReturnStatus = async (req, res) => {
         }
 
         if (status === 'approved') {
-            // Calculate refund amount with detailed breakdown
+         
             const refundCalculation = order.calculateReturnRefundAmount(returnedItems);
             const { totalRefundAmount, refundDetails } = refundCalculation;
 
             if (order.paymentMethod === 'razorpay' || order.paymentMethod === 'cashOnDelivery' || order.paymentMethod === 'wallet') {
                 try {
-                    // Process wallet refund
+                
                     let wallet = await Wallet.findOne({ userId: order.user._id });
                     if (!wallet) {
                         wallet = new Wallet({
@@ -142,20 +141,20 @@ const updateReturnStatus = async (req, res) => {
                         });
                     }
 
-                    // Add refund to wallet
+                    
                     await wallet.addMoney(
                         totalRefundAmount, 
                         `Refund for return of items from order #${order.orderId}`
                     );
 
-                    // Update return information in order
+                   
                     order.return.refundAmount = totalRefundAmount;
                     order.return.refundStatus = 'completed';
                     order.return.refundDate = new Date();
                     order.return.status = status;
                     order.return.processedDate = new Date();
                     
-                    // Add detailed refund breakdown to timeline
+                    
                     const refundBreakdown = refundDetails.map(detail => 
                         `Item ${detail.itemId}: ₹${detail.itemRefundAmount.toFixed(2)} ` +
                         `(Price: ₹${detail.itemSubtotal.toFixed(2)}, ` +
@@ -169,7 +168,7 @@ const updateReturnStatus = async (req, res) => {
                         comment: `Refund of ₹${totalRefundAmount.toFixed(2)} processed to wallet\n${refundBreakdown}`
                     });
 
-                    // Update items status and product quantities
+                   
                     for (const item of returnedItems) {
                         if (item.product) {
                             // Increase product quantity
@@ -177,12 +176,12 @@ const updateReturnStatus = async (req, res) => {
                                 item.product._id,
                                 { $inc: { quantity: item.quantity } }
                             );
-                            // Change to Return Approved instead of Returned
+                            
                             item.status = 'Return Approved';
                         }
                     }
 
-                    // Update overall order status if all items are returned
+                  
                     const allReturned = order.orderedItems.every(
                         item => ['Return Approved', 'Cancelled'].includes(item.status)
                     );
@@ -203,7 +202,7 @@ const updateReturnStatus = async (req, res) => {
                 }
             }
         } else if (status === 'rejected') {
-            // Handle rejection logic
+         
             order.return.status = status;
             order.return.processedDate = new Date();
             order.return.timeline.push({
@@ -212,15 +211,15 @@ const updateReturnStatus = async (req, res) => {
                 comment: comment || 'Return request rejected'
             });
 
-            // Update items status
+       
             returnedItems.forEach(item => {
-                item.status = 'Delivered'; // Revert to delivered status
+                item.status = 'Delivered';
                 if (item.returnRequest) {
                     item.returnRequest.status = 'rejected';
                 }
             });
 
-            // Revert order status to Delivered
+            
             order.status = 'Delivered';
 
             await order.save();
@@ -243,7 +242,7 @@ const updateReturnStatus = async (req, res) => {
 
 const renderReturnManagementPage = async (req, res) => {
     try {
-        // Add status filter if provided in query
+      
         const statusFilter = req.query.status !== 'all' && req.query.status 
             ? { 'return.status': req.query.status }
             : {};
@@ -269,11 +268,11 @@ const renderReturnManagementPage = async (req, res) => {
                     return '/placeholder-image.jpg';
                 },
                 isItemReturned: function(order, itemId) {
-                    // Check for all return-related statuses
+                
                     const orderItem = order.orderedItems.find(
                         item => item._id.toString() === itemId.toString()
                     );
-                    // Changed from item.status to orderItem.status
+                  
                     const returnStatuses = ['Return Requested', 'Return Approved', 'Returned'];
                     return orderItem && returnStatuses.includes(orderItem.status);
                 }

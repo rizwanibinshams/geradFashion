@@ -3,7 +3,7 @@ const InfoTag = require("../../models/infoschema")
 
 
 
-    // Get admin page to manage info tags
+    
    const getinfoPage = async (req, res) => {
         try {
             const infoTags = await InfoTag.find().sort({ createdAt: -1 });

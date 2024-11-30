@@ -240,7 +240,7 @@ const postNewPassword = async (req, res) => {
             });
         }
 
-        // Check if new password is same as current
+      
         if (currentPassword === newPass1) {
             return res.render('change-password', { 
                 message: 'New password must be different from current password.',
@@ -255,7 +255,7 @@ const postNewPassword = async (req, res) => {
         // Update password in database
         await User.findByIdAndUpdate(userId, { password: hashedPassword });
 
-        // Render success message and include redirect script
+     
         res.render('change-password', { 
             message: 'Password changed successfully! Redirecting to home...',
             success: true

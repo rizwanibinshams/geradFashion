@@ -77,7 +77,6 @@ const addCategoryOffer = async (req, res) => {
         const percentage = parseInt(req.body.percentage);
         const categoryId = req.body.categoryId;
 
-        // Validate percentage value
         if (isNaN(percentage) || percentage < 0 || percentage > 100) {
             return res.status(400).json({ status: false, message: 'Invalid percentage value' });
         }
@@ -93,14 +92,12 @@ const addCategoryOffer = async (req, res) => {
             return res.json({ status: true, message: 'Category offer updated. No products in this category.' });
         }
 
-        // Update category offer
         await Category.updateOne({ _id: categoryId }, { $set: { categoryOffer: percentage } });
 
-        // Apply offer only to products with a lower product offer and store their previous sale price
         const updatePromises = products.map(product => {
             if (product.productOffer < percentage) {
                 if (product.previousSalePrice === undefined) {
-                    product.previousSalePrice = product.salePrice; // Store the current sale price
+                    product.previousSalePrice = product.salePrice; 
                 }
                 const discountAmount = Math.floor(product.regularPrice * (percentage / 100));
                 product.salePrice = product.regularPrice - discountAmount;
@@ -135,10 +132,10 @@ const removeCategoryOffer = async (req, res) => {
 
         if (products.length > 0) {
             for (const product of products) {
-                // Revert sale price to previous sale price if it exists
+               
                 if (product.previousSalePrice !== undefined) {
                     product.salePrice = product.previousSalePrice;
-                    product.previousSalePrice = undefined; // Clear the previous sale price after reverting
+                    product.previousSalePrice = undefined; 
                 }
                 product.productOffer = 0;
                 await product.save();
@@ -184,11 +181,11 @@ const editCategory = async (req, res) => {
             });
         }
 
-        // Sanitize the input
+       
         const sanitizedCategoryName = categoryName.trim();
 
         try {
-            // First check if the category exists
+           
             const categoryToUpdate = await Category.findById(id);
             if (!categoryToUpdate) {
                 return res.status(404).json({ 
@@ -197,7 +194,7 @@ const editCategory = async (req, res) => {
                 });
             }
 
-            // Check for duplicate category name, excluding the current category
+           
             const existingCategory = await Category.findOne({
                 name: { $regex: new RegExp(`^${sanitizedCategoryName}$`, 'i') },
                 _id: { $ne: id }
@@ -210,7 +207,7 @@ const editCategory = async (req, res) => {
                 });
             }
 
-            // Update the category
+            
             const updatedCategory = await Category.findByIdAndUpdate(
                 id,
                 {
@@ -230,7 +227,7 @@ const editCategory = async (req, res) => {
             });
 
         } catch (dbError) {
-            // Handle specific database errors
+            
             if (dbError.name === 'ValidationError') {
                 return res.status(400).json({
                     success: false,

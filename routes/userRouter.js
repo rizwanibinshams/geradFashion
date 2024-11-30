@@ -24,7 +24,7 @@ router.get('/pageNotFound',userController.pageNotFound)
 router.get('/api/products/search',productController.searchProducts)
 router.get('/products/suggestions', productController.getSearchSuggestions);
 
- // Example route to get product details
+ //  get product details
 router.get('/products/:id', productController.getProductDetailsPage);
 
 
@@ -35,9 +35,7 @@ router.post('/signup',userController.signup)
 router.post('/verifyOtp',userController.verifyOtp)
 router.post('/resendOtp',userController.resendOtp)
 router.get('/auth/google',passport.authenticate('google',{scope:['profile','email']}))
-// router.get('/auth/google/callback',passport.authenticate('google',{failureRedirect:'/signup'}),(req,res)=>{
-//     res.redirect('/')
-// })
+
 router.get('/auth/google/callback', 
   passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {

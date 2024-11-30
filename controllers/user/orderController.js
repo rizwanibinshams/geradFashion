@@ -73,7 +73,7 @@ const placeOrder = async (req, res) => {
         // Calculate delivery charge
         const deliveryCharge = subtotal < FREE_DELIVERY_THRESHOLD ? DELIVERY_CHARGE : 0;
 
-        // Handle coupon if provided
+        
         if (couponCode) {
             const coupon = await Coupon.findOne({ 
                 code: couponCode, 
@@ -83,7 +83,7 @@ const placeOrder = async (req, res) => {
             });
 
             if (coupon) {
-                // Calculate discount based on subtotal (before delivery charge)
+                //  discount based on subtotal (before delivery charge)
                 if (coupon.discountType === 'percentage') {
                     discountAmount = (subtotal * coupon.discountValue) / 100;
                     if (coupon.maxDiscount) {
@@ -109,14 +109,14 @@ const placeOrder = async (req, res) => {
         // Calculate final amount including delivery charge
         const finalAmount = subtotal - discountAmount + deliveryCharge;
 
-        // Prepare order data according to schema
+    
         const orderData = {
             user: userId,
     paymentMethod,
     orderedItems: cart.items.map(item => ({
         product: item.productId._id,
         quantity: item.quantity,
-        category: item.category || item.productId.category, // Use product's category as fallback
+        category: item.category || item.productId.category, 
         price: item.totalPrice,
         status: 'Pending'
     })),
@@ -145,19 +145,19 @@ const placeOrder = async (req, res) => {
                 razorpayPaymentId: paymentDetails?.razorpay_payment_id,
                 razorpayOrderId: paymentDetails?.razorpay_order_id,
                 razorpaySignature: paymentDetails?.razorpay_signature,
-                paymentStatus: 'Completed'  // For Razorpay
+                paymentStatus: 'Completed'  
             } : {
-                paymentStatus: 'Pending'    // For Cash on Delivery
+                paymentStatus: 'Pending'    
             }
 
 
         };
 
-        // Create and save order
+     
         const order = new Order(orderData);
         await order.save();
 
-        // Update product stock
+       
         for (const item of cart.items) {
             await Product.findByIdAndUpdate(item.productId._id, {
                 $inc: { quantity: -item.quantity }
@@ -172,7 +172,7 @@ const placeOrder = async (req, res) => {
             message: "Order placed successfully!",
             orderId: order.orderId,
             orderDetails: {
-                orderId: order.orderId,  // Ensure this is included
+                orderId: order.orderId,  
                 subtotal,
                 deliveryCharge,
                 discountAmount,
@@ -205,7 +205,7 @@ const cancelOrderItem = async (req, res) => {
             return res.status(404).json({ message: 'Order not found' });
         }
 
-        // Find the specific item in the order
+       
         const orderItem = order.orderedItems.id(itemId);
         if (!orderItem) {
             return res.status(404).json({ message: 'Order item not found' });
@@ -228,7 +228,7 @@ const cancelOrderItem = async (req, res) => {
         // Calculate refund amount
         const refundDetails = order.calculateItemRefundAmount(itemId);
 
-        // Update order item status
+       
         orderItem.status = 'Cancelled';
         orderItem.cancelRequest = {
             requested: true,
@@ -236,7 +236,7 @@ const cancelOrderItem = async (req, res) => {
             status: 'approved'
         };
 
-        // Check if all items are cancelled
+      
         const allItemsCancelled = order.orderedItems.every(item => 
             item.status === 'Cancelled'
         );
@@ -245,9 +245,9 @@ const cancelOrderItem = async (req, res) => {
             order.status = 'Cancelled';
         }
 
-        // Process refund if payment method is Razorpay
+        
         if (order.paymentMethod === 'razorpay' || order.paymentMethod === 'wallet') {
-            // Find or create wallet
+         
             let wallet = await Wallet.findOne({ userId });
             if (!wallet) {
                 wallet = new Wallet({
@@ -263,10 +263,10 @@ const cancelOrderItem = async (req, res) => {
                 `Refund for cancelled item from order #${order.orderId}`
             );
 
-            // Update the final amount in the order
+        
             order.finalAmount -= refundDetails.refundAmount;
 
-            // Save the order
+           
             await order.save();
 
             return res.status(200).json({
@@ -278,7 +278,7 @@ const cancelOrderItem = async (req, res) => {
             });
         }
 
-        // Save the order without refund if not Razorpay
+       
         await order.save();
 
         res.status(200).json({
@@ -305,15 +305,15 @@ const trackOrder = async (req, res) => {
 
         const user = req.session.user;
 
-        // Check if the user is logged in
+      
         if (!user) {
-          return res.redirect('/login'); // If user is not logged in, redirect to login
+          return res.redirect('/login'); 
         }
     
-        const userId = user.id; // Now safely access the user ID
-        const userData = await User.findById(userId); // Fetch user data
+        const userId = user.id; 
+        const userData = await User.findById(userId); 
     
-        // Check if the user data is found, if not, redirect to login
+       
         if (!userData) {
           return res.redirect('/login');
         }
@@ -335,7 +335,7 @@ const trackOrder = async (req, res) => {
             });
         }
 
-        // Define tracking stages and their corresponding status codes
+       
         const trackingStages = [
             { status: 'ordered', label: 'Order Placed', icon: 'shopping-bag' },
             { status: 'confirmed', label: 'Order Confirmed', icon: 'check-circle' },
@@ -344,11 +344,11 @@ const trackOrder = async (req, res) => {
             { status: 'delivered', label: 'Delivered', icon: 'package' }
         ];
 
-        // Find current stage index
+ 
         const currentStageIndex = trackingStages.findIndex(stage => 
             stage.status === order.status);
 
-        // Process tracking timeline
+  
         const trackingTimeline = trackingStages.map((stage, index) => ({
             ...stage,
             isCompleted: index <= currentStageIndex,
@@ -357,7 +357,7 @@ const trackOrder = async (req, res) => {
                 update.status === stage.status)?.date || null
         }));
 
-        // Format order data for template
+      
         const orderData = {
             orderId: order._id,
             orderDate: format(order.createdOn, 'MMM dd, yyyy'),
@@ -381,7 +381,7 @@ const trackOrder = async (req, res) => {
             finalAmount: order.finalAmount,
             couponApplied: order.coupon.applied,
             appliedCouponCode: order.coupon.code || '',
-            shippingAddress: order.address || {},  // Ensure it's an object
+            shippingAddress: order.address || {},  
             trackingTimeline,
             paymentStatus: order.paymentStatus
         };
@@ -446,7 +446,7 @@ const downloadInvoice = async (req, res) => {
             return res.status(404).send('Order not found');
         }
 
-        // Check if the entire order is cancelled
+      
         if (order.status === 'Cancelled') {
             return res.status(400).json({
                 status: 'error',
@@ -454,7 +454,7 @@ const downloadInvoice = async (req, res) => {
             });
         }
 
-        // Helper functions
+       
         const formatCurrency = amount => `₹${Number(amount).toFixed(2)}`;
         const formatDate = date => new Date(date).toLocaleDateString('en-IN', {
             year: 'numeric',
@@ -484,7 +484,7 @@ const downloadInvoice = async (req, res) => {
             red: '#FF0000'
         };
 
-        // Draw watermark based on order status
+       
         const drawWatermark = () => {
             if (['Returned', 'Return Requested', 'Return Approved'].includes(order.status)) {
                 doc.save();
@@ -499,7 +499,7 @@ const downloadInvoice = async (req, res) => {
             }
         };
 
-        // Header section (same as before)
+        
         const drawHeader = () => {
             doc.save()
                .moveTo(0, 0)
@@ -519,7 +519,7 @@ const downloadInvoice = async (req, res) => {
                .text('Premium Fashion & Lifestyle', 50, 90);
         };
 
-        // Modified Invoice details section
+   
         const drawInvoiceDetails = () => {
             const startY = 160;
             
@@ -566,7 +566,7 @@ const downloadInvoice = async (req, res) => {
             });
         };
 
-        // Modified Order items table
+       
         const drawOrderItems = () => {
             const startY = 340;
             const pageHeight = doc.page.height - 150;
@@ -592,7 +592,7 @@ const downloadInvoice = async (req, res) => {
 
             currentY = drawTableHeader(currentY);
 
-            // Filter out cancelled items if needed
+      
             const itemsToShow = order.orderedItems.filter(item => 
                 item.status !== 'Cancelled' && item.status !== 'Cancel Requested'
             );
@@ -609,7 +609,7 @@ const downloadInvoice = async (req, res) => {
                 doc.rect(50, currentY, 495, rowHeight)
                    .fill(index % 2 === 0 ? colors.light : colors.white);
 
-                // Item details with status indicator
+               
                 doc.fillColor(colors.primary)
                    .font('Helvetica-Bold')
                    .fontSize(10)
@@ -642,7 +642,7 @@ const downloadInvoice = async (req, res) => {
             return currentY;
         };
 
-        // Modified Summary section
+        //  Summary section
         const drawSummary = (startY) => {
             const summaryX = 300;
             const summaryWidth = 260;
@@ -658,7 +658,7 @@ const downloadInvoice = async (req, res) => {
                 ['Total:', formatCurrency(order.finalAmount)]
             ].filter(Boolean);
 
-            // Add refund information if order is returned
+            //  refund information if order is returned
             if (order.return && order.return.refundAmount) {
                 summaryItems.push(['Refund Amount:', `-${formatCurrency(order.return.refundAmount)}`]);
                 summaryItems.push(['Final Amount:', formatCurrency(order.finalAmount - order.return.refundAmount)]);
@@ -678,7 +678,7 @@ const downloadInvoice = async (req, res) => {
             return startY + 140;
         };
 
-        // Footer section (same as before)
+        // Footer section 
         const drawFooter = () => {
             const footerHeight = 80;
             const footerY = doc.page.height - footerHeight;
@@ -695,7 +695,7 @@ const downloadInvoice = async (req, res) => {
                .text('Follow us @GeradFashion', { align: 'center' });
         };
 
-        // Draw all sections
+        // Draw all section
         drawWatermark();
         drawHeader();
         drawInvoiceDetails();
@@ -728,7 +728,7 @@ const loadorder = async (req, res) => {
 
         const addresses = await Address.find({ userId: userData.id });
         
-        // Fetch ALL orders for the user without coupon filter
+       
         const orders = await Order.find({ 
             user: userData._id
         })
@@ -756,7 +756,7 @@ const loadorder = async (req, res) => {
             });
             return orderObj;
           });
-        // Extract coupon history only from orders that used coupons
+       
         const couponHistory = orders
             .filter(order => order.coupon && order.coupon.applied)
             .map(order => ({
@@ -819,7 +819,7 @@ const loadOrderDetails = async (req, res) => {
             return res.status(404).render('page-404', { message: 'User not found' });
         }
 
-        // Fetch the order with populated product and category details
+        
         const order = await Order.findOne({
             _id: orderId,
             user: userData._id
@@ -852,7 +852,7 @@ const loadOrderDetails = async (req, res) => {
                 : '/placeholder-image.jpg';
 
             return {
-                _id: item._id, // Ensure item ID is available
+                _id: item._id, 
                 product: productData,
                 productImage: productImage,
                 quantity: item.quantity,
@@ -864,11 +864,11 @@ const loadOrderDetails = async (req, res) => {
             };
         });
 
-        // Map shipping address from schema format to template format
+        
         processedOrder.shippingAddress = {
             fullName: order.address?.name || userData.fullName,
             addressLine1: order.address?.street || '',
-            addressLine2: '',  // If you want to split street into two lines
+            addressLine2: '',  
             city: order.address?.city || '',
             state: order.address?.state || '',
             pincode: order.address?.pincode || '',
@@ -892,7 +892,7 @@ const loadOrderDetails = async (req, res) => {
             };
         }
 
-        // Add return request details if exists
+        //  return request details if exists
         if (order.return && order.return.requested) {
             processedOrder.return = {
                 ...order.return,
@@ -900,7 +900,7 @@ const loadOrderDetails = async (req, res) => {
             };
         }
 
-        // Helper functions for the template
+      
         const helpers = {
             formatDate: function(date) {
                 if (!date) return 'Date not available';
@@ -955,7 +955,7 @@ const loadOrderDetails = async (req, res) => {
             user: userData,
             order: {
                 ...processedOrder,
-                _id: orderId, // Ensure order ID is available at the top level
+                _id: orderId, 
             },
             helpers: helpers
         });
@@ -972,7 +972,6 @@ const loadOrderDetails = async (req, res) => {
 
 module.exports = {
     placeOrder,
-    // cancelOrder,
     cancelOrderItem,
     trackOrder ,
     getOrderDetails,

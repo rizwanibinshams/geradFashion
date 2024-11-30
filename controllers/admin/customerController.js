@@ -28,7 +28,7 @@ const customerInfo = async (req, res) => {
         .exec();
 
         
-        // Count the total number of documents that match the query
+        // Count the total number of documents 
         const count = await User.find({
             isAdmin: false,
             $or: [
@@ -37,7 +37,7 @@ const customerInfo = async (req, res) => {
             ]
         }).countDocuments();
 
-        // Pass the data, pagination info, and total pages to the view
+       
         res.render('customers', {
             data: Userdata,
             totalPages: Math.ceil(count / limit),

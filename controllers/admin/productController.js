@@ -23,53 +23,6 @@ const getProductAddPage = async (req, res) => {
     }
 };
 
-// const addProducts = async (req, res) => {
-//     try {
-//         const products = req.body;
-//         const productExists = await Product.findOne({ productName: products.productName });
-
-//         if (!productExists) {
-//             const images = [];
-//             if (req.files && req.files.length > 0) {
-//                 for (let i = 0; i < req.files.length; i++) {
-//                     const originalImagePath = req.files[i].path;
-//                     const resizedImagePath = path.join('public', 'uploads', 'product-images', req.files[i].filename);
-//                     await sharp(originalImagePath).resize({ width: 440, height: 440 }).toFile(resizedImagePath);
-//                     images.push(req.files[i].filename);
-//                 }
-//             }
-
-//             const categoryId = await Category.findOne({ name: products.category });
-//             if (!categoryId) {
-//                 return res.status(400).json("Invalid category name");
-//             }
-
-//             const newProduct = new Product({
-//                 productName: products.productName,
-//                 description: products.description,
-//                 brand: products.brand,
-              
-//                 category: categoryId._id,
-//                 regularPrice: products.regularPrice,
-//                 salePrice: products.salePrice,
-//                 createdAt: new Date(),
-//                 quantity: products.quantity,
-//                 size: products.size ? products.size.split(',') : [], // Handle size array
-//                 color: products.color ? products.color.split(',') : [], // Handle color array
-//                 productImage: images,
-//                 status: "Available",
-//             });
-
-//             await newProduct.save();
-//             return res.redirect("/admin/addProducts");
-//         } else {
-//             res.status(400).json("Product already exists, please try with another name");
-//         }
-//     } catch (error) {
-//         console.error("Error while saving products:", error);
-//         res.redirect("/admin/pageerror");
-//     }
-// };
 
 const addProducts = async (req, res) => {
     try {
@@ -98,7 +51,7 @@ const addProducts = async (req, res) => {
                 // Push the resized filename to images array
                 images.push(resizedFilename);
                 
-                // Optionally, delete the original file if you don't need it
+                
                 fs.unlink(originalImagePath, (err) => {
                     if (err) console.error('Error deleting original file:', err);
                 });
@@ -167,7 +120,7 @@ const getAllProducts = async (req, res) => {
         const brand = await Brand.find({ isBlocked: false });
         const user = req.session.user || null;
 
-        // Calculate pagination range (e.g., showing 5 pages at a time)
+        //  showing 5 pages at a time
         const paginationRange = 6;
         let startPage = Math.max(1, page - Math.floor(paginationRange / 2));
         let endPage = Math.min(totalPages, page + Math.floor(paginationRange / 2));
@@ -234,16 +187,16 @@ const addProductOffer = async (req, res) => {
             });
         }
 
-        // Save current sale price to previousSalePrice before applying the offer
+        
         findProduct.previousSalePrice = findProduct.salePrice;
         const discountAmount = Math.floor(findProduct.regularPrice * (percentage / 100));
         findProduct.salePrice = findProduct.regularPrice - discountAmount;
         findProduct.productOffer = parseInt(percentage);
 
-        // Reset category offer as needed
+        // Reset category offer
         findCategory.categoryOffer = 0;
 
-        // Save both documents
+       
         await Promise.all([
             findProduct.save(),
             findCategory.save()
@@ -268,7 +221,7 @@ const removeProductOffer = async (req, res) => {
         const { productId } = req.body;
         const findProduct = await Product.findOne({ _id: productId });
 
-        // Validate product exists
+      
         if (!findProduct) {
             return res.status(404).json({ 
                 status: false, 
@@ -276,7 +229,7 @@ const removeProductOffer = async (req, res) => {
             });
         }
 
-        // Check if there's an offer to remove
+        
         if (findProduct.productOffer === 0) {
             return res.status(400).json({ 
                 status: false, 
@@ -284,10 +237,10 @@ const removeProductOffer = async (req, res) => {
             });
         }
 
-        // Revert sale price to previous sale price
+       
         if (findProduct.previousSalePrice !== undefined) {
             findProduct.salePrice = findProduct.previousSalePrice;
-            findProduct.previousSalePrice = undefined; // Clear the previous sale price after reverting
+            findProduct.previousSalePrice = undefined; 
         }
         findProduct.productOffer = 0;
 
@@ -383,7 +336,7 @@ const editProduct = async (req, res) => {
             regularPrice: data.regularPrice,
             salePrice: data.salePrice,
             quantity: data.quantity,
-            size: Array.isArray(data.size) ? data.size : [data.size], // Use data.size directly if it's an array
+            size: Array.isArray(data.size) ? data.size : [data.size],
             color: data.color ? data.color.split(',') : Product.color, 
         };
 

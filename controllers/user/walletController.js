@@ -26,7 +26,7 @@ const addMoneyToWallet = async (req, res) => {
         // Update wallet balance
         const newBalance = wallet.balance + parseFloat(amount);
         
-        // Add transaction to history
+       
         const transaction = {
             type: 'credit',
             amount: parseFloat(amount),
@@ -87,7 +87,7 @@ const processWalletPayment = async (req, res) => {
         const userId = req.session.user_id || req.session.user?.id;
         const { amount, orderId, description: customDescription } = req.body;
 
-        // Validate order if orderId is provided
+        
         if (orderId) {
             const orderExists = await Order.exists({ orderId });
             if (!orderExists) {
@@ -98,7 +98,7 @@ const processWalletPayment = async (req, res) => {
             }
         }
 
-        // Find wallet and check balance
+        
         const wallet = await Wallet.findOne({ userId });
         
         if (!wallet) {
@@ -115,10 +115,10 @@ const processWalletPayment = async (req, res) => {
             });
         }
 
-        // Update balance and add transaction
+       
         const newBalance = wallet.balance - parseFloat(amount);
         
-        // Create a meaningful description based on available information
+      
         let transactionDescription = customDescription;
         if (!transactionDescription) {
             transactionDescription = orderId 
@@ -128,7 +128,7 @@ const processWalletPayment = async (req, res) => {
 
         const transaction = {
             type: 'debit',
-            amount: -parseFloat(amount),  // Store as negative for debits
+            amount: -parseFloat(amount), 
             description: transactionDescription,
             date: new Date(),
             balance: newBalance,
@@ -167,7 +167,7 @@ const getTransactionHistory = async (req, res) => {
             });
         }
 
-        // Sort transactions by date (newest first)
+        
         const sortedTransactions = wallet.transactionHistory.sort((a, b) => 
             b.date.getTime() - a.date.getTime()
         );
@@ -194,18 +194,18 @@ const deductOrderAmount = async (userId, amount, orderId) => {
             throw new Error('Wallet not found');
         }
 
-        // Check if sufficient balance
+
         if (wallet.balance < amount) {
             throw new Error('Insufficient balance');
         }
 
-        // Calculate new balance
+       
         const newBalance = wallet.balance - parseFloat(amount);
         
-        // Create transaction record with negative amount for debits
+        
         const transaction = {
             type: 'debit',
-            amount: -parseFloat(amount),  // Store as negative for debits
+            amount: -parseFloat(amount), 
             description: `Payment deducted for order #${orderId}`,
             date: new Date(),
             balance: newBalance,
@@ -237,7 +237,7 @@ const getWallet = async (req, res) => {
         }
 
         const page = parseInt(req.query.page) || 1;
-        const limit = 10; // Number of transactions per page
+        const limit = 10;
         
         const userData = await User.findById(req.session.user.id);
         if (!userData) {
@@ -254,12 +254,12 @@ const getWallet = async (req, res) => {
             await wallet.save();
         }
 
-        // Calculate pagination values
+      
         const totalTransactions = wallet.transactionHistory.length;
         const totalPages = Math.ceil(totalTransactions / limit);
         const skip = (page - 1) * limit;
 
-        // Get paginated transactions
+       
         const paginatedTransactions = wallet.transactionHistory
             .slice()
             .reverse()
